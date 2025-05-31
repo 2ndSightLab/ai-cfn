@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for Internet Gateway'
+
+Parameters:
+  VpcId:
+    Description: ID of the VPC to attach the Internet Gateway to
+    Type: AWS::EC2::VPC::Id
+
+  InternetGatewayName:
+    Description: Name tag for the Internet Gateway
+    Type: String
+
+Resources:
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref InternetGatewayName
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VpcId
+      InternetGatewayId: !Ref InternetGateway
+
+Outputs:
+  InternetGatewayId:
+    Description: Internet Gateway ID
+    Value: !Ref InternetGateway
+    Export:
+      Name: !Sub '${AWS::StackName}-InternetGatewayId'
+
+  AttachedVpcId:
+    Description: VPC ID to which the Internet Gateway is attached
+    Value: !Ref VpcId
+    Export:
+      Name: !Sub '${AWS::StackName}-AttachedVpcId'
+
+  InternetGatewayName:
+    Description: Internet Gateway Name
+    Value: !Ref InternetGatewayName
+    Export:
+      Name: !Sub '${AWS::StackName}-InternetGatewayName'
