@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for subnet'
+
+Parameters:
+  VpcId:
+    Description: ID of the VPC where the subnet will be created
+    Type: AWS::EC2::VPC::Id
+
+  SubnetCidrBlock:
+    Description: CIDR block for the subnet
+    Type: String
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    ConstraintDescription: Must be a valid CIDR block format (x.x.x.x/x)
+
+  SubnetName:
+    Description: Name tag for the subnet
+    Type: String
+
+  AvailabilityZone:
+    Description: Availability Zone for the subnet
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: 'us-east-2b'
+
+  MapPublicIpOnLaunch:
+    Description: Specify whether instances launched in this subnet receive a public IP address
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+
+Resources:
+  Subnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VpcId
+      CidrBlock: !Ref SubnetCidrBlock
+      AvailabilityZone: !Ref AvailabilityZone
+      MapPublicIpOnLaunch: !Ref MapPublicIpOnLaunch
+      Tags:
+        - Key: Name
+          Value: !Ref SubnetName
+
+Outputs:
+  SubnetId:
+    Description: Subnet ID
+    Value: !Ref Subnet
+    Export:
+      Name: !Sub '${AWS::StackName}-SubnetId'
+
+  SubnetCidr:
+    Description: Subnet CIDR Block
+    Value: !Ref SubnetCidrBlock
+    Export:
+      Name: !Sub '${AWS::StackName}-SubnetCidr'
+
+  SubnetName:
+    Description: Subnet Name
+    Value: !Ref SubnetName
+    Export:
+      Name: !Sub '${AWS::StackName}-SubnetName'
+
+  SubnetAvailabilityZone:
+    Description: Subnet Availability Zone
+    Value: !Ref AvailabilityZone
+    Export:
+      Name: !Sub '${AWS::StackName}-SubnetAZ'
