@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Add rules to block RFC 1918 addresses to an existing NACL'
+
+Parameters:
+  NetworkAclId:
+    Type: String
+    Description: 'ID of the existing Network ACL to modify'
+
+Resources:
+  InboundRule10:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId: !Ref NetworkAclId
+      RuleNumber: 80
+      Protocol: -1
+      RuleAction: deny
+      Egress: false
+      CidrBlock: 10.0.0.0/8
+
+  InboundRule172:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId: !Ref NetworkAclId
+      RuleNumber: 81
+      Protocol: -1
+      RuleAction: deny
+      Egress: false
+      CidrBlock: 172.16.0.0/12
+
+  InboundRule192:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId: !Ref NetworkAclId
+      RuleNumber: 82
+      Protocol: -1
+      RuleAction: deny
+      Egress: false
+      CidrBlock: 192.168.0.0/16
+
+  OutboundRule10:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId: !Ref NetworkAclId
+      RuleNumber: 80
+      Protocol: -1
+      RuleAction: deny
+      Egress: true
+      CidrBlock: 10.0.0.0/8
+
+  OutboundRule172:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId: !Ref NetworkAclId
+      RuleNumber: 81
+      Protocol: -1
+      RuleAction: deny
+      Egress: true
+      CidrBlock: 172.16.0.0/12
+
+  OutboundRule192:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId: !Ref NetworkAclId
+      RuleNumber: 82
+      Protocol: -1
+      RuleAction: deny
+      Egress: true
+      CidrBlock: 192.168.0.0/16
+
+Outputs:
+  ModifiedNetworkAclId:
+    Description: 'ID of the modified Network ACL'
+    Value: !Ref NetworkAclId
