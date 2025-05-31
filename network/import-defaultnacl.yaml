@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to import default NACL without modification'
+
+Parameters:
+  VpcId:
+    Description: ID of the VPC whose default NACL will be imported
+    Type: AWS::EC2::VPC::Id
+
+Resources:
+  # Import the existing default Network ACL
+  ImportedDefaultNetworkAcl:
+    Type: AWS::EC2::NetworkAcl
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      VpcId: !Ref VpcId
+
