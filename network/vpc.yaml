@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for VPC'
+
+Parameters:
+  VpcCidrBlock:
+    Description: CIDR block for the VPC
+    Type: String
+    Default: '10.20.30.0/23'
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    ConstraintDescription: Must be a valid CIDR block format (x.x.x.x/x)
+
+  VpcName:
+    Description: Name tag for the VPC
+    Type: String
+    Default: 'hacker-shared-vpc'
+
+  EnableDnsSupport:
+    Description: Enable DNS resolution through the Amazon provided DNS server
+    Type: String
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+
+  EnableDnsHostnames:
+    Description: Enable DNS hostnames for instances with public IP addresses
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidrBlock
+      EnableDnsSupport: !Ref EnableDnsSupport
+      EnableDnsHostnames: !Ref EnableDnsHostnames
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Ref VpcName
+
+Outputs:
+  VpcId:
+    Description: VPC ID
+    Value: !Ref VPC
+    Export:
+      Name: !Sub '${AWS::StackName}-VpcId'
+
+  VpcCidr:
+    Description: VPC CIDR Block
+    Value: !GetAtt VPC.CidrBlock
+    Export:
+      Name: !Sub '${AWS::StackName}-VpcCidr'
+
+  VpcName:
+    Description: VPC Name
+    Value: !Ref VpcName
+    Export:
+      Name: !Sub '${AWS::StackName}-VpcName'
