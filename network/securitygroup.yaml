@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Template to create a security group in an existing VPC'
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: The ID of the VPC where the security group will be created
+
+  SecurityGroupName:
+    Type: String
+    Description: The name of the security group to be created
+
+Resources:
+  MySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Ref SecurityGroupName
+      GroupDescription: Security group created from CloudFormation
+      VpcId: !Ref VpcId
+
+Outputs:
+  SecurityGroupId:
+    Description: The ID of the created security group
+    Value: !Ref MySecurityGroup
