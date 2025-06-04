@@ -1,0 +1,458 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFront distribution for S3 static website with comprehensive security best practices'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: 'The primary domain name for the CloudFront distribution (e.g., example.com)'
+    
+  S3BucketName:
+    Type: String
+    Description: 'The name of the S3 bucket to use as the origin'
+    
+  S3BucketRegion:
+    Type: String
+    Description: 'The AWS region where the S3 bucket is located'
+    Default: 'us-east-1'
+    
+  AcmCertificateArn:
+    Type: String
+    Description: 'The ARN of the ACM certificate for HTTPS'
+    
+  IncludeWWW:
+    Type: String
+    Description: 'Include www subdomain as an alias'
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+      
+  DefaultRootObject:
+    Type: String
+    Description: 'The default root object (e.g., index.html)'
+    Default: 'index.html'
+
+  # PriceClass_100: North America and Europe Only
+  # PriceClass_200: North America, Europe, Asia, Middle East, and Africa
+  # PriceClass_All: All CloudFront edge locations worldwide
+  PriceClass:
+    Type: String
+    Description: 'The price class for the CloudFront distribution'
+    Default: 'PriceClass_100'
+    AllowedValues:
+      - 'PriceClass_100'
+      - 'PriceClass_200'
+      - 'PriceClass_All'
+  PriceClass:
+    Type: String
+    Description: 'The price class for the CloudFront distribution'
+    Default: 'PriceClass_100'
+    AllowedValues:
+      - 'PriceClass_100'
+      - 'PriceClass_200'
+      - 'PriceClass_All'
+      
+  EnableLogging:
+    Type: String
+    Description: 'Enable CloudFront access logging'
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+      
+  LoggingBucket:
+    Type: String
+    Description: 'S3 bucket for CloudFront access logs (required if EnableLogging is true)'
+    Default: ''
+    
+  LoggingPrefix:
+    Type: String
+    Description: 'Prefix for CloudFront access logs'
+    Default: 'cloudfront-logs/'
+    
+  WebACLId:
+    Type: String
+    Description: 'Optional AWS WAF Web ACL ID to associate with the distribution'
+    Default: ''
+    
+  EnableGeoRestriction:
+    Type: String
+    Description: 'Enable geographic restrictions'
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+      
+  GeoRestrictionType:
+    Type: String
+    Description: 'Type of geographic restriction'
+    Default: 'blacklist'
+    AllowedValues:
+      - 'whitelist'
+      - 'blacklist'
+      
+  GeoRestrictionLocations:
+    Type: CommaDelimitedList
+    Description: 'Comma-separated list of country codes for geo restriction'
+    Default: ''
+    
+  EnableOriginShield:
+    Type: String
+    Description: 'Enable CloudFront Origin Shield for improved caching'
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+      
+  OriginShieldRegion:
+    Type: String
+    Description: 'Region for Origin Shield (should be closest to S3 bucket region)'
+    Default: 'us-east-1'
+    
+  CSPDirectives:
+    Type: String
+    Description: 'Content Security Policy directives'
+    Default: "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self'"
+
+Conditions:
+  IncludeWWWAlias: !Equals [!Ref IncludeWWW, 'true']
+  EnableCloudFrontLogging: !Equals [!Ref EnableLogging, 'true']
+  UseWebACL: !Not [!Equals [!Ref WebACLId, '']]
+  UseGeoRestriction: !Equals [!Ref EnableGeoRestriction, 'true']
+  HasGeoRestrictionLocations: !Not [!Equals [!Join [',', !Ref GeoRestrictionLocations], '']]
+  UseOriginShield: !Equals [!Ref EnableOriginShield, 'true']
+  HasLoggingBucket: !Not [!Equals [!Ref LoggingBucket, '']]
+
+Resources:
+  # Cache Policy for HTML content (shorter TTL)
+  HtmlCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: !Sub '${AWS::StackName}-HtmlCachePolicy'
+        DefaultTTL: 3600  # 1 hour
+        MaxTTL: 86400     # 1 day
+        MinTTL: 0
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+          CookiesConfig:
+            CookieBehavior: none
+          HeadersConfig:
+            HeaderBehavior: whitelist
+            Headers:
+              - Host  # Include only the Host header in cache key
+          QueryStringsConfig:
+            QueryStringBehavior: none  # Don't include any query strings in cache key
+
+  # Cache Policy for static assets (longer TTL)
+  StaticAssetsCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: !Sub '${AWS::StackName}-StaticAssetsCachePolicy'
+        DefaultTTL: 2592000  # 30 days
+        MaxTTL: 31536000     # 1 year
+        MinTTL: 86400        # 1 day
+        ParametersInCacheKeyAndForwardedToOrigin:
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+          CookiesConfig:
+            CookieBehavior: none
+          HeadersConfig:
+            HeaderBehavior: whitelist
+            Headers:
+              - Host  # Include only the Host header in cache key
+          QueryStringsConfig:
+            QueryStringBehavior: none  # Don't include any query strings in cache key
+
+  # Origin Request Policy - Only forward essential headers
+  S3OriginRequestPolicy:
+    Type: AWS::CloudFront::OriginRequestPolicy
+    Properties:
+      OriginRequestPolicyConfig:
+        Name: !Sub '${AWS::StackName}-S3OriginRequestPolicy'
+        CookiesConfig:
+          CookieBehavior: none
+        HeadersConfig:
+          HeaderBehavior: whitelist
+          Headers:
+            - Host
+            - Origin
+            - Access-Control-Request-Headers
+            - Access-Control-Request-Method
+        QueryStringsConfig:
+          QueryStringBehavior: none
+
+  # Response Headers Policy with security headers
+  SecurityHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: !Sub '${AWS::StackName}-SecurityHeadersPolicy'
+        SecurityHeadersConfig:
+          ContentSecurityPolicy:
+            ContentSecurityPolicy: !Ref CSPDirectives
+            Override: true
+          ContentTypeOptions:
+            Override: true
+          FrameOptions:
+            FrameOption: DENY
+            Override: true
+          ReferrerPolicy:
+            ReferrerPolicy: strict-origin-when-cross-origin
+            Override: true
+          StrictTransportSecurity:
+            AccessControlMaxAgeSec: 63072000
+            IncludeSubdomains: true
+            Preload: true
+            Override: true
+          # X-XSS-Protection header removed as it's deprecated
+        CorsConfig:
+          AccessControlAllowCredentials: false
+          AccessControlAllowHeaders:
+            - 'Content-Type'
+            - 'Authorization'
+            - 'X-Requested-With'
+            - 'Origin'
+            - 'Accept'
+          AccessControlAllowMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          AccessControlAllowOrigins:
+            - !Sub 'https://${DomainName}'
+            - !If [IncludeWWWAlias, !Sub 'https://www.${DomainName}', !Ref 'AWS::NoValue']
+          AccessControlMaxAgeSec: 600
+          OriginOverride: false
+        # Add Cache-Control header for static assets
+        CustomHeadersConfig:
+          Items:
+            - Header: Cache-Control
+              Value: "public, max-age=31536000, immutable"
+              Override: false
+
+  CloudFrontOriginAccessControl:
+    Type: 'AWS::CloudFront::OriginAccessControl'
+    Properties:
+      OriginAccessControlConfig:
+        Description: !Sub 'OAC for ${S3BucketName}'
+        Name: !Sub '${AWS::StackName}-OAC'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  CloudFrontDistribution:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+      DistributionConfig:
+        Aliases: !If 
+          - IncludeWWWAlias
+          - - !Ref DomainName
+            - !Sub 'www.${DomainName}'
+          - - !Ref DomainName
+        DefaultRootObject: !Ref DefaultRootObject
+        Enabled: true
+        HttpVersion: http2and3  # Support for HTTP/3 for better performance
+        IPV6Enabled: true
+        PriceClass: !Ref PriceClass
+        WebACLId: !If [UseWebACL, !Ref WebACLId, !Ref 'AWS::NoValue']
+        Origins:
+          - DomainName: !Sub '${S3BucketName}.s3.${S3BucketRegion}.amazonaws.com'
+            Id: S3Origin
+            OriginAccessControlId: !Ref CloudFrontOriginAccessControl
+            S3OriginConfig: {}
+            OriginShield: !If
+              - UseOriginShield
+              - Enabled: true
+                OriginShieldRegion: !Ref OriginShieldRegion
+              - !Ref 'AWS::NoValue'
+            # Ensure origin connection uses HTTPS
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols:
+                - TLSv1.2
+                - TLSv1.3
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          Compress: true
+          CachePolicyId: !Ref HtmlCachePolicy
+          OriginRequestPolicyId: !Ref S3OriginRequestPolicy
+          ResponseHeadersPolicyId: !Ref SecurityHeadersPolicy
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          # Enable automatic object compression
+          FunctionAssociations: []
+        CacheBehaviors:
+          - PathPattern: '*.js'
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: true
+            CachePolicyId: !Ref StaticAssetsCachePolicy
+            OriginRequestPolicyId: !Ref S3OriginRequestPolicy
+            ResponseHeadersPolicyId: !Ref SecurityHeadersPolicy
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: redirect-to-https
+          - PathPattern: '*.css'
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: true
+            CachePolicyId: !Ref StaticAssetsCachePolicy
+            OriginRequestPolicyId: !Ref S3OriginRequestPolicy
+            ResponseHeadersPolicyId: !Ref SecurityHeadersPolicy
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: redirect-to-https
+          - PathPattern: '*.jpg'
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: false  # Don't compress already compressed images
+            CachePolicyId: !Ref StaticAssetsCachePolicy
+            OriginRequestPolicyId: !Ref S3OriginRequestPolicy
+            ResponseHeadersPolicyId: !Ref SecurityHeadersPolicy
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: redirect-to-https
+          - PathPattern: '*.png'
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: false  # Don't compress already compressed images
+            CachePolicyId: !Ref StaticAssetsCachePolicy
+            OriginRequestPolicyId: !Ref S3OriginRequestPolicy
+            ResponseHeadersPolicyId: !Ref SecurityHeadersPolicy
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: redirect-to-https
+          - PathPattern: '*.svg'
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: true  # SVGs are text-based and benefit from compression
+            CachePolicyId: !Ref StaticAssetsCachePolicy
+            OriginRequestPolicyId: !Ref S3OriginRequestPolicy
+            ResponseHeadersPolicyId: !Ref SecurityHeadersPolicy
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: redirect-to-https
+          - PathPattern: '*.woff*'
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            Compress: false  # Don't compress already compressed fonts
+            CachePolicyId: !Ref StaticAssetsCachePolicy
+            OriginRequestPolicyId: !Ref S3OriginRequestPolicy
+            ResponseHeadersPolicyId: !Ref SecurityHeadersPolicy
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: redirect-to-https
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 404
+            ResponsePagePath: '/404.html'
+            ErrorCachingMinTTL: 300
+          - ErrorCode: 404
+            ResponseCode: 404
+            ResponsePagePath: '/404.html'
+            ErrorCachingMinTTL: 300
+        ViewerCertificate:
+          AcmCertificateArn: !Ref AcmCertificateArn
+          MinimumProtocolVersion: TLSv1.2_2021
+          SslSupportMethod: sni-only
+        Logging: !If
+          - EnableCloudFrontLogging
+          - !If
+            - HasLoggingBucket
+            - Bucket: !Sub '${LoggingBucket}.s3.amazonaws.com'
+              Prefix: !Ref LoggingPrefix
+              IncludeCookies: false
+            - !Ref AWS::NoValue
+          - !Ref AWS::NoValue
+        Restrictions: !If
+          - UseGeoRestriction
+          - GeoRestriction:
+              RestrictionType: !Ref GeoRestrictionType
+              Locations: !If
+                - HasGeoRestrictionLocations
+                - !Ref GeoRestrictionLocations
+                - !Ref AWS::NoValue
+          - !Ref AWS::NoValue
+
+Outputs:
+  DistributionId:
+    Description: 'The ID of the CloudFront distribution'
+    Value: !Ref CloudFrontDistribution
+    Export:
+      Name: !Sub '${AWS::StackName}-DistributionId'
+
+  DistributionDomainName:
+    Description: 'The domain name of the CloudFront distribution'
+    Value: !GetAtt CloudFrontDistribution.DomainName
+    Export:
+      Name: !Sub '${AWS::StackName}-DistributionDomainName'
+
+  OriginAccessControlId:
+    Description: 'The ID of the Origin Access Control'
+    Value: !Ref CloudFrontOriginAccessControl
+    Export:
+      Name: !Sub '${AWS::StackName}-OriginAccessControlId'
+      
+  FullDomainName:
+    Description: 'The full domain name for the website'
+    Value: !Ref DomainName
+    Export:
+      Name: !Sub '${AWS::StackName}-FullDomainName'
+      
+  WebsiteURL:
+    Description: 'The secure URL of the website'
+    Value: !Sub 'https://${DomainName}'
+    Export:
+      Name: !Sub '${AWS::StackName}-WebsiteURL'
+      
+  WWWDomainEnabled:
+    Description: 'Whether the www subdomain is enabled'
+    Value: !Ref IncludeWWW
+    Export:
+      Name: !Sub '${AWS::StackName}-WWWDomainEnabled'
+      
+  WWWDomainName:
+    Description: 'The www subdomain name (if enabled)'
+    Value: !If [IncludeWWWAlias, !Sub 'www.${DomainName}', 'Not Enabled']
+    Export:
+      Name: !Sub '${AWS::StackName}-WWWDomainName'
+
