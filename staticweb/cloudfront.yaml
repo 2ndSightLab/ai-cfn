@@ -96,7 +96,9 @@ Parameters:
     Description: 'Comma-separated list of country codes for geo restriction'
     Default: ''
     
-  # Shield Advanced costs $3,000 per year at the time this template was written
+  # Origin Shield is a regional caching layer that costs approximately $0.012 per GB in the US (as of 2025)
+  # https://aws.amazon.com/cloudfront/pricing/
+  # This is different than Amazon shield which costs $3,000 per year as of 06/04/2025
   # EnableOriginShield:
   #   Type: String
   #   Description: 'Enable CloudFront Origin Shield for improved caching'
