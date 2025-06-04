@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for ACM Certificate'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: 'The primary domain name for the certificate (e.g., example.com)'
+    
+  IncludeWWW:
+    Type: String
+    Description: 'Include www subdomain as an alternative name'
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+      
+  IncludeWildcard:
+    Type: String
+    Description: 'Include wildcard subdomain (*.domain.com) as an alternative name'
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+      
+  AdditionalDomains:
+    Type: CommaDelimitedList
+    Description: 'Additional domain names for the certificate (comma-separated)'
+    Default: ''
+    
+  ValidationMethod:
+    Type: String
+    Description: 'The method to validate domain ownership'
+    Default: 'DNS'
+    AllowedValues:
+      - 'DNS'
+      - 'EMAIL'
+      
+  HostedZoneId:
+    Type: String
+    Description: 'The Route 53 Hosted Zone ID (optional, used only for DNS validation)'
+    Default: ''
+      
+  Region:
+    Type: String
+    Description: 'Region to create the certificate in (use us-east-1 for CloudFront)'
+    Default: 'us-east-1'
+
+Conditions:
+  IncludeWWWDomain: !Equals [!Ref IncludeWWW, 'true']
+  IncludeWildcardDomain: !Equals [!Ref IncludeWildcard, 'true']
+  HasAdditionalDomains: !Not [!Equals [!Join [',', !Ref AdditionalDomains], '']]
+  UseDNSValidation: !Equals [!Ref ValidationMethod, 'DNS']
+  UseHostedZoneId: !And 
+    - !Condition UseDNSValidation
+    - !Not [!Equals [!Ref HostedZoneId, '']]
+
+Resources:
+  TLSCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames: 
+        !Split
+          - ','
+          - !Join
+            - ','
+            - - !If [IncludeWWWDomain, !Sub 'www.${DomainName}', '']
+              - !If [IncludeWildcardDomain, !Sub '*.${DomainName}', '']
+              - !If [HasAdditionalDomains, !Join [',', !Ref AdditionalDomains], '']
+      ValidationMethod: !Ref ValidationMethod
+      DomainValidationOptions: 
+        !If 
+          - UseHostedZoneId
+          - - DomainName: !Ref DomainName
+              HostedZoneId: !Ref HostedZoneId
+          - !Ref AWS::NoValue
+
+Outputs:
+  CertificateArn:
+    Description: 'ARN of the created certificate'
+    Value: !Ref TLSCertificate
+    Export:
+      Name: !Sub '${AWS::StackName}-CertificateArn'
+
+  CertificateDomain:
+    Description: 'Primary domain name for the certificate'
+    Value: !Ref DomainName
