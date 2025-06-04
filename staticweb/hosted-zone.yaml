@@ -1,0 +1,132 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Route 53 Hosted Zone for S3 static website with CloudFront integration'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: 'The domain name for the hosted zone (e.g., example.com)'
+  
+  CreateS3Records:
+    Type: String
+    Description: 'Create DNS records for direct S3 website endpoint (not needed if using CloudFront)'
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+  
+  CloudFrontDomainName:
+    Type: String
+    Description: 'The CloudFront distribution domain name (e.g., d1234abcdef.cloudfront.net)'
+    Default: ''
+  
+  CreateCloudFrontRecords:
+    Type: String
+    Description: 'Create DNS records for CloudFront distribution'
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+
+Conditions:
+  HasCloudFrontDomain: !Not [!Equals [!Ref CloudFrontDomainName, '']]
+  CreateS3WebsiteRecords: !Equals [!Ref CreateS3Records, 'true']
+  CreateCloudFrontDNSRecords: !And
+    - !Equals [!Ref CreateCloudFrontRecords, 'true']
+    - !Condition HasCloudFrontDomain
+
+Resources:
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Ref DomainName
+      HostedZoneConfig:
+        Comment: !Sub 'Hosted zone for ${DomainName}'
+
+  # S3 Website Records (Optional)
+  S3WebsiteRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: CreateS3WebsiteRecords
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !Sub 's3-website-${AWS::Region}.amazonaws.com'
+        HostedZoneId: !FindInMap [RegionMap, !Ref 'AWS::Region', S3HostedZoneId]
+        EvaluateTargetHealth: false
+
+  WWWS3Record:
+    Type: AWS::Route53::RecordSet
+    Condition: CreateS3WebsiteRecords
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Sub 'www.${DomainName}'
+      Type: A
+      AliasTarget:
+        DNSName: !Sub 's3-website-${AWS::Region}.amazonaws.com'
+        HostedZoneId: !FindInMap [RegionMap, !Ref 'AWS::Region', S3HostedZoneId]
+        EvaluateTargetHealth: false
+
+  # CloudFront Records
+  CloudFrontRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: CreateCloudFrontDNSRecords
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !Ref CloudFrontDomainName
+        HostedZoneId: Z2FDTNDATAQYW2 # CloudFront's global Hosted Zone ID
+        EvaluateTargetHealth: false
+
+  WWWCloudFrontRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: CreateCloudFrontDNSRecords
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Sub 'www.${DomainName}'
+      Type: A
+      AliasTarget:
+        DNSName: !Ref CloudFrontDomainName
+        HostedZoneId: Z2FDTNDATAQYW2 # CloudFront's global Hosted Zone ID
+        EvaluateTargetHealth: false
+
+Mappings:
+  RegionMap:
+    us-east-1:
+      S3HostedZoneId: Z3AQBSTGFYJSTF
+    us-east-2:
+      S3HostedZoneId: Z2O1EMRO9K5GLX
+    us-west-1:
+      S3HostedZoneId: Z2F56UZL2M1ACD
+    us-west-2:
+      S3HostedZoneId: Z3BJ6K6RIION7M
+    eu-west-1:
+      S3HostedZoneId: Z1BKCTXD74EZPE
+    ap-southeast-1:
+      S3HostedZoneId: Z3O0J2DXBE1FTB
+    ap-southeast-2:
+      S3HostedZoneId: Z1WCIGYICN2BYD
+    ap-northeast-1:
+      S3HostedZoneId: Z2M4EHUR26P7ZW
+    sa-east-1:
+      S3HostedZoneId: Z31GFT0UA1I2HV
+    # Add other regions as needed
+
+Outputs:
+  HostedZoneId:
+    Description: 'Hosted Zone ID'
+    Value: !Ref HostedZone
+    Export:
+      Name: !Sub '${AWS::StackName}-HostedZoneId'
+
+  DomainName:
+    Description: 'Domain Name'
+    Value: !Ref DomainName
+    Export:
+      Name: !Sub '${AWS::StackName}-DomainName'
+
+  NameServers:
+    Description: 'Name Servers (update these in your domain registrar)'
+    Value: !Join [', ', !GetAtt HostedZone.NameServers]
