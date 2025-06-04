@@ -1,1 +1,87 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create an S3 bucket for static website hosting with CloudFront'
 
+Parameters:
+  DomainName:
+    Type: String
+    Description: 'The domain name for the static website (e.g., example.com)'
+  CloudFrontOriginAccessIdentity:
+    Type: String
+    Description: 'The CloudFront Origin Access Identity ID'
+    Default: ''
+  CreateOAIPolicy:
+    Type: String
+    Description: 'Whether to create an OAI policy (Yes/No)'
+    Default: 'Yes'
+    AllowedValues:
+      - 'Yes'
+      - 'No'
+  OAIType:
+    Type: String
+    Description: 'Type of Origin Access (OAI or OAC)'
+    Default: 'OAI'
+    AllowedValues:
+      - 'OAI'
+      - 'OAC'
+  OriginAccessControlId:
+    Type: String
+    Description: 'The CloudFront Origin Access Control ID (if using OAC instead of OAI)'
+    Default: ''
+
+Conditions:
+  CreateOAIBucketPolicy: !Equals [!Ref CreateOAIPolicy, 'Yes']
+  UseOAI: !Equals [!Ref OAIType, 'OAI']
+  UseOAC: !Equals [!Ref OAIType, 'OAC']
+
+Resources:
+  StaticWebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref DomainName
+      AccessControl: Private
+    DeletionPolicy: Retain
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: CreateOAIBucketPolicy
+    Properties:
+      Bucket: !Ref StaticWebsiteBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - !If
+            - UseOAI
+            - Sid: AllowCloudFrontOAIAccess
+              Effect: Allow
+              Principal:
+                CanonicalUser: !Sub 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}'
+              Action: 's3:GetObject'
+              Resource: !Join 
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref StaticWebsiteBucket
+                  - '/*'
+            - Sid: AllowCloudFrontOACAccess
+              Effect: Allow
+              Principal:
+                Service: 'cloudfront.amazonaws.com'
+              Action: 's3:GetObject'
+              Resource: !Join 
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref StaticWebsiteBucket
+                  - '/*'
+              Condition:
+                StringEquals:
+                  'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/*'
+
+Outputs:
+  BucketName:
+    Value: !Ref StaticWebsiteBucket
+    Description: Name of S3 bucket to hold website content
+  BucketRegionalDomainName:
+    Value: !GetAtt StaticWebsiteBucket.RegionalDomainName
+    Description: Regional domain name of the S3 bucket
+  BucketArn:
+    Value: !GetAtt StaticWebsiteBucket.Arn
+    Description: ARN of the S3 bucket
