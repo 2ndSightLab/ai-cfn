@@ -96,18 +96,19 @@ Parameters:
     Description: 'Comma-separated list of country codes for geo restriction'
     Default: ''
     
-  EnableOriginShield:
-    Type: String
-    Description: 'Enable CloudFront Origin Shield for improved caching'
-    Default: 'true'
-    AllowedValues:
-      - 'true'
-      - 'false'
+  # Shield Advanced costs $3,000 per year at the time this template was written
+  # EnableOriginShield:
+  #   Type: String
+  #   Description: 'Enable CloudFront Origin Shield for improved caching'
+  #   Default: 'true'
+  #   AllowedValues:
+  #     - 'true'
+  #     - 'false'
       
-  OriginShieldRegion:
-    Type: String
-    Description: 'Region for Origin Shield (should be closest to S3 bucket region)'
-    Default: 'us-east-1'
+  # OriginShieldRegion:
+  #   Type: String
+  #   Description: 'Region for Origin Shield (should be closest to S3 bucket region)'
+  #   Default: 'us-east-1'
     
   CSPDirectives:
     Type: String
