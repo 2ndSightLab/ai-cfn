@@ -1,57 +1,41 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'ACM Certificate'
+Description: 'Basic ACM Certificate without www or wildcard'
 
 Parameters:
   DomainName:
     Type: String
     Description: The domain name for the certificate
   
-  IncludeWWW:
+  ValidationMethod:
     Type: String
-    Default: 'true'
+    Default: 'DNS'
     AllowedValues:
-      - 'true'
-      - 'false'
-    Description: Whether to include www subdomain
+      - 'DNS'
+      - 'EMAIL'
+    Description: Validation method for the certificate
   
   HostedZoneId:
     Type: String
-    Description: The Route 53 Hosted Zone ID
+    Default: ''
+    Description: The Route 53 Hosted Zone ID (required for DNS validation)
 
 Conditions:
-  IncludeWWWDomain: !Equals [!Ref IncludeWWW, 'true']
+  UseDNSValidation: !Equals [!Ref ValidationMethod, 'DNS']
+  UseHostedZoneId: !And 
+    - !Condition UseDNSValidation
+    - !Not [!Equals [!Ref HostedZoneId, '']]
 
 Resources:
-  # Certificate with www
-  CertificateWithWWW:
+  Certificate:
     Type: AWS::CertificateManager::Certificate
-    Condition: IncludeWWWDomain
     Properties:
       DomainName: !Ref DomainName
-      SubjectAlternativeNames:
-        - !Sub "www.${DomainName}"
-      ValidationMethod: DNS
+      ValidationMethod: !Ref ValidationMethod
       DomainValidationOptions:
         - DomainName: !Ref DomainName
-          HostedZoneId: !Ref HostedZoneId
-        - DomainName: !Sub "www.${DomainName}"
-          HostedZoneId: !Ref HostedZoneId
-  
-  # Certificate without www
-  CertificateNoWWW:
-    Type: AWS::CertificateManager::Certificate
-    Condition: !Not [!Condition IncludeWWWDomain]
-    Properties:
-      DomainName: !Ref DomainName
-      ValidationMethod: DNS
-      DomainValidationOptions:
-        - DomainName: !Ref DomainName
-          HostedZoneId: !Ref HostedZoneId
+          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
 
 Outputs:
   CertificateArn:
     Description: The ARN of the certificate
-    Value: !If
-      - IncludeWWWDomain
-      - !Ref CertificateWithWWW
-      - !Ref CertificateNoWWW
+    Value: !Ref Certificate
