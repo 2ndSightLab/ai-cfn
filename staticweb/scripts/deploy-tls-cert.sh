@@ -1,4 +1,9 @@
-# Now check if any valid certificates exist
+#!/bin/bash
+
+# TLS Certificate 
+ACM_CERTIFICATE_ARN=""
+
+# Check if any valid certificates exist
 if check_certificate_exists "$DOMAIN_NAME" "us-east-1"; then
   echo "Existing certificate ARN: $ACM_CERTIFICATE_ARN"
 else
