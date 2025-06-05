@@ -12,6 +12,9 @@ export AWS_DEFAULT_REGION=$REGION
 
 # Stack names
 read -p "Stack name prefix (default: my-website): " STACK_NAME_PREFIX
+if [[ $STACK_NAME_PREFIX =~ ^[0-9] ]]; then
+   STACK_NAME_PREFIX="s-$STACK_NAME_PREFIX"
+fi
 STACK_NAME_PREFIX=${STACK_NAME_PREFIX:-my-website}
 S3_ACCESS_LOGS_STACK="${STACK_NAME_PREFIX}-s3-access-logs"
 CLOUDFRONT_LOGS_STACK="${STACK_NAME_PREFIX}-cloudfront-logs"
