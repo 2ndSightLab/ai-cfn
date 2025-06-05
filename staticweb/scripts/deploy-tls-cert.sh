@@ -57,6 +57,9 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     else
         VALIDATION_METHOD="EMAIL"
     fi
+    
+    # Check if stack exists
+    stack_exists "$TLS_CERTIFICATE_STACK"
   
     # Deploy the certificate using CloudFormation
     aws cloudformation deploy \
