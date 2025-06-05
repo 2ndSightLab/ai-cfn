@@ -11,37 +11,22 @@ else
   ACM_CERTIFICATE_ARN=""
 fi
 
-read -p "Deploy TLS certificate? (y/n): " DEPLOY_CERTIFICATE
-if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
-  if [[ -z "$HOSTED_ZONE_ID" ]]; then
-    echo "Error: A Route 53 hosted zone is required for DNS validation."
-    exit 1
-  fi
-  
-  read -p "Include www subdomain in certificate? (true/false, default: true): " INCLUDE_WWW
-  INCLUDE_WWW=${INCLUDE_WWW:-true}
-  
-  # Check for existing certificates first
-  if check_certificate_exists "$DOMAIN_NAME" "us-east-1"; then
-    echo "Using existing certificate with ARN: $ACM_CERTIFICATE_ARN"
-    
-    # Check if validation is already complete
-    CERT_STATUS=$(aws acm describe-certificate \
-      --certificate-arn $ACM_CERTIFICATE_ARN \
-      --region us-east-1 \
-      --query 'Certificate.Status' \
-      --output text)
-    
-    if [[ "$CERT_STATUS" == "ISSUED" ]]; then
-      echo "Certificate is already validated and active."
-      VALIDATION_NEEDED=false
-    else
-      echo "Certificate exists but is not yet validated."
-      VALIDATION_NEEDED=true
+# Check for existing certificates first
+if check_certificate_exists "$DOMAIN_NAME" "us-east-1"; then
+   echo "Using existing certificate with ARN: $ACM_CERTIFICATE_ARN"
+else
+
+  read -p "Deploy TLS certificate? (y/n): " DEPLOY_CERTIFICATE
+  if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
+ 
+    if [[ -z "$HOSTED_ZONE_ID" ]]; then
+      echo "Enter hosted zone ID:"
+      read HOSTED_ZONE_ID
     fi
-  else
-    echo "No valid certificates found. Deploying new certificate..."
-    
+  
+    read -p "Include www subdomain in certificate? (true/false, default: true): " INCLUDE_WWW
+    INCLUDE_WWW=${INCLUDE_WWW:-true}
+  
     # Deploy the certificate using CloudFormation
     aws cloudformation deploy \
       --template-file cfn/tls-certificate.yaml \
@@ -60,4 +45,19 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
       --output text)
     
     echo "Certificate requested with ARN: $ACM_CERTIFICATE_ARN"
+  fi
+
+  # Check if validation is already complete
+  CERT_STATUS=$(aws acm describe-certificate \
+      --certificate-arn $ACM_CERTIFICATE_ARN \
+      --region us-east-1 \
+      --query 'Certificate.Status' \
+      --output text)
+    
+  if [[ "$CERT_STATUS" == "ISSUED" ]]; then
+    echo "Certificate is already validated and active."
+    VALIDATION_NEEDED=false
+  else
+    echo "Certificate exists but is not yet validated."
+    VALIDATION_NEEDED=true
   fi
