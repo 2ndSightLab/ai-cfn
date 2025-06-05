@@ -132,10 +132,10 @@ read -p "Force delete any existing certificates for $DOMAIN_NAME? (y/n): " FORCE
 if [[ "$FORCE_DELETE_CERT" == "y" || "$FORCE_DELETE_CERT" == "Y" ]]; then
   echo "Searching for certificates to delete..."
   
-  # List all certificates for the domain, including expired and failed ones
+  # List all certificates for the domain
+  # Note: We're not using --include-expired as it's not supported
   CERT_ARNS=$(aws acm list-certificates \
     --region us-east-1 \
-    --include-expired \
     --query "CertificateSummaryList[?DomainName=='$DOMAIN_NAME'].CertificateArn" \
     --output text)
   
