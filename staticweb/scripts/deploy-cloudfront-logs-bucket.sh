@@ -20,7 +20,7 @@ if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
   
   echo "Deploying CloudFront Logs Bucket..."
   aws cloudformation deploy \
-    --template-file s3-cloudfront-access-log-bucket.yaml \
+    --template-file cfn/s3-cloudfront-access-log-bucket.yaml \
     --stack-name $CLOUDFRONT_LOGS_STACK \
     --parameter-overrides \
       LogRetentionDays=$CF_LOG_RETENTION_DAYS \
