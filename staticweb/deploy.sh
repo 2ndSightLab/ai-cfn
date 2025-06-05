@@ -78,42 +78,92 @@ else
 fi
 
 # TLS Certificate
-# Check if certificate exists in ACM - IMPROVED VERSION
 ACM_CERTIFICATE_ARN=""
-if [[ ! -z "$DOMAIN_NAME" ]]; then
-  echo "Checking for existing certificates for $DOMAIN_NAME..."
+
+# Function to check if a certificate exists and is valid
+check_certificate_exists() {
+  local domain=$1
+  local region=${2:-us-east-1}
   
-  # Try to find an existing certificate for the domain with proper filtering
-  # This checks for ISSUED certificates only to avoid finding deleted or failed ones
-  ACM_CERTIFICATE_ARN=$(aws acm list-certificates \
+  echo "Thoroughly checking for existing certificates for $domain..."
+  
+  # List all certificates regardless of status
+  local all_certs=$(aws acm list-certificates \
+    --region $region \
+    --include-expired \
+    --query "CertificateSummaryList[?DomainName=='$domain'].CertificateArn" \
+    --output text)
+  
+  if [[ -z "$all_certs" ]]; then
+    echo "No certificates found for $domain"
+    return 1
+  fi
+  
+  echo "Found certificate ARNs: $all_certs"
+  
+  # Check each certificate
+  for cert_arn in $all_certs; do
+    echo "Checking certificate: $cert_arn"
+    
+    local describe_result
+    if ! describe_result=$(aws acm describe-certificate --certificate-arn "$cert_arn" --region $region); then
+      echo "Certificate $cert_arn cannot be described - might be in an inconsistent state"
+      continue
+    fi
+    
+    local status=$(echo "$describe_result" | jq -r '.Certificate.Status')
+    
+    echo "Certificate status: $status"
+    
+    # Only consider ISSUED or PENDING_VALIDATION certificates as valid
+    if [[ "$status" == "ISSUED" || "$status" == "PENDING_VALIDATION" ]]; then
+      echo "Found valid certificate: $cert_arn with status: $status"
+      ACM_CERTIFICATE_ARN=$cert_arn
+      return 0
+    fi
+  done
+  
+  echo "No valid certificates found for $domain"
+  return 1
+}
+
+# Ask if user wants to force delete any existing certificates
+read -p "Force delete any existing certificates for $DOMAIN_NAME? (y/n): " FORCE_DELETE_CERT
+if [[ "$FORCE_DELETE_CERT" == "y" || "$FORCE_DELETE_CERT" == "Y" ]]; then
+  echo "Searching for certificates to delete..."
+  
+  # List all certificates for the domain
+  CERT_ARNS=$(aws acm list-certificates \
     --region us-east-1 \
-    --certificate-statuses "ISSUED" "PENDING_VALIDATION" \
-    --includes keyTypes=RSA_2048,RSA_1024,RSA_4096,EC_prime256v1,EC_secp384r1,EC_secp521r1 \
+    --include-expired \
     --query "CertificateSummaryList[?DomainName=='$DOMAIN_NAME'].CertificateArn" \
     --output text)
   
-  # Verify the certificate actually exists by trying to describe it
-  if [[ ! -z "$ACM_CERTIFICATE_ARN" ]]; then
-    if ! aws acm describe-certificate --certificate-arn "$ACM_CERTIFICATE_ARN" --region us-east-1 &>/dev/null; then
-      echo "Certificate appears to exist but cannot be described. Clearing reference."
-      ACM_CERTIFICATE_ARN=""
-    fi
+  if [[ -z "$CERT_ARNS" ]]; then
+    echo "No certificates found for $DOMAIN_NAME"
+  else
+    echo "Found certificates: $CERT_ARNS"
+    
+    # Try to delete each certificate
+    for CERT_ARN in $CERT_ARNS; do
+      echo "Attempting to delete certificate: $CERT_ARN"
+      if aws acm delete-certificate --certificate-arn $CERT_ARN --region us-east-1; then
+        echo "Successfully deleted certificate: $CERT_ARN"
+      else
+        echo "Failed to delete certificate: $CERT_ARN"
+        echo "This certificate might be in use by another AWS service."
+        echo "Please check the AWS Console and manually remove any resources using this certificate."
+      fi
+    done
   fi
 fi
 
-if [[ ! -z "$ACM_CERTIFICATE_ARN" ]]; then
-  echo "Found existing certificate for $DOMAIN_NAME with ARN: $ACM_CERTIFICATE_ARN"
-  
-  # Check certificate status
-  CERT_STATUS=$(aws acm describe-certificate \
-    --certificate-arn $ACM_CERTIFICATE_ARN \
-    --region us-east-1 \
-    --query 'Certificate.Status' \
-    --output text)
-  
-  echo "Certificate status: $CERT_STATUS"
+# Now check if any valid certificates exist
+if check_certificate_exists "$DOMAIN_NAME" "us-east-1"; then
+  echo "Using existing certificate with ARN: $ACM_CERTIFICATE_ARN"
 else
-  echo "No existing certificate found for $DOMAIN_NAME"
+  echo "No valid certificates found for $DOMAIN_NAME"
+  ACM_CERTIFICATE_ARN=""
 fi
 
 read -p "Deploy TLS certificate? (y/n): " DEPLOY_CERTIFICATE
