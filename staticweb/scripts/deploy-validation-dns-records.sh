@@ -73,7 +73,7 @@
       
       echo "Creating Route 53 records using CloudFormation..."
       aws cloudformation deploy \
-        --template-file dns-records.yaml \
+        --template-file cfn/dns-records.yaml \
         --stack-name $DNS_RECORDS_STACK \
         --parameter-overrides \
           DomainName=$DOMAIN_NAME \
