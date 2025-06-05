@@ -45,19 +45,4 @@ ACM_CERTIFICATE_ARN=$(aws cloudformation describe-stacks \
       --query "Stacks[0].Outputs[?OutputKey=='CertificateArn'].OutputValue" \
       --output text)
     
-echo "Certificate requested with ARN: $ACM_CERTIFICATE_ARN"
-
-# Check if validation is already complete
-CERT_STATUS=$(aws acm describe-certificate \
-      --certificate-arn $ACM_CERTIFICATE_ARN \
-      --region us-east-1 \
-      --query 'Certificate.Status' \
-      --output text)
-    
-if [[ "$CERT_STATUS" == "ISSUED" ]]; then
-    echo "Certificate is already validated and active."
-    VALIDATION_NEEDED=false
-else
-    echo "Certificate exists but is not yet validated."
-    VALIDATION_NEEDED=true
-fi
+echo "Certificate ARN: $ACM_CERTIFICATE_ARN"
