@@ -14,7 +14,7 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
   
   echo "Deploying S3 Access Logs Bucket..."
   aws cloudformation deploy \
-    --template-file s3-access-log-bucket.yaml \
+    --template-file cfn/s3-access-log-bucket.yaml \
     --stack-name $S3_ACCESS_LOGS_STACK \
     --parameter-overrides \
       LogRetentionDays=$S3_LOG_RETENTION_DAYS \
