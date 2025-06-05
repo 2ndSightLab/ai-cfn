@@ -35,7 +35,6 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
         DomainName=$DOMAIN_NAME \
         IncludeWWW=$INCLUDE_WWW \
         HostedZoneId=$HOSTED_ZONE_ID \
-      --capabilities CAPABILITY_IAM \
       --no-fail-on-empty-changeset
 fi
 
