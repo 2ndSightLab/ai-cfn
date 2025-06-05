@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the template file path
-template_file="cfn/update-name-servers.yaml"
+template_file="cfn/update-nameservers.yaml"
 
 # Prompt for domain name and name servers
 read -p "Enter the domain name (e.g., example.com): " domain_name
