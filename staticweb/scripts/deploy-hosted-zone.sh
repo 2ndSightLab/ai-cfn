@@ -18,7 +18,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
   
   echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."
   aws cloudformation deploy \
-    --template-file hosted-zone.yaml \
+    --template-file cfn/hosted-zone.yaml \
     --stack-name $HOSTED_ZONE_STACK \
     --parameter-overrides \
       DomainName=$DOMAIN_NAME \
