@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # Prompt for domain name and name servers as a comma-separated list
 read -p "Enter the domain name (e.g., example.com): " domain_name
@@ -17,19 +17,31 @@ echo "Using identifier: $identifier"
 # Convert comma-separated string to array
 IFS=',' read -ra ns_array <<< "$nameservers"
 
-# Prepare the nameservers parameter for AWS CLI
-ns_param=""
-for ns in "${ns_array[@]}"; do
+# Build JSON format for nameservers parameter
+nameservers_json="["
+for i in "${!ns_array[@]}"; do
     # Add trailing dot if not present
+    ns="${ns_array[$i]}"
     if [[ ! "$ns" == *. ]]; then
         ns="${ns}."
     fi
-    ns_param+="Name=$ns "
+    
+    # Add to JSON
+    nameservers_json+="{\"Name\":\"$ns\"}"
+    
+    # Add comma if not the last element
+    if [ $i -lt $(( ${#ns_array[@]} - 1 )) ]; then
+        nameservers_json+=","
+    fi
 done
+nameservers_json+="]"
 
 echo "Updating name servers for domain: $domain_name"
 echo "Name servers to be set:"
 for ns in "${ns_array[@]}"; do
+    if [[ ! "$ns" == *. ]]; then
+        ns="${ns}."
+    fi
     echo "  - $ns"
 done
 
@@ -38,7 +50,7 @@ echo "Executing AWS CLI command to update name servers..."
 aws route53domains update-domain-nameservers \
     --region us-east-1 \
     --domain-name "$domain_name" \
-    --nameservers $ns_param
+    --nameservers "$nameservers_json"
 
 # Check the command's exit status
 if [ $? -eq 0 ]; then
