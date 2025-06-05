@@ -1,1 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ACM Certificate with www subdomain'
 
+Parameters:
+  DomainName:
+    Type: String
+    Description: The domain name for the certificate
+  
+  ValidationMethod:
+    Type: String
+    Default: 'DNS'
+    AllowedValues:
+      - 'DNS'
+      - 'EMAIL'
+    Description: Validation method for the certificate
+  
+  HostedZoneId:
+    Type: String
+    Default: ''
+    Description: The Route 53 Hosted Zone ID (required for DNS validation)
+
+Conditions:
+  UseDNSValidation: !Equals [!Ref ValidationMethod, 'DNS']
+  UseHostedZoneId: !And 
+    - !Condition UseDNSValidation
+    - !Not [!Equals [!Ref HostedZoneId, '']]
+
+Resources:
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Sub "www.${DomainName}"
+      ValidationMethod: !Ref ValidationMethod
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
+        - DomainName: !Sub "www.${DomainName}"
+          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
+
+Outputs:
+  CertificateArn:
+    Description: The ARN of the certificate
+    Value: !Ref Certificate
