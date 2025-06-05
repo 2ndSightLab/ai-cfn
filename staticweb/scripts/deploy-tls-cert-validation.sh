@@ -74,7 +74,7 @@
       
       echo "Deploying certificate validation DNS records..."
       aws cloudformation deploy \
-        --template-file certificate-validation.yaml \
+        --template-file cfn/certificate-validation.yaml \
         --stack-name $CERT_VALIDATION_STACK \
         --parameter-overrides \
           HostedZoneId=$HOSTED_ZONE_ID \
