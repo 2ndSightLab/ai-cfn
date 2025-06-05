@@ -41,3 +41,7 @@ echo "Hosted Zone ID: $HOSTED_ZONE_ID"
 echo "IMPORTANT: Update your domain's name servers with your registrar to point to:"
 echo "$NAME_SERVERS"
 echo "DNS propagation may take up to 48 hours."
+
+echo -e "\nEnter to continue after you have upated the records."
+read ok
+
