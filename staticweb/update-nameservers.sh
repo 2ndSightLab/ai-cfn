@@ -75,3 +75,5 @@ fi
 
 echo "Done! The name servers for $domain_name have been updated."
 echo "Note: DNS propagation may take up to 48 hours to complete."
+
+
