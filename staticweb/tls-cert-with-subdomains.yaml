@@ -8,7 +8,7 @@ Parameters:
   
   Subdomains:
     Type: CommaDelimitedList
-    Description: List of subdomains to include in the certificate (e.g., api,blog,shop)
+    Description: List of fully qualified subdomains to include in the certificate (e.g., api.example.com,blog.example.com)
   
   ValidationMethod:
     Type: String
@@ -34,11 +34,13 @@ Resources:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !Ref DomainName
-      SubjectAlternativeNames: !Split
-        - ','
-        - !Join
-          - ','
-          - !Transform
-            Name: 'AWS::LanguageExtensions'
-            Parameters:
-       
+      SubjectAlternativeNames: !Ref Subdomains
+      ValidationMethod: !Ref ValidationMethod
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
+
+Outputs:
+  CertificateArn:
+    Description: The ARN of the certificate
+    Value: !Ref Certificate
