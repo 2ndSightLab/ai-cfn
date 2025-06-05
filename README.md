@@ -1,2 +1,2 @@
 # ai-cfn
-CloudFormation temlpates created with Amazon Q Developer
+CloudFormation temlpates and scripts created with Amazon Q Developer
