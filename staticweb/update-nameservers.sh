@@ -1,16 +1,18 @@
 #!/bin/bash
 
-echo "WARNING: Updating name servers may break email and other services that rely on records defined in the existing hosted zone for this domain."
-echo "Are you sure you wnat to continue? (Ctrl-C to exit)"
-read ok
-
 # Prompt for domain name and name servers as a comma-separated list
 read -p "Enter the domain name (e.g., example.com): " domain_name
 read -p "Enter name servers as a comma-separated list (WITHOUT trailing dots, e.g., ns-1234.awsdns-56.org,ns-789.awsdns-12.com,ns-3456.awsdns-78.co.uk,ns-901.awsdns-34.net): " nameservers
 
-# Generate stack name from domain name (replace periods with dashes) and add -nameservers
-stack_name=$(echo "$domain_name" | tr '.' '-')"-nameservers"
-echo "Using identifier: $stack_name"
+# Generate identifier from domain name (replace periods with dashes) and add -nameservers
+# If domain starts with a number, prepend "s-"
+if [[ $domain_name =~ ^[0-9] ]]; then
+    identifier="s-$(echo "$domain_name" | tr '.' '-')"
+else
+    identifier=$(echo "$domain_name" | tr '.' '-')
+fi
+identifier="${identifier}-nameservers"
+echo "Using identifier: $identifier"
 
 # Convert comma-separated string to array
 IFS=',' read -ra ns_array <<< "$nameservers"
