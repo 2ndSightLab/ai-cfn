@@ -1,0 +1,38 @@
+#!/bin/bash -e
+
+# Route 53 Hosted Zone ------------------
+read -p "Deploy Route 53 hosted zone? (y/n): " DEPLOY_HOSTED_ZONE
+if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
+  if stack_exists $HOSTED_ZONE_STACK; then
+    echo "Hosted zone stack already exists. Updating..."
+  else
+    echo "Creating new hosted zone stack..."
+  fi
+  
+  echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."
+  aws cloudformation deploy \
+    --template-file hosted-zone.yaml \
+    --stack-name $HOSTED_ZONE_STACK \
+    --parameter-overrides \
+      DomainName=$DOMAIN_NAME \
+    --capabilities CAPABILITY_IAM \
+    --no-fail-on-empty-changeset
+  
+  # Get the Hosted Zone ID from the stack outputs
+  HOSTED_ZONE_ID=$(aws cloudformation describe-stacks \
+    --stack-name $HOSTED_ZONE_STACK \
+    --query "Stacks[0].Outputs[?OutputKey=='HostedZoneId'].OutputValue" \
+    --output text)
+  
+  NAME_SERVERS=$(aws cloudformation describe-stacks \
+    --stack-name $HOSTED_ZONE_STACK \
+    --query "Stacks[0].Outputs[?OutputKey=='NameServers'].OutputValue" \
+    --output text)
+  
+  echo "Hosted Zone ID: $HOSTED_ZONE_ID"
+  echo "IMPORTANT: Update your domain's name servers with your registrar to point to:"
+  echo "$NAME_SERVERS"
+  echo "DNS propagation may take up to 48 hours."
+else
+  read -p "Enter existing Route 53 Hosted Zone ID (leave empty to skip): " HOSTED_ZONE_ID
+fi
