@@ -1,6 +1,13 @@
 #!/bin/bash -e
 
-# Route 53 Hosted Zone ------------------
+# Domain name
+read -p "Domain name (e.g., example.com): " DOMAIN_NAME
+while [[ -z "$DOMAIN_NAME" ]]; do
+  echo "Domain name cannot be empty."
+  read -p "Domain name (e.g., example.com): " DOMAIN_NAME
+done
+
+# Route 53 Hosted Zone 
 read -p "Deploy Route 53 hosted zone? (y/n): " DEPLOY_HOSTED_ZONE
 if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
   if stack_exists $HOSTED_ZONE_STACK; then
