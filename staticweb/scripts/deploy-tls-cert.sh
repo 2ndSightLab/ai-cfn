@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # TLS Certificate 
 ACM_CERTIFICATE_ARN=""
@@ -57,21 +57,8 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     else
         VALIDATION_METHOD="EMAIL"
     fi
-    
-    # Check if stack exists in a failed state
-    STACK_STATUS=$(aws cloudformation describe-stacks --stack-name $TLS_CERTIFICATE_STACK --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "STACK_NOT_FOUND")
-    
-    if [[ "$STACK_STATUS" == *"FAILED"* || "$STACK_STATUS" == *"ROLLBACK_COMPLETE"* ]]; then
-        echo "Stack $TLS_CERTIFICATE_STACK exists in a failed state ($STACK_STATUS). Deleting it before redeployment..."
-        aws cloudformation delete-stack --stack-name $TLS_CERTIFICATE_STACK
-        
-        echo "Waiting for stack deletion to complete..."
-        aws cloudformation wait stack-delete-complete --stack-name $TLS_CERTIFICATE_STACK
-        echo "Stack deletion complete."
-    fi
   
     # Deploy the certificate using CloudFormation
-    echo "Deploying certificate stack..."
     aws cloudformation deploy \
       --template-file cfn/tls-certificate.yaml \
       --stack-name $TLS_CERTIFICATE_STACK \
