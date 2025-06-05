@@ -32,7 +32,7 @@ stack_exists() {
   fi
 }
 
-source ./deploy-hosted-zone.sh
+source ./scripts/deploy-hosted-zone.sh
 source ./scripts/check-certificate-exists.sh
 source ./scripts/delete-existing-certificates.sh
 source ./scripts/deploy-tls-cert.sh
