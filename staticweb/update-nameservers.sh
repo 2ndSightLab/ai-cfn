@@ -1,58 +1,50 @@
 #!/bin/bash
 
-# Set the template file path
-template_file="cfn/update-nameservers.yaml"
-
 # Prompt for domain name and name servers as a comma-separated list
 read -p "Enter the domain name (e.g., example.com): " domain_name
 read -p "Enter name servers as a comma-separated list (WITHOUT trailing dots, e.g., ns-1234.awsdns-56.org,ns-789.awsdns-12.com,ns-3456.awsdns-78.co.uk,ns-901.awsdns-34.net): " nameservers
 
 # Generate stack name from domain name (replace periods with dashes) and add -nameservers
 stack_name=$(echo "$domain_name" | tr '.' '-')"-nameservers"
-echo "Using stack name: $stack_name"
+echo "Using identifier: $stack_name"
 
-# Check if the template file exists
-if [ ! -f "$template_file" ]; then
-  echo "Error: CloudFormation template file '$template_file' not found in the current directory."
-  exit 1
-fi
+# Convert comma-separated string to array
+IFS=',' read -ra ns_array <<< "$nameservers"
 
-# Format domain name for hosted zone lookup (remove trailing dot if present)
-lookup_domain=${domain_name%.}
+# Prepare the nameservers parameter for AWS CLI
+ns_param=""
+for ns in "${ns_array[@]}"; do
+    # Add trailing dot if not present
+    if [[ ! "$ns" == *. ]]; then
+        ns="${ns}."
+    fi
+    ns_param+="Name=$ns "
+done
 
-echo "Looking up hosted zone ID for domain: $lookup_domain"
+echo "Updating name servers for domain: $domain_name"
+echo "Name servers to be set:"
+for ns in "${ns_array[@]}"; do
+    echo "  - $ns"
+done
 
-# Look up the hosted zone ID
-hosted_zone_id=$(aws route53 list-hosted-zones-by-name --dns-name "$lookup_domain" --query 'HostedZones[?Name==`'$lookup_domain'.`].Id' --output text)
+# Execute the AWS CLI command
+echo "Executing AWS CLI command to update name servers..."
+aws route53domains update-domain-nameservers \
+    --region us-east-1 \
+    --domain-name "$domain_name" \
+    --nameservers $ns_param
 
-# Check if hosted zone was found
-if [ -z "$hosted_zone_id" ]; then
-  echo "Error: No hosted zone found for domain $lookup_domain"
-  exit 1
-fi
-
-# Extract the zone ID from the full string (remove /hostedzone/ prefix)
-hosted_zone_id=${hosted_zone_id#/hostedzone/}
-
-echo "Found hosted zone ID: $hosted_zone_id"
-
-# Deploy the CloudFormation template
-echo "Deploying CloudFormation stack: $stack_name"
-aws cloudformation deploy \
-  --template-file "$template_file" \
-  --stack-name "$stack_name" \
-  --parameter-overrides \
-    DomainName="$domain_name" \
-    HostedZoneId="$hosted_zone_id" \
-    NameServers="$nameservers" \
-  --capabilities CAPABILITY_IAM
-
-# Check deployment status
+# Check the command's exit status
 if [ $? -eq 0 ]; then
-  echo "CloudFormation stack deployment initiated successfully."
-  echo "You can check the status with: aws cloudformation describe-stacks --stack-name $stack_name"
+    echo "Name servers updated successfully for $domain_name"
 else
-  echo "CloudFormation stack deployment failed."
+    echo "Failed to update name servers for $domain_name"
+    echo "Please check that:"
+    echo "  - You have the necessary permissions"
+    echo "  - The domain exists in your AWS account"
+    echo "  - The name servers are in the correct format"
+    exit 1
 fi
 
-
+echo "Done! The name servers for $domain_name have been updated."
+echo "Note: DNS propagation may take up to 48 hours to complete."
