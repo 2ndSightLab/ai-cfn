@@ -18,6 +18,9 @@ S3_ACCESS_LOGS_STACK="${STACK_NAME_PREFIX}-s3-access-logs"
 CLOUDFRONT_LOGS_STACK="${STACK_NAME_PREFIX}-cloudfront-logs"
 S3_WEBSITE_STACK="${STACK_NAME_PREFIX}-s3-website"
 HOSTED_ZONE_STACK="${STACK_NAME_PREFIX}-hosted-zone"
+TLS_CERTIFICATE_STACK="${STACK_NAME_PREFIX}-tls-certificate"
+CERT_VALIDATION_STACK="${STACK_NAME_PREFIX}-cert-validation"
+DNS_RECORDS_STACK="${STACK_NAME_PREFIX}-dns-records"
 CLOUDFRONT_STACK="${STACK_NAME_PREFIX}-cloudfront"
 
 # Domain name
@@ -58,19 +61,24 @@ else
   read -p "Enter existing Route 53 Hosted Zone ID (leave empty to skip): " HOSTED_ZONE_ID
 fi
 
-# ACM Certificate
-read -p "Create ACM certificate? (y/n): " CREATE_CERTIFICATE
-if [[ "$CREATE_CERTIFICATE" == "y" || "$CREATE_CERTIFICATE" == "Y" ]]; then
+# TLS Certificate
+read -p "Deploy TLS certificate? (y/n): " DEPLOY_CERTIFICATE
+if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
   if [[ -z "$HOSTED_ZONE_ID" ]]; then
     echo "Error: A Route 53 hosted zone is required for DNS validation."
     exit 1
   fi
   
-  echo "Requesting ACM certificate for $DOMAIN_NAME and www.$DOMAIN_NAME..."
+  read -p "Include www subdomain in certificate? (true/false, default: true): " INCLUDE_WWW
+  INCLUDE_WWW=${INCLUDE_WWW:-true}
+  
+  echo "Requesting ACM certificate for $DOMAIN_NAME..."
+  
+  # Create certificate request
   CERTIFICATE_ARN=$(aws acm request-certificate \
     --domain-name $DOMAIN_NAME \
     --validation-method DNS \
-    --subject-alternative-names www.$DOMAIN_NAME \
+    --subject-alternative-names $([ "$INCLUDE_WWW" == "true" ] && echo "www.$DOMAIN_NAME" || echo "") \
     --region us-east-1 \
     --query 'CertificateArn' \
     --output text)
@@ -79,40 +87,56 @@ if [[ "$CREATE_CERTIFICATE" == "y" || "$CREATE_CERTIFICATE" == "Y" ]]; then
   echo "Waiting for certificate details..."
   sleep 10
   
-  # Get and create DNS validation records
-  VALIDATION_RECORDS=$(aws acm describe-certificate \
+  # Get validation record details for the main domain
+  VALIDATION_RECORD_NAME=$(aws acm describe-certificate \
     --certificate-arn $CERTIFICATE_ARN \
     --region us-east-1 \
-    --query 'Certificate.DomainValidationOptions[].ResourceRecord')
+    --query "Certificate.DomainValidationOptions[?DomainName=='$DOMAIN_NAME'].ResourceRecord.Name" \
+    --output text)
   
-  echo "Creating DNS validation records..."
-  for i in $(seq 0 $(echo $VALIDATION_RECORDS | jq 'length - 1')); do
-    RECORD_NAME=$(echo $VALIDATION_RECORDS | jq -r ".[$i].Name")
-    RECORD_VALUE=$(echo $VALIDATION_RECORDS | jq -r ".[$i].Value")
-    RECORD_TYPE=$(echo $VALIDATION_RECORDS | jq -r ".[$i].Type")
+  VALIDATION_RECORD_VALUE=$(aws acm describe-certificate \
+    --certificate-arn $CERTIFICATE_ARN \
+    --region us-east-1 \
+    --query "Certificate.DomainValidationOptions[?DomainName=='$DOMAIN_NAME'].ResourceRecord.Value" \
+    --output text)
+  
+  # Get validation record details for the www subdomain if included
+  if [[ "$INCLUDE_WWW" == "true" ]]; then
+    WWW_VALIDATION_RECORD_NAME=$(aws acm describe-certificate \
+      --certificate-arn $CERTIFICATE_ARN \
+      --region us-east-1 \
+      --query "Certificate.DomainValidationOptions[?DomainName=='www.$DOMAIN_NAME'].ResourceRecord.Name" \
+      --output text)
     
-    aws route53 change-resource-record-sets \
-      --hosted-zone-id $HOSTED_ZONE_ID \
-      --change-batch '{
-        "Changes": [
-          {
-            "Action": "UPSERT",
-            "ResourceRecordSet": {
-              "Name": "'$RECORD_NAME'",
-              "Type": "'$RECORD_TYPE'",
-              "TTL": 300,
-              "ResourceRecords": [
-                {
-                  "Value": "'$RECORD_VALUE'"
-                }
-              ]
-            }
-          }
-        ]
-      }'
-  done
+    WWW_VALIDATION_RECORD_VALUE=$(aws acm describe-certificate \
+      --certificate-arn $CERTIFICATE_ARN \
+      --region us-east-1 \
+      --query "Certificate.DomainValidationOptions[?DomainName=='www.$DOMAIN_NAME'].ResourceRecord.Value" \
+      --output text)
+  else
+    WWW_VALIDATION_RECORD_NAME=""
+    WWW_VALIDATION_RECORD_VALUE=""
+  fi
   
-  echo "DNS validation records created. Certificate validation in progress..."
+  # Deploy validation records
+  echo "Creating certificate validation DNS records..."
+  aws cloudformation deploy \
+    --template-file certificate-validation.yaml \
+    --stack-name $CERT_VALIDATION_STACK \
+    --parameter-overrides \
+      HostedZoneId=$HOSTED_ZONE_ID \
+      DomainName=$DOMAIN_NAME \
+      ValidationDomain1RecordName="$VALIDATION_RECORD_NAME" \
+      ValidationDomain1RecordValue="$VALIDATION_RECORD_VALUE" \
+      IncludeWWW=$INCLUDE_WWW \
+      ValidationDomain2RecordName="$WWW_VALIDATION_RECORD_NAME" \
+      ValidationDomain2RecordValue="$WWW_VALIDATION_RECORD_VALUE" \
+    --capabilities CAPABILITY_IAM \
+    --no-fail-on-empty-changeset
+  
+  echo "Certificate validation records created. Validation in progress..."
+  
+  ACM_CERTIFICATE_ARN=$CERTIFICATE_ARN
   
   echo "============================================================"
   echo "IMPORTANT: Certificate validation is now in progress"
@@ -128,7 +152,7 @@ if [[ "$CREATE_CERTIFICATE" == "y" || "$CREATE_CERTIFICATE" == "Y" ]]; then
     
     while true; do
       CERT_STATUS=$(aws acm describe-certificate \
-        --certificate-arn $CERTIFICATE_ARN \
+        --certificate-arn $ACM_CERTIFICATE_ARN \
         --region us-east-1 \
         --query 'Certificate.Status' \
         --output text)
@@ -155,8 +179,6 @@ if [[ "$CREATE_CERTIFICATE" == "y" || "$CREATE_CERTIFICATE" == "Y" ]]; then
     echo "Continuing without waiting for certificate validation."
     echo "Note: Your CloudFront distribution will not serve HTTPS traffic until validation completes."
   fi
-  
-  ACM_CERTIFICATE_ARN=$CERTIFICATE_ARN
 else
   read -p "Enter existing ACM certificate ARN (leave empty to skip): " ACM_CERTIFICATE_ARN
 fi
@@ -293,10 +315,7 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
   read -p "Origin Shield region (default: $REGION): " ORIGIN_SHIELD_REGION
   ORIGIN_SHIELD_REGION=${ORIGIN_SHIELD_REGION:-$REGION}
   
-  Display the rest of the script starting from the last line above
-
-Here's the rest of the script starting from the incomplete line:
-
+  echo "Deploying CloudFront Distribution..."
   aws cloudformation deploy \
     --template-file cloudfront.yaml \
     --stack-name $CLOUDFRONT_STACK \
@@ -324,85 +343,121 @@ Here's the rest of the script starting from the incomplete line:
   
   echo "CloudFront Distribution Domain: $CLOUDFRONT_DOMAIN"
   
- # Create DNS records if we have a hosted zone
-if [[ ! -z "$HOSTED_ZONE_ID" && ! -z "$CLOUDFRONT_DOMAIN" ]]; then
-  read -p "Create DNS records pointing to CloudFront? (y/n): " CREATE_DNS
-  if [[ "$CREATE_DNS" == "y" || "$CREATE_DNS" == "Y" ]]; then
-    # First check if the certificate is validated
-    if [[ ! -z "$ACM_CERTIFICATE_ARN" ]]; then
-      echo "Checking certificate validation status..."
-      
-      CERT_STATUS=$(aws acm describe-certificate \
-        --certificate-arn $ACM_CERTIFICATE_ARN \
-        --region us-east-1 \
-        --query 'Certificate.Status' \
-        --output text)
-      
-      if [[ "$CERT_STATUS" != "ISSUED" ]]; then
-        echo "============================================================"
-        echo "IMPORTANT: Your certificate is not yet validated (Status: $CERT_STATUS)"
-        echo "============================================================"
-        echo "To complete the validation process:"
-        echo "1. The DNS validation records have been created in your Route 53 hosted zone"
-        echo "2. Wait for DNS propagation (can take 15-30 minutes, sometimes longer)"
-        echo "3. ACM will automatically validate your certificate once propagation is complete"
-        echo ""
-        echo "Would you like to wait for certificate validation to complete before continuing?"
-        read -p "Wait for validation? (y/n): " WAIT_FOR_VALIDATION
+  # Create DNS records if we have a hosted zone
+  if [[ ! -z "$HOSTED_ZONE_ID" && ! -z "$CLOUDFRONT_DOMAIN" ]]; then
+    read -p "Create DNS records pointing to CloudFront? (y/n): " CREATE_DNS
+    if [[ "$CREATE_DNS" == "y" || "$CREATE_DNS" == "Y" ]]; then
+      # First check if the certificate is validated
+      if [[ ! -z "$ACM_CERTIFICATE_ARN" ]]; then
+        echo "Checking certificate validation status..."
         
-        if [[ "$WAIT_FOR_VALIDATION" == "y" || "$WAIT_FOR_VALIDATION" == "Y" ]]; then
-          echo "Waiting for certificate validation to complete..."
-          echo "This may take several minutes. You'll see updates every 30 seconds."
-          echo "Press Ctrl+C to cancel waiting (the certificate will still be validated eventually)."
+        CERT_STATUS=$(aws acm describe-certificate \
+          --certificate-arn $ACM_CERTIFICATE_ARN \
+          --region us-east-1 \
+          --query 'Certificate.Status' \
+          --output text)
+        
+        if [[ "$CERT_STATUS" != "ISSUED" ]]; then
+          echo "============================================================"
+          echo "IMPORTANT: Your certificate is not yet validated (Status: $CERT_STATUS)"
+          echo "============================================================"
+          echo "To complete the validation process:"
+          echo "1. The DNS validation records have been created in your Route 53 hosted zone"
+          echo "2. Wait for DNS propagation (can take 15-30 minutes, sometimes longer)"
+          echo "3. ACM will automatically validate your certificate once propagation is complete"
+          echo ""
+          echo "Would you like to wait for certificate validation to complete before continuing?"
+          read -p "Wait for validation? (y/n): " WAIT_FOR_VALIDATION
           
-          while true; do
-            CERT_STATUS=$(aws acm describe-certificate \
-              --certificate-arn $ACM_CERTIFICATE_ARN \
-              --region us-east-1 \
-              --query 'Certificate.Status' \
-              --output text)
+          if [[ "$WAIT_FOR_VALIDATION" == "y" || "$WAIT_FOR_VALIDATION" == "Y" ]]; then
+            echo "Waiting for certificate validation to complete..."
+            echo "This may take several minutes. You'll see updates every 30 seconds."
+            echo "Press Ctrl+C to cancel waiting (the certificate will still be validated eventually)."
             
-            echo "$(date '+%Y-%m-%d %H:%M:%S') - Certificate status: $CERT_STATUS"
-            
-            if [[ "$CERT_STATUS" == "ISSUED" ]]; then
-              echo "Certificate validation complete! Proceeding with DNS record creation."
-              break
-            elif [[ "$CERT_STATUS" == "FAILED" ]]; then
-              echo "Certificate validation failed. Please check the AWS console for details."
-              echo "You may need to request a new certificate."
-              read -p "Continue with DNS record creation anyway? (y/n): " CONTINUE_ANYWAY
-              if [[ "$CONTINUE_ANYWAY" != "y" && "$CONTINUE_ANYWAY" != "Y" ]]; then
-                echo "Exiting script. Please fix certificate issues and try again."
-                exit 1
+            while true; do
+              CERT_STATUS=$(aws acm describe-certificate \
+                --certificate-arn $ACM_CERTIFICATE_ARN \
+                --region us-east-1 \
+                --query 'Certificate.Status' \
+                --output text)
+              
+              echo "$(date '+%Y-%m-%d %H:%M:%S') - Certificate status: $CERT_STATUS"
+              
+              if [[ "$CERT_STATUS" == "ISSUED" ]]; then
+                echo "Certificate validation complete! Proceeding with DNS record creation."
+                break
+              elif [[ "$CERT_STATUS" == "FAILED" ]]; then
+                echo "Certificate validation failed. Please check the AWS console for details."
+                echo "You may need to request a new certificate."
+                read -p "Continue with DNS record creation anyway? (y/n): " CONTINUE_ANYWAY
+                if [[ "$CONTINUE_ANYWAY" != "y" && "$CONTINUE_ANYWAY" != "Y" ]]; then
+                  echo "Exiting script. Please fix certificate issues and try again."
+                  exit 1
+                fi
+                break
               fi
-              break
-            fi
-            
-            sleep 30
-          done
+              
+              sleep 30
+            done
+          else
+            echo "Continuing without waiting for certificate validation."
+            echo "Note: Your CloudFront distribution will not serve HTTPS traffic until validation completes."
+          fi
         else
-          echo "Continuing without waiting for certificate validation."
-          echo "Note: Your CloudFront distribution will not serve HTTPS traffic until validation completes."
+          echo "Certificate is already validated. Proceeding with DNS record creation."
         fi
-      else
-        echo "Certificate is already validated. Proceeding with DNS record creation."
       fi
+      
+      echo "Creating Route 53 records using CloudFormation..."
+      aws cloudformation deploy \
+        --template-file dns-records.yaml \
+        --stack-name $DNS_RECORDS_STACK \
+        --parameter-overrides \
+          DomainName=$DOMAIN_NAME \
+          HostedZoneId=$HOSTED_ZONE_ID \
+          CloudFrontDomainName=$CLOUDFRONT_DOMAIN \
+          IncludeWWW=$INCLUDE_WWW \
+        --capabilities CAPABILITY_IAM \
+        --no-fail-on-empty-changeset
+      
+      echo "DNS records created successfully."
     fi
-    
-    DNS_RECORDS_STACK="${STACK_NAME_PREFIX}-dns-records"
-    
-    echo "Creating Route 53 records using CloudFormation..."
-    aws cloudformation deploy \
-      --template-file dns-records.yaml \
-      --stack-name $DNS_RECORDS_STACK \
-      --parameter-overrides \
-        DomainName=$DOMAIN_NAME \
-        HostedZoneId=$HOSTED_ZONE_ID \
-        CloudFrontDomainName=$CLOUDFRONT_DOMAIN \
-        IncludeWWW=$INCLUDE_WWW \
-      --capabilities CAPABILITY_IAM \
-      --no-fail-on-empty-changeset
-    
-    echo "DNS records created successfully."
   fi
 fi
+
+echo "Deployment complete!"
+echo "Website URL: https://$DOMAIN_NAME"
+if [[ ! -z "$CLOUDFRONT_DOMAIN" ]]; then
+  echo "CloudFront Distribution Domain: $CLOUDFRONT_DOMAIN"
+fi
+
+# Final certificate status check and instructions
+if [[ ! -z "$ACM_CERTIFICATE_ARN" ]]; then
+  FINAL_CERT_STATUS=$(aws acm describe-certificate \
+    --certificate-arn $ACM_CERTIFICATE_ARN \
+    --region us-east-1 \
+    --query 'Certificate.Status' \
+    --output text)
+  
+  if [[ "$FINAL_CERT_STATUS" != "ISSUED" ]]; then
+    echo ""
+    echo "============================================================"
+    echo "IMPORTANT: Certificate Status: $FINAL_CERT_STATUS"
+    echo "============================================================"
+    echo "Your CloudFront distribution has been created, but the SSL/TLS certificate"
+    echo "is still being validated. HTTPS access will not work until validation completes."
+    echo ""
+    echo "To check validation status:"
+    echo "  aws acm describe-certificate --certificate-arn $ACM_CERTIFICATE_ARN --region us-east-1"
+    echo ""
+    echo "You can also check the status in the AWS Console:"
+    echo "  https://console.aws.amazon.com/acm/home?region=us-east-1#/certificates/list"
+    echo ""
+    echo "Once validation is complete, your site will be accessible via HTTPS."
+  else
+    echo ""
+    echo "Certificate is validated and active. Your site is ready to serve HTTPS traffic."
+  fi
+fi
+
+echo "Script execution completed."
