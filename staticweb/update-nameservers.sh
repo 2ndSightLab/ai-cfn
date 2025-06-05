@@ -1,14 +1,11 @@
 #!/bin/bash
 
 # Set the template file path
-template_file="cfn/update-nameservers.yaml"
+template_file="cfn/update-name-servers.yaml"
 
-# Prompt for domain name and name servers
+# Prompt for domain name and name servers as a comma-separated list
 read -p "Enter the domain name (e.g., example.com): " domain_name
-read -p "Enter nameserver 1 (e.g., ns-1234.awsdns-56.org.): " ns1
-read -p "Enter nameserver 2 (e.g., ns-789.awsdns-12.com.): " ns2
-read -p "Enter nameserver 3 (e.g., ns-3456.awsdns-78.co.uk.): " ns3
-read -p "Enter nameserver 4 (e.g., ns-901.awsdns-34.net.): " ns4
+read -p "Enter name servers as a comma-separated list (WITHOUT trailing dots, e.g., ns-1234.awsdns-56.org,ns-789.awsdns-12.com,ns-3456.awsdns-78.co.uk,ns-901.awsdns-34.net): " nameservers
 
 # Generate stack name from domain name (replace periods with dashes) and add -nameservers
 stack_name=$(echo "$domain_name" | tr '.' '-')"-nameservers"
@@ -47,10 +44,7 @@ aws cloudformation deploy \
   --parameter-overrides \
     DomainName="$domain_name" \
     HostedZoneId="$hosted_zone_id" \
-    NameServer1="$ns1" \
-    NameServer2="$ns2" \
-    NameServer3="$ns3" \
-    NameServer4="$ns4" \
+    NameServers="$nameservers" \
   --capabilities CAPABILITY_IAM
 
 # Check deployment status
@@ -60,4 +54,5 @@ if [ $? -eq 0 ]; then
 else
   echo "CloudFormation stack deployment failed."
 fi
+
 
