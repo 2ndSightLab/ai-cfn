@@ -11,11 +11,6 @@ else
   ACM_CERTIFICATE_ARN=""
 fi
 
-# Check for existing certificates first
-if check_certificate_exists "$DOMAIN_NAME" "us-east-1"; then
-   echo "Certificate exists with ARN: $ACM_CERTIFICATE_ARN"
-fi
-
 read -p "Deploy TLS certificate? (y/n): " DEPLOY_CERTIFICATE
 if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
   
