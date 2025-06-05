@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Update Name Servers for Route 53 Domain'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: 'The domain name to update (include trailing dot, e.g., example.com.)'
+  NameServer1:
+    Type: String
+    Description: 'First name server (include trailing dot, e.g., ns-1234.awsdns-56.org.)'
+  NameServer2:
+    Type: String
+    Description: 'Second name server (include trailing dot, e.g., ns-789.awsdns-12.com.)'
+  NameServer3:
+    Type: String
+    Description: 'Third name server (include trailing dot, e.g., ns-3456.awsdns-78.co.uk.)'
+  NameServer4:
+    Type: String
+    Description: 'Fourth name server (include trailing dot, e.g., ns-901.awsdns-34.net.)'
+  HostedZoneId:
+    Type: String
+    Description: 'The ID of the hosted zone (e.g., Z1234567890ABC)'
+
+Resources:
+  NameServers:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: NS
+      TTL: '172800'
+      ResourceRecords:
+        - !Ref NameServer1
+        - !Ref NameServer2
+        - !Ref NameServer3
+        - !Ref NameServer4
+
+Outputs:
+  UpdatedDomain:
+    Description: 'Domain with updated name servers'
+    Value: !Ref DomainName
+  NameServers:
+    Description: 'Configured name servers'
+    Value: !Join [', ', [!Ref NameServer1, !Ref NameServer2, !Ref NameServer3, !Ref NameServer4]]
