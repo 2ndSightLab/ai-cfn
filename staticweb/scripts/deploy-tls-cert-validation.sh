@@ -1,7 +1,19 @@
 #!/bin/bash
 
-  #why do we even need this?
-  VALIDATION_NEEDED = "true"
+# Check if validation is already complete
+CERT_STATUS=$(aws acm describe-certificate \
+      --certificate-arn $ACM_CERTIFICATE_ARN \
+      --region us-east-1 \
+      --query 'Certificate.Status' \
+      --output text)
+    
+if [[ "$CERT_STATUS" == "ISSUED" ]]; then
+    echo "Certificate is already validated and active."
+    VALIDATION_NEEDED=false
+else
+    echo "Certificate exists but is not yet validated."
+    VALIDATION_NEEDED=true
+fi
   
   # Check if validation records already exist
   if [[ "$VALIDATION_NEEDED" == "true" ]]; then
