@@ -44,7 +44,7 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     
     # Deploy the certificate using CloudFormation
     aws cloudformation deploy \
-      --template-file tls-certificate.yaml \
+      --template-file cfn/tls-certificate.yaml \
       --stack-name $TLS_CERTIFICATE_STACK \
       --parameter-overrides \
         DomainName=$DOMAIN_NAME \
