@@ -40,7 +40,7 @@ stack_exists() {
   fi
 }
 
-# Route 53 Hosted Zone
+# Route 53 Hosted Zone ------------------
 read -p "Deploy Route 53 hosted zone? (y/n): " DEPLOY_HOSTED_ZONE
 if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
   if stack_exists $HOSTED_ZONE_STACK; then
@@ -77,7 +77,7 @@ else
   read -p "Enter existing Route 53 Hosted Zone ID (leave empty to skip): " HOSTED_ZONE_ID
 fi
 
-# TLS Certificate - COMPLETELY REVISED VERSION
+# TLS Certificate --------------------
 ACM_CERTIFICATE_ARN=""
 
 # Function to check if a certificate exists and is valid
@@ -176,131 +176,170 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
   read -p "Include www subdomain in certificate? (true/false, default: true): " INCLUDE_WWW
   INCLUDE_WWW=${INCLUDE_WWW:-true}
   
-  if [[ ! -z "$ACM_CERTIFICATE_ARN" ]]; then
-    read -p "Use existing certificate? (y/n): " USE_EXISTING_CERT
-    if [[ "$USE_EXISTING_CERT" != "y" && "$USE_EXISTING_CERT" != "Y" ]]; then
-      ACM_CERTIFICATE_ARN=""
-    fi
-  fi
-  
-  if [[ -z "$ACM_CERTIFICATE_ARN" ]]; then
-    echo "Requesting ACM certificate for $DOMAIN_NAME..."
+  # Check for existing certificates first
+  if check_certificate_exists "$DOMAIN_NAME" "us-east-1"; then
+    echo "Using existing certificate with ARN: $ACM_CERTIFICATE_ARN"
     
-    # Create certificate request
-    CERTIFICATE_ARN=$(aws acm request-certificate \
-      --domain-name $DOMAIN_NAME \
-      --validation-method DNS \
-      --subject-alternative-names $([ "$INCLUDE_WWW" == "true" ] && echo "www.$DOMAIN_NAME" || echo "") \
+    # Check if validation is already complete
+    CERT_STATUS=$(aws acm describe-certificate \
+      --certificate-arn $ACM_CERTIFICATE_ARN \
       --region us-east-1 \
-      --query 'CertificateArn' \
+      --query 'Certificate.Status' \
       --output text)
     
-    echo "Certificate requested with ARN: $CERTIFICATE_ARN"
-    echo "Waiting for certificate details..."
-    sleep 10
-    
-    # Get validation record details for the main domain
-    VALIDATION_RECORD_NAME=$(aws acm describe-certificate \
-      --certificate-arn $CERTIFICATE_ARN \
-      --region us-east-1 \
-      --query "Certificate.DomainValidationOptions[?DomainName=='$DOMAIN_NAME'].ResourceRecord.Name" \
-      --output text)
-    
-    VALIDATION_RECORD_VALUE=$(aws acm describe-certificate \
-      --certificate-arn $CERTIFICATE_ARN \
-      --region us-east-1 \
-      --query "Certificate.DomainValidationOptions[?DomainName=='$DOMAIN_NAME'].ResourceRecord.Value" \
-      --output text)
-    
-    # Get validation record details for the www subdomain if included
-    if [[ "$INCLUDE_WWW" == "true" ]]; then
-      WWW_VALIDATION_RECORD_NAME=$(aws acm describe-certificate \
-        --certificate-arn $CERTIFICATE_ARN \
-        --region us-east-1 \
-        --query "Certificate.DomainValidationOptions[?DomainName=='www.$DOMAIN_NAME'].ResourceRecord.Name" \
-        --output text)
-      
-      WWW_VALIDATION_RECORD_VALUE=$(aws acm describe-certificate \
-        --certificate-arn $CERTIFICATE_ARN \
-        --region us-east-1 \
-        --query "Certificate.DomainValidationOptions[?DomainName=='www.$DOMAIN_NAME'].ResourceRecord.Value" \
-        --output text)
+    if [[ "$CERT_STATUS" == "ISSUED" ]]; then
+      echo "Certificate is already validated and active."
+      VALIDATION_NEEDED=false
     else
-      WWW_VALIDATION_RECORD_NAME=""
-      WWW_VALIDATION_RECORD_VALUE=""
+      echo "Certificate exists but is not yet validated."
+      VALIDATION_NEEDED=true
     fi
+  else
+    echo "No valid certificates found. Deploying new certificate..."
     
-    # Deploy validation records
-    if stack_exists $CERT_VALIDATION_STACK; then
-      echo "Certificate validation stack already exists. Updating..."
-    else
-      echo "Creating new certificate validation stack..."
-    fi
-    
-    echo "Deploying certificate validation DNS records..."
+    # Deploy the certificate using CloudFormation
     aws cloudformation deploy \
-      --template-file certificate-validation.yaml \
-      --stack-name $CERT_VALIDATION_STACK \
+      --template-file tls-certificate.yaml \
+      --stack-name $TLS_CERTIFICATE_STACK \
       --parameter-overrides \
-        HostedZoneId=$HOSTED_ZONE_ID \
         DomainName=$DOMAIN_NAME \
-        ValidationDomain1RecordName="$VALIDATION_RECORD_NAME" \
-        ValidationDomain1RecordValue="$VALIDATION_RECORD_VALUE" \
         IncludeWWW=$INCLUDE_WWW \
-        ValidationDomain2RecordName="$WWW_VALIDATION_RECORD_NAME" \
-        ValidationDomain2RecordValue="$WWW_VALIDATION_RECORD_VALUE" \
+        HostedZoneId=$HOSTED_ZONE_ID \
       --capabilities CAPABILITY_IAM \
       --no-fail-on-empty-changeset
     
-    echo "Certificate validation records created. Validation in progress..."
+    # Get the certificate ARN from the stack outputs
+    ACM_CERTIFICATE_ARN=$(aws cloudformation describe-stacks \
+      --stack-name $TLS_CERTIFICATE_STACK \
+      --query "Stacks[0].Outputs[?OutputKey=='CertificateArn'].OutputValue" \
+      --output text)
     
-    ACM_CERTIFICATE_ARN=$CERTIFICATE_ARN
+    echo "Certificate requested with ARN: $ACM_CERTIFICATE_ARN"
+    echo "Waiting for certificate details..."
+    sleep 10
+    
+    VALIDATION_NEEDED=true
   fi
   
-  echo "============================================================"
-  echo "IMPORTANT: Certificate validation is now in progress"
-  echo "============================================================"
-  echo "Would you like to wait for certificate validation to complete before continuing?"
-  echo "This may take several minutes (typically 15-30 minutes, sometimes longer)."
-  read -p "Wait for validation? (y/n): " WAIT_FOR_VALIDATION
-  
-  if [[ "$WAIT_FOR_VALIDATION" == "y" || "$WAIT_FOR_VALIDATION" == "Y" ]]; then
-    echo "Waiting for certificate validation to complete..."
-    echo "This may take several minutes. You'll see updates every 30 seconds."
-    echo "Press Ctrl+C to cancel waiting (the certificate will still be validated eventually)."
-    
-    while true; do
-      CERT_STATUS=$(aws acm describe-certificate \
+  # Check if validation records already exist
+  if [[ "$VALIDATION_NEEDED" == "true" ]]; then
+    if stack_exists $CERT_VALIDATION_STACK; then
+      echo "Certificate validation stack already exists."
+      echo "Checking if validation records match the current certificate..."
+      
+      # Get current validation record details
+      VALIDATION_RECORD_NAME=$(aws acm describe-certificate \
         --certificate-arn $ACM_CERTIFICATE_ARN \
         --region us-east-1 \
-        --query 'Certificate.Status' \
+        --query "Certificate.DomainValidationOptions[?DomainName=='$DOMAIN_NAME'].ResourceRecord.Name" \
         --output text)
       
-      echo "$(date '+%Y-%m-%d %H:%M:%S') - Certificate status: $CERT_STATUS"
+      # Get existing validation record from CloudFormation stack
+      EXISTING_VALIDATION_RECORD=$(aws cloudformation describe-stacks \
+        --stack-name $CERT_VALIDATION_STACK \
+        --query "Stacks[0].Parameters[?ParameterKey=='ValidationDomain1RecordName'].ParameterValue" \
+        --output text)
       
-      if [[ "$CERT_STATUS" == "ISSUED" ]]; then
-        echo "Certificate validation complete! Proceeding with deployment."
-        break
-      elif [[ "$CERT_STATUS" == "FAILED" ]]; then
-        echo "Certificate validation failed. Please check the AWS console for details."
-        echo "You may need to request a new certificate."
-        read -p "Continue with deployment anyway? (y/n): " CONTINUE_ANYWAY
-        if [[ "$CONTINUE_ANYWAY" != "y" && "$CONTINUE_ANYWAY" != "Y" ]]; then
-          echo "Exiting script. Please fix certificate issues and try again."
-          exit 1
+      if [[ "$VALIDATION_RECORD_NAME" == "$EXISTING_VALIDATION_RECORD" ]]; then
+        echo "Existing validation records match the current certificate."
+        echo "No need to update validation records."
+        UPDATE_VALIDATION=false
+      else
+        echo "Validation records do not match the current certificate."
+        read -p "Update validation records? (y/n): " UPDATE_VALIDATION_INPUT
+        if [[ "$UPDATE_VALIDATION_INPUT" == "y" || "$UPDATE_VALIDATION_INPUT" == "Y" ]]; then
+          UPDATE_VALIDATION=true
+        else
+          UPDATE_VALIDATION=false
         fi
-        break
+      fi
+    else
+      echo "No validation stack found. Need to create validation records."
+      UPDATE_VALIDATION=true
+    fi
+    
+    if [[ "$UPDATE_VALIDATION" == "true" ]]; then
+      # Get validation record details for the main domain
+      VALIDATION_RECORD_NAME=$(aws acm describe-certificate \
+        --certificate-arn $ACM_CERTIFICATE_ARN \
+        --region us-east-1 \
+        --query "Certificate.DomainValidationOptions[?DomainName=='$DOMAIN_NAME'].ResourceRecord.Name" \
+        --output text)
+      
+      VALIDATION_RECORD_VALUE=$(aws acm describe-certificate \
+        --certificate-arn $ACM_CERTIFICATE_ARN \
+        --region us-east-1 \
+        --query "Certificate.DomainValidationOptions[?DomainName=='$DOMAIN_NAME'].ResourceRecord.Value" \
+        --output text)
+      
+      # Get validation record details for the www subdomain if included
+      if [[ "$INCLUDE_WWW" == "true" ]]; then
+        WWW_VALIDATION_RECORD_NAME=$(aws acm describe-certificate \
+          --certificate-arn $ACM_CERTIFICATE_ARN \
+          --region us-east-1 \
+          --query "Certificate.DomainValidationOptions[?DomainName=='www.$DOMAIN_NAME'].ResourceRecord.Name" \
+          --output text)
+        
+        WWW_VALIDATION_RECORD_VALUE=$(aws acm describe-certificate \
+          --certificate-arn $ACM_CERTIFICATE_ARN \
+          --region us-east-1 \
+          --query "Certificate.DomainValidationOptions[?DomainName=='www.$DOMAIN_NAME'].ResourceRecord.Value" \
+          --output text)
+      else
+        WWW_VALIDATION_RECORD_NAME=""
+        WWW_VALIDATION_RECORD_VALUE=""
       fi
       
-      sleep 30
-    done
-  else
-    echo "Continuing without waiting for certificate validation."
-    echo "Note: Your CloudFront distribution will not serve HTTPS traffic until validation completes."
+      echo "Deploying certificate validation DNS records..."
+      aws cloudformation deploy \
+        --template-file certificate-validation.yaml \
+        --stack-name $CERT_VALIDATION_STACK \
+        --parameter-overrides \
+          HostedZoneId=$HOSTED_ZONE_ID \
+          DomainName=$DOMAIN_NAME \
+          ValidationDomain1RecordName="$VALIDATION_RECORD_NAME" \
+          ValidationDomain1RecordValue="$VALIDATION_RECORD_VALUE" \
+          IncludeWWW=$INCLUDE_WWW \
+          ValidationDomain2RecordName="$WWW_VALIDATION_RECORD_NAME" \
+          ValidationDomain2RecordValue="$WWW_VALIDATION_RECORD_VALUE" \
+        --capabilities CAPABILITY_IAM \
+        --no-fail-on-empty-changeset
+      
+      echo "Certificate validation records created. Validation in progress..."
+    fi
   fi
-else
-  read -p "Enter existing ACM certificate ARN (leave empty to skip): " ACM_CERTIFICATE_ARN
+  
+  # Check if the user wants to wait for validation
+  if [[ "$VALIDATION_NEEDED" == "true" ]]; then
+    read -p "Wait for validation? (y/n): " WAIT_FOR_VALIDATION
+    if [[ "$WAIT_FOR_VALIDATION" == "y" || "$WAIT_FOR_VALIDATION" == "Y" ]]; then
+      echo "Waiting for certificate validation to complete..."
+      echo "This may take several minutes. You'll see updates every 30 seconds."
+      echo "Press Ctrl+C to cancel waiting (the certificate will still be validated eventually)."
+      
+      while true; do
+        CERT_STATUS=$(aws acm describe-certificate \
+          --certificate-arn $ACM_CERTIFICATE_ARN \
+          --region us-east-1 \
+          --query 'Certificate.Status' \
+          --output text)
+        
+        echo "$(date '+%Y-%m-%d %H:%M:%S') - Certificate status: $CERT_STATUS"
+        
+        if [[ "$CERT_STATUS" == "ISSUED" ]]; then
+          echo "Certificate validation complete!"
+          break
+        elif [[ "$CERT_STATUS" == "FAILED" ]]; then
+          echo "Certificate validation failed. Please check the AWS console for details."
+          break
+        fi
+        
+        sleep 30
+      done
+    fi
+  fi
 fi
+
 
 # S3 bucket for website content
 read -p "Deploy S3 bucket for website content? (y/n): " DEPLOY_S3_BUCKET
