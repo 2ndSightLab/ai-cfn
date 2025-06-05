@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 # Prompt for domain name and name servers as a comma-separated list
 read -p "Enter the domain name (e.g., example.com): " domain_name
@@ -14,8 +14,16 @@ fi
 identifier="${identifier}-nameservers"
 echo "Using identifier: $identifier"
 
-# Convert comma-separated string to array
-IFS=',' read -ra ns_array <<< "$nameservers"
+# Convert comma-separated string to array and trim whitespace
+IFS=',' read -ra ns_array_raw <<< "$nameservers"
+ns_array=()
+
+# Trim whitespace from each nameserver
+for ns in "${ns_array_raw[@]}"; do
+    # Trim leading and trailing whitespace
+    trimmed=$(echo "$ns" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+    ns_array+=("$trimmed")
+done
 
 # Build JSON format for nameservers parameter
 nameservers_json="["
@@ -47,6 +55,7 @@ done
 
 # Execute the AWS CLI command
 echo "Executing AWS CLI command to update name servers..."
+echo "Command: aws route53domains update-domain-nameservers --region us-east-1 --domain-name \"$domain_name\" --nameservers '$nameservers_json'"
 aws route53domains update-domain-nameservers \
     --region us-east-1 \
     --domain-name "$domain_name" \
