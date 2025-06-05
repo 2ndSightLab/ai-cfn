@@ -77,7 +77,7 @@ else
   read -p "Enter existing Route 53 Hosted Zone ID (leave empty to skip): " HOSTED_ZONE_ID
 fi
 
-# TLS Certificate
+# TLS Certificate - COMPLETELY REVISED VERSION
 ACM_CERTIFICATE_ARN=""
 
 # Function to check if a certificate exists and is valid
@@ -87,22 +87,22 @@ check_certificate_exists() {
   
   echo "Thoroughly checking for existing certificates for $domain..."
   
-  # List all certificates regardless of status
-  local all_certs=$(aws acm list-certificates \
+  # List only ISSUED or PENDING_VALIDATION certificates
+  local valid_certs=$(aws acm list-certificates \
     --region $region \
-    --include-expired \
+    --certificate-statuses "ISSUED" "PENDING_VALIDATION" \
     --query "CertificateSummaryList[?DomainName=='$domain'].CertificateArn" \
     --output text)
   
-  if [[ -z "$all_certs" ]]; then
-    echo "No certificates found for $domain"
+  if [[ -z "$valid_certs" ]]; then
+    echo "No valid certificates found for $domain"
     return 1
   fi
   
-  echo "Found certificate ARNs: $all_certs"
+  echo "Found potentially valid certificate ARNs: $valid_certs"
   
   # Check each certificate
-  for cert_arn in $all_certs; do
+  for cert_arn in $valid_certs; do
     echo "Checking certificate: $cert_arn"
     
     local describe_result
@@ -132,7 +132,7 @@ read -p "Force delete any existing certificates for $DOMAIN_NAME? (y/n): " FORCE
 if [[ "$FORCE_DELETE_CERT" == "y" || "$FORCE_DELETE_CERT" == "Y" ]]; then
   echo "Searching for certificates to delete..."
   
-  # List all certificates for the domain
+  # List all certificates for the domain, including expired and failed ones
   CERT_ARNS=$(aws acm list-certificates \
     --region us-east-1 \
     --include-expired \
