@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ACM Certificate with custom subdomains'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: The domain name for the certificate
+  
+  Subdomains:
+    Type: CommaDelimitedList
+    Description: List of subdomains to include in the certificate (e.g., api,blog,shop)
+  
+  ValidationMethod:
+    Type: String
+    Default: 'DNS'
+    AllowedValues:
+      - 'DNS'
+      - 'EMAIL'
+    Description: Validation method for the certificate
+  
+  HostedZoneId:
+    Type: String
+    Default: ''
+    Description: The Route 53 Hosted Zone ID (required for DNS validation)
+
+Conditions:
+  UseDNSValidation: !Equals [!Ref ValidationMethod, 'DNS']
+  UseHostedZoneId: !And 
+    - !Condition UseDNSValidation
+    - !Not [!Equals [!Ref HostedZoneId, '']]
+
+Resources:
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames: !Split
+        - ','
+        - !Join
+          - ','
+          - !Transform
+            Name: 'AWS::LanguageExtensions'
+            Parameters:
+       
