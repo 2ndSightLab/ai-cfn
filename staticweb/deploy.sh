@@ -1,10 +1,9 @@
-#!/bin/bash
-set -e
+#!/bin/bash -e
+
+echo "===== AWS CloudFront Website Deployment Script ====="
 
 # Generate a unique suffix for bucket names
 BUCKET_NAME_SUFFIX=$(date +%Y%m%d%H%M%S)
-
-echo "===== AWS CloudFront Website Deployment Script ====="
 
 # AWS Region
 read -p "AWS Region (default: us-east-1): " REGION
@@ -23,13 +22,6 @@ CERT_VALIDATION_STACK="${STACK_NAME_PREFIX}-cert-validation"
 DNS_RECORDS_STACK="${STACK_NAME_PREFIX}-dns-records"
 CLOUDFRONT_STACK="${STACK_NAME_PREFIX}-cloudfront"
 
-# Domain name
-read -p "Domain name (e.g., example.com): " DOMAIN_NAME
-while [[ -z "$DOMAIN_NAME" ]]; do
-  echo "Domain name cannot be empty."
-  read -p "Domain name (e.g., example.com): " DOMAIN_NAME
-done
-
 # Function to check if a CloudFormation stack exists
 stack_exists() {
   local stack_name=$1
@@ -41,23 +33,14 @@ stack_exists() {
 }
 
 source ./deploy-hosted-zone.sh
-
 source ./scripts/check-certificate-exists.sh
-
 source ./scripts/delete-existing-certificates.sh
-
 source ./scripts/deploy-tls-cert.sh
-
 source ./scripts/deploy-tls-cert-validation.sh
-
 source ./scripts/deploy-s3-content-bucket.sh
-
 source ./scripts/deploy-s3-access-log-bucket.sh
-
 source ./scripts/deploy-cloudfront-logs-bucket.sh
-
 source ./scripts/deploy-cloudfront-distribution.sh
-
 source ./scripts/deploy-validation-dns-records.sh
 
 echo "Deployment complete!"
