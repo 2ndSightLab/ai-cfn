@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'DNS validation records for ACM certificate'
+
+Parameters:
+  HostedZoneId:
+    Type: String
+    Description: The Route 53 Hosted Zone ID
+  
+  DomainName:
+    Type: String
+    Description: The domain name for the certificate
+  
+  ValidationDomain1RecordName:
+    Type: String
+    Description: The DNS record name for domain validation (from ACM console)
+  
+  ValidationDomain1RecordValue:
+    Type: String
+    Description: The DNS record value for domain validation (from ACM console)
+  
+  IncludeWWW:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+    Description: Whether to include www subdomain validation
+  
+  ValidationDomain2RecordName:
+    Type: String
+    Default: ''
+    Description: The DNS record name for www subdomain validation (from ACM console)
+  
+  ValidationDomain2RecordValue:
+    Type: String
+    Default: ''
+    Description: The DNS record value for www subdomain validation (from ACM console)
+
+Conditions:
+  IncludeWWWDomain: !Equals [!Ref IncludeWWW, 'true']
+
+Resources:
+  DomainValidationRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref ValidationDomain1RecordName
+      Type: CNAME
+      TTL: 300
+      ResourceRecords:
+        - !Ref ValidationDomain1RecordValue
+
+  WWWDomainValidationRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: IncludeWWWDomain
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref ValidationDomain2RecordName
+      Type: CNAME
+      TTL: 300
+      ResourceRecords:
+        - !Ref ValidationDomain2RecordValue
+
+Outputs:
+  DomainValidationRecordName:
+    Description: The domain validation record name
+    Value: !Ref ValidationDomain1RecordName
+  
+  WWWDomainValidationRecordName:
+    Description: The www domain validation record name
+    Value: !Ref ValidationDomain2RecordName
+    Condition: IncludeWWWDomain
