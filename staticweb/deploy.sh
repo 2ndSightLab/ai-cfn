@@ -30,9 +30,25 @@ while [[ -z "$DOMAIN_NAME" ]]; do
   read -p "Domain name (e.g., example.com): " DOMAIN_NAME
 done
 
+# Function to check if a CloudFormation stack exists
+stack_exists() {
+  local stack_name=$1
+  if aws cloudformation describe-stacks --stack-name $stack_name &>/dev/null; then
+    return 0  # Stack exists
+  else
+    return 1  # Stack does not exist
+  fi
+}
+
 # Route 53 Hosted Zone
 read -p "Deploy Route 53 hosted zone? (y/n): " DEPLOY_HOSTED_ZONE
 if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
+  if stack_exists $HOSTED_ZONE_STACK; then
+    echo "Hosted zone stack already exists. Updating..."
+  else
+    echo "Creating new hosted zone stack..."
+  fi
+  
   echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."
   aws cloudformation deploy \
     --template-file hosted-zone.yaml \
@@ -53,7 +69,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
     --query "Stacks[0].Outputs[?OutputKey=='NameServers'].OutputValue" \
     --output text)
   
-  echo "Hosted Zone created with ID: $HOSTED_ZONE_ID"
+  echo "Hosted Zone ID: $HOSTED_ZONE_ID"
   echo "IMPORTANT: Update your domain's name servers with your registrar to point to:"
   echo "$NAME_SERVERS"
   echo "DNS propagation may take up to 48 hours."
@@ -62,6 +78,15 @@ else
 fi
 
 # TLS Certificate
+# Check if certificate exists in ACM
+ACM_CERTIFICATE_ARN=""
+if [[ ! -z "$DOMAIN_NAME" ]]; then
+  # Try to find an existing certificate for the domain
+  ACM_CERTIFICATE_ARN=$(aws acm list-certificates --region us-east-1 \
+    --query "CertificateSummaryList[?DomainName=='$DOMAIN_NAME'].CertificateArn" \
+    --output text)
+fi
+
 read -p "Deploy TLS certificate? (y/n): " DEPLOY_CERTIFICATE
 if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
   if [[ -z "$HOSTED_ZONE_ID" ]]; then
@@ -72,71 +97,97 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
   read -p "Include www subdomain in certificate? (true/false, default: true): " INCLUDE_WWW
   INCLUDE_WWW=${INCLUDE_WWW:-true}
   
-  echo "Requesting ACM certificate for $DOMAIN_NAME..."
-  
-  # Create certificate request
-  CERTIFICATE_ARN=$(aws acm request-certificate \
-    --domain-name $DOMAIN_NAME \
-    --validation-method DNS \
-    --subject-alternative-names $([ "$INCLUDE_WWW" == "true" ] && echo "www.$DOMAIN_NAME" || echo "") \
-    --region us-east-1 \
-    --query 'CertificateArn' \
-    --output text)
-  
-  echo "Certificate requested with ARN: $CERTIFICATE_ARN"
-  echo "Waiting for certificate details..."
-  sleep 10
-  
-  # Get validation record details for the main domain
-  VALIDATION_RECORD_NAME=$(aws acm describe-certificate \
-    --certificate-arn $CERTIFICATE_ARN \
-    --region us-east-1 \
-    --query "Certificate.DomainValidationOptions[?DomainName=='$DOMAIN_NAME'].ResourceRecord.Name" \
-    --output text)
-  
-  VALIDATION_RECORD_VALUE=$(aws acm describe-certificate \
-    --certificate-arn $CERTIFICATE_ARN \
-    --region us-east-1 \
-    --query "Certificate.DomainValidationOptions[?DomainName=='$DOMAIN_NAME'].ResourceRecord.Value" \
-    --output text)
-  
-  # Get validation record details for the www subdomain if included
-  if [[ "$INCLUDE_WWW" == "true" ]]; then
-    WWW_VALIDATION_RECORD_NAME=$(aws acm describe-certificate \
-      --certificate-arn $CERTIFICATE_ARN \
+  if [[ ! -z "$ACM_CERTIFICATE_ARN" ]]; then
+    echo "Found existing certificate for $DOMAIN_NAME with ARN: $ACM_CERTIFICATE_ARN"
+    
+    # Check certificate status
+    CERT_STATUS=$(aws acm describe-certificate \
+      --certificate-arn $ACM_CERTIFICATE_ARN \
       --region us-east-1 \
-      --query "Certificate.DomainValidationOptions[?DomainName=='www.$DOMAIN_NAME'].ResourceRecord.Name" \
+      --query 'Certificate.Status' \
       --output text)
     
-    WWW_VALIDATION_RECORD_VALUE=$(aws acm describe-certificate \
-      --certificate-arn $CERTIFICATE_ARN \
-      --region us-east-1 \
-      --query "Certificate.DomainValidationOptions[?DomainName=='www.$DOMAIN_NAME'].ResourceRecord.Value" \
-      --output text)
-  else
-    WWW_VALIDATION_RECORD_NAME=""
-    WWW_VALIDATION_RECORD_VALUE=""
+    echo "Certificate status: $CERT_STATUS"
+    
+    read -p "Use existing certificate? (y/n): " USE_EXISTING_CERT
+    if [[ "$USE_EXISTING_CERT" != "y" && "$USE_EXISTING_CERT" != "Y" ]]; then
+      ACM_CERTIFICATE_ARN=""
+    fi
   fi
   
-  # Deploy validation records
-  echo "Creating certificate validation DNS records..."
-  aws cloudformation deploy \
-    --template-file certificate-validation.yaml \
-    --stack-name $CERT_VALIDATION_STACK \
-    --parameter-overrides \
-      HostedZoneId=$HOSTED_ZONE_ID \
-      DomainName=$DOMAIN_NAME \
-      ValidationDomain1RecordName="$VALIDATION_RECORD_NAME" \
-      ValidationDomain1RecordValue="$VALIDATION_RECORD_VALUE" \
-      IncludeWWW=$INCLUDE_WWW \
-      ValidationDomain2RecordName="$WWW_VALIDATION_RECORD_NAME" \
-      ValidationDomain2RecordValue="$WWW_VALIDATION_RECORD_VALUE" \
-    --capabilities CAPABILITY_IAM \
-    --no-fail-on-empty-changeset
-  
-  echo "Certificate validation records created. Validation in progress..."
-  
-  ACM_CERTIFICATE_ARN=$CERTIFICATE_ARN
+  if [[ -z "$ACM_CERTIFICATE_ARN" ]]; then
+    echo "Requesting ACM certificate for $DOMAIN_NAME..."
+    
+    # Create certificate request
+    CERTIFICATE_ARN=$(aws acm request-certificate \
+      --domain-name $DOMAIN_NAME \
+      --validation-method DNS \
+      --subject-alternative-names $([ "$INCLUDE_WWW" == "true" ] && echo "www.$DOMAIN_NAME" || echo "") \
+      --region us-east-1 \
+      --query 'CertificateArn' \
+      --output text)
+    
+    echo "Certificate requested with ARN: $CERTIFICATE_ARN"
+    echo "Waiting for certificate details..."
+    sleep 10
+    
+    # Get validation record details for the main domain
+    VALIDATION_RECORD_NAME=$(aws acm describe-certificate \
+      --certificate-arn $CERTIFICATE_ARN \
+      --region us-east-1 \
+      --query "Certificate.DomainValidationOptions[?DomainName=='$DOMAIN_NAME'].ResourceRecord.Name" \
+      --output text)
+    
+    VALIDATION_RECORD_VALUE=$(aws acm describe-certificate \
+      --certificate-arn $CERTIFICATE_ARN \
+      --region us-east-1 \
+      --query "Certificate.DomainValidationOptions[?DomainName=='$DOMAIN_NAME'].ResourceRecord.Value" \
+      --output text)
+    
+    # Get validation record details for the www subdomain if included
+    if [[ "$INCLUDE_WWW" == "true" ]]; then
+      WWW_VALIDATION_RECORD_NAME=$(aws acm describe-certificate \
+        --certificate-arn $CERTIFICATE_ARN \
+        --region us-east-1 \
+        --query "Certificate.DomainValidationOptions[?DomainName=='www.$DOMAIN_NAME'].ResourceRecord.Name" \
+        --output text)
+      
+      WWW_VALIDATION_RECORD_VALUE=$(aws acm describe-certificate \
+        --certificate-arn $CERTIFICATE_ARN \
+        --region us-east-1 \
+        --query "Certificate.DomainValidationOptions[?DomainName=='www.$DOMAIN_NAME'].ResourceRecord.Value" \
+        --output text)
+    else
+      WWW_VALIDATION_RECORD_NAME=""
+      WWW_VALIDATION_RECORD_VALUE=""
+    fi
+    
+    # Deploy validation records
+    if stack_exists $CERT_VALIDATION_STACK; then
+      echo "Certificate validation stack already exists. Updating..."
+    else
+      echo "Creating new certificate validation stack..."
+    fi
+    
+    echo "Deploying certificate validation DNS records..."
+    aws cloudformation deploy \
+      --template-file certificate-validation.yaml \
+      --stack-name $CERT_VALIDATION_STACK \
+      --parameter-overrides \
+        HostedZoneId=$HOSTED_ZONE_ID \
+        DomainName=$DOMAIN_NAME \
+        ValidationDomain1RecordName="$VALIDATION_RECORD_NAME" \
+        ValidationDomain1RecordValue="$VALIDATION_RECORD_VALUE" \
+        IncludeWWW=$INCLUDE_WWW \
+        ValidationDomain2RecordName="$WWW_VALIDATION_RECORD_NAME" \
+        ValidationDomain2RecordValue="$WWW_VALIDATION_RECORD_VALUE" \
+      --capabilities CAPABILITY_IAM \
+      --no-fail-on-empty-changeset
+    
+    echo "Certificate validation records created. Validation in progress..."
+    
+    ACM_CERTIFICATE_ARN=$CERTIFICATE_ARN
+  fi
   
   echo "============================================================"
   echo "IMPORTANT: Certificate validation is now in progress"
@@ -189,6 +240,12 @@ if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
   read -p "S3 bucket name (default: ${DOMAIN_NAME}-content): " S3_BUCKET_NAME
   S3_BUCKET_NAME=${S3_BUCKET_NAME:-"${DOMAIN_NAME}-content"}
   
+  if stack_exists $S3_WEBSITE_STACK; then
+    echo "S3 website stack already exists. Updating..."
+  else
+    echo "Creating new S3 website stack..."
+  fi
+  
   echo "Deploying S3 bucket for website content..."
   aws cloudformation deploy \
     --template-file s3.yaml \
@@ -205,14 +262,17 @@ if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
     --output text)
   
   # Create a sample index.html file
-  echo "Creating a sample index.html file..."
-  echo "<html><head><title>Welcome to $DOMAIN_NAME</title></head><body><h1>Welcome to $DOMAIN_NAME</h1><p>Your CloudFront distribution is working!</p></body></html>" > /tmp/index.html
-  
-  aws s3 cp /tmp/index.html s3://$S3_BUCKET_NAME/index.html \
-    --content-type "text/html" \
-    --metadata-directive REPLACE
-  
-  echo "S3 bucket created and sample index.html uploaded."
+  read -p "Upload a sample index.html file? (y/n): " UPLOAD_SAMPLE
+  if [[ "$UPLOAD_SAMPLE" == "y" || "$UPLOAD_SAMPLE" == "Y" ]]; then
+    echo "Creating a sample index.html file..."
+    echo "<html><head><title>Welcome to $DOMAIN_NAME</title></head><body><h1>Welcome to $DOMAIN_NAME</h1><p>Your CloudFront distribution is working!</p></body></html>" > /tmp/index.html
+    
+    aws s3 cp /tmp/index.html s3://$S3_BUCKET_NAME/index.html \
+      --content-type "text/html" \
+      --metadata-directive REPLACE
+    
+    echo "Sample index.html uploaded."
+  fi
 else
   read -p "Enter existing S3 bucket name: " S3_BUCKET_NAME
   while [[ -z "$S3_BUCKET_NAME" ]]; do
@@ -226,6 +286,12 @@ read -p "Deploy S3 Access Logs Bucket? (y/n): " DEPLOY_S3_ACCESS_LOGS
 if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; then
   read -p "S3 access logs retention days (default: 90): " S3_LOG_RETENTION_DAYS
   S3_LOG_RETENTION_DAYS=${S3_LOG_RETENTION_DAYS:-90}
+  
+  if stack_exists $S3_ACCESS_LOGS_STACK; then
+    echo "S3 access logs stack already exists. Updating..."
+  else
+    echo "Creating new S3 access logs stack..."
+  fi
   
   echo "Deploying S3 Access Logs Bucket..."
   aws cloudformation deploy \
@@ -258,6 +324,12 @@ if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
   
   read -p "Days before transitioning to Glacier (default: 90): " TRANSITION_GLACIER_DAYS
   TRANSITION_GLACIER_DAYS=${TRANSITION_GLACIER_DAYS:-90}
+  
+  if stack_exists $CLOUDFRONT_LOGS_STACK; then
+    echo "CloudFront logs stack already exists. Updating..."
+  else
+    echo "Creating new CloudFront logs stack..."
+  fi
   
   echo "Deploying CloudFront Logs Bucket..."
   aws cloudformation deploy \
@@ -314,6 +386,12 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
   
   read -p "Origin Shield region (default: $REGION): " ORIGIN_SHIELD_REGION
   ORIGIN_SHIELD_REGION=${ORIGIN_SHIELD_REGION:-$REGION}
+  
+  if stack_exists $CLOUDFRONT_STACK; then
+    echo "CloudFront stack already exists. Updating..."
+  else
+    echo "Creating new CloudFront stack..."
+  fi
   
   echo "Deploying CloudFront Distribution..."
   aws cloudformation deploy \
@@ -408,6 +486,12 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
         fi
       fi
       
+      if stack_exists $DNS_RECORDS_STACK; then
+        echo "DNS records stack already exists. Updating..."
+      else
+        echo "Creating new DNS records stack..."
+      fi
+      
       echo "Creating Route 53 records using CloudFormation..."
       aws cloudformation deploy \
         --template-file dns-records.yaml \
@@ -461,3 +545,4 @@ if [[ ! -z "$ACM_CERTIFICATE_ARN" ]]; then
 fi
 
 echo "Script execution completed."
+
