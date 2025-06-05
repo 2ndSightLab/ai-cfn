@@ -1,10 +1,25 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Basic ACM Certificate without www or wildcard'
+Description: 'ACM Certificate with user-selected configuration'
 
 Parameters:
   DomainName:
     Type: String
     Description: The domain name for the certificate
+  
+  CertificateType:
+    Type: String
+    Description: The type of certificate to create
+    AllowedValues:
+      - Basic
+      - WWW
+      - Wildcard
+      - CustomSubdomains
+    Default: Basic
+  
+  CustomSubdomains:
+    Type: CommaDelimitedList
+    Description: List of fully qualified subdomains (only used if CertificateType is CustomSubdomains)
+    Default: ''
   
   ValidationMethod:
     Type: String
@@ -20,16 +35,65 @@ Parameters:
     Description: The Route 53 Hosted Zone ID (required for DNS validation)
 
 Conditions:
+  IsBasicCertificate: !Equals [!Ref CertificateType, 'Basic']
+  IsWWWCertificate: !Equals [!Ref CertificateType, 'WWW']
+  IsWildcardCertificate: !Equals [!Ref CertificateType, 'Wildcard']
+  IsCustomSubdomainsCertificate: !Equals [!Ref CertificateType, 'CustomSubdomains']
+  
   UseDNSValidation: !Equals [!Ref ValidationMethod, 'DNS']
   UseHostedZoneId: !And 
     - !Condition UseDNSValidation
     - !Not [!Equals [!Ref HostedZoneId, '']]
 
 Resources:
-  Certificate:
+  # Basic Certificate (domain only)
+  BasicCertificate:
     Type: AWS::CertificateManager::Certificate
+    Condition: IsBasicCertificate
     Properties:
       DomainName: !Ref DomainName
+      ValidationMethod: !Ref ValidationMethod
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
+  
+  # Certificate with www subdomain
+  WWWCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Condition: IsWWWCertificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Sub "www.${DomainName}"
+      ValidationMethod: !Ref ValidationMethod
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
+        - DomainName: !Sub "www.${DomainName}"
+          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
+  
+  # Certificate with wildcard subdomain
+  WildcardCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Condition: IsWildcardCertificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Sub "*.${DomainName}"
+      ValidationMethod: !Ref ValidationMethod
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
+        - DomainName: !Sub "*.${DomainName}"
+          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
+  
+  # Certificate with custom subdomains
+  CustomSubdomainsCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Condition: IsCustomSubdomainsCertificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames: !Ref CustomSubdomains
       ValidationMethod: !Ref ValidationMethod
       DomainValidationOptions:
         - DomainName: !Ref DomainName
@@ -38,4 +102,14 @@ Resources:
 Outputs:
   CertificateArn:
     Description: The ARN of the certificate
-    Value: !Ref Certificate
+    Value: !If
+      - IsBasicCertificate
+      - !Ref BasicCertificate
+      - !If
+        - IsWWWCertificate
+        - !Ref WWWCertificate
+        - !If
+          - IsWildcardCertificate
+          - !Ref WildcardCertificate
+          - !Ref CustomSubdomainsCertificate
+
