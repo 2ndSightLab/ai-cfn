@@ -14,7 +14,7 @@ if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
   
   echo "Deploying S3 bucket for website content..."
   aws cloudformation deploy \
-    --template-file s3.yaml \
+    --template-file cfn/s3.yaml \
     --stack-name $S3_WEBSITE_STACK \
     --parameter-overrides \
       BucketName=$S3_BUCKET_NAME \
