@@ -127,17 +127,6 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
   INCLUDE_WWW=${INCLUDE_WWW:-true}
   
   if [[ ! -z "$ACM_CERTIFICATE_ARN" ]]; then
-    echo "Found existing certificate for $DOMAIN_NAME with ARN: $ACM_CERTIFICATE_ARN"
-    
-    # Check certificate status
-    CERT_STATUS=$(aws acm describe-certificate \
-      --certificate-arn $ACM_CERTIFICATE_ARN \
-      --region us-east-1 \
-      --query 'Certificate.Status' \
-      --output text)
-    
-    echo "Certificate status: $CERT_STATUS"
-    
     read -p "Use existing certificate? (y/n): " USE_EXISTING_CERT
     if [[ "$USE_EXISTING_CERT" != "y" && "$USE_EXISTING_CERT" != "Y" ]]; then
       ACM_CERTIFICATE_ARN=""
@@ -574,4 +563,3 @@ if [[ ! -z "$ACM_CERTIFICATE_ARN" ]]; then
 fi
 
 echo "Script execution completed."
-
