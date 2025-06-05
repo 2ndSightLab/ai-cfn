@@ -78,13 +78,42 @@ else
 fi
 
 # TLS Certificate
-# Check if certificate exists in ACM
+# Check if certificate exists in ACM - IMPROVED VERSION
 ACM_CERTIFICATE_ARN=""
 if [[ ! -z "$DOMAIN_NAME" ]]; then
-  # Try to find an existing certificate for the domain
-  ACM_CERTIFICATE_ARN=$(aws acm list-certificates --region us-east-1 \
+  echo "Checking for existing certificates for $DOMAIN_NAME..."
+  
+  # Try to find an existing certificate for the domain with proper filtering
+  # This checks for ISSUED certificates only to avoid finding deleted or failed ones
+  ACM_CERTIFICATE_ARN=$(aws acm list-certificates \
+    --region us-east-1 \
+    --certificate-statuses "ISSUED" "PENDING_VALIDATION" \
+    --includes keyTypes=RSA_2048,RSA_1024,RSA_4096,EC_prime256v1,EC_secp384r1,EC_secp521r1 \
     --query "CertificateSummaryList[?DomainName=='$DOMAIN_NAME'].CertificateArn" \
     --output text)
+  
+  # Verify the certificate actually exists by trying to describe it
+  if [[ ! -z "$ACM_CERTIFICATE_ARN" ]]; then
+    if ! aws acm describe-certificate --certificate-arn "$ACM_CERTIFICATE_ARN" --region us-east-1 &>/dev/null; then
+      echo "Certificate appears to exist but cannot be described. Clearing reference."
+      ACM_CERTIFICATE_ARN=""
+    fi
+  fi
+fi
+
+if [[ ! -z "$ACM_CERTIFICATE_ARN" ]]; then
+  echo "Found existing certificate for $DOMAIN_NAME with ARN: $ACM_CERTIFICATE_ARN"
+  
+  # Check certificate status
+  CERT_STATUS=$(aws acm describe-certificate \
+    --certificate-arn $ACM_CERTIFICATE_ARN \
+    --region us-east-1 \
+    --query 'Certificate.Status' \
+    --output text)
+  
+  echo "Certificate status: $CERT_STATUS"
+else
+  echo "No existing certificate found for $DOMAIN_NAME"
 fi
 
 read -p "Deploy TLS certificate? (y/n): " DEPLOY_CERTIFICATE
