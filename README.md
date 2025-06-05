@@ -1,2 +1,2 @@
 # ai-cfn
-CFN temlpates created with AI
+CloudFormation temlpates created with AI
