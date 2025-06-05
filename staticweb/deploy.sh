@@ -16,6 +16,8 @@ read -p "Stack name prefix (default: my-website): " STACK_NAME_PREFIX
 STACK_NAME_PREFIX=${STACK_NAME_PREFIX:-my-website}
 S3_ACCESS_LOGS_STACK="${STACK_NAME_PREFIX}-s3-access-logs"
 CLOUDFRONT_LOGS_STACK="${STACK_NAME_PREFIX}-cloudfront-logs"
+S3_WEBSITE_STACK="${STACK_NAME_PREFIX}-s3-website"
+HOSTED_ZONE_STACK="${STACK_NAME_PREFIX}-hosted-zone"
 CLOUDFRONT_STACK="${STACK_NAME_PREFIX}-cloudfront"
 
 # Domain name
@@ -26,16 +28,27 @@ while [[ -z "$DOMAIN_NAME" ]]; do
 done
 
 # Route 53 Hosted Zone
-read -p "Create Route 53 hosted zone? (y/n): " CREATE_HOSTED_ZONE
-if [[ "$CREATE_HOSTED_ZONE" == "y" || "$CREATE_HOSTED_ZONE" == "Y" ]]; then
-  echo "Creating Route 53 hosted zone for $DOMAIN_NAME..."
-  HOSTED_ZONE_RESULT=$(aws route53 create-hosted-zone \
-    --name $DOMAIN_NAME \
-    --caller-reference "$(date +%Y%m%d%H%M%S)" \
-    --hosted-zone-config Comment="Created by CloudFront deployment script")
+read -p "Deploy Route 53 hosted zone? (y/n): " DEPLOY_HOSTED_ZONE
+if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
+  echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."
+  aws cloudformation deploy \
+    --template-file hosted-zone.yaml \
+    --stack-name $HOSTED_ZONE_STACK \
+    --parameter-overrides \
+      DomainName=$DOMAIN_NAME \
+    --capabilities CAPABILITY_IAM \
+    --no-fail-on-empty-changeset
   
-  HOSTED_ZONE_ID=$(echo $HOSTED_ZONE_RESULT | jq -r '.HostedZone.Id' | sed 's/\/hostedzone\///')
-  NAME_SERVERS=$(echo $HOSTED_ZONE_RESULT | jq -r '.DelegationSet.NameServers[]' | tr '\n' ' ')
+  # Get the Hosted Zone ID from the stack outputs
+  HOSTED_ZONE_ID=$(aws cloudformation describe-stacks \
+    --stack-name $HOSTED_ZONE_STACK \
+    --query "Stacks[0].Outputs[?OutputKey=='HostedZoneId'].OutputValue" \
+    --output text)
+  
+  NAME_SERVERS=$(aws cloudformation describe-stacks \
+    --stack-name $HOSTED_ZONE_STACK \
+    --query "Stacks[0].Outputs[?OutputKey=='NameServers'].OutputValue" \
+    --output text)
   
   echo "Hosted Zone created with ID: $HOSTED_ZONE_ID"
   echo "IMPORTANT: Update your domain's name servers with your registrar to point to:"
@@ -149,38 +162,25 @@ else
 fi
 
 # S3 bucket for website content
-read -p "Create S3 bucket for website content? (y/n): " CREATE_S3_BUCKET
-if [[ "$CREATE_S3_BUCKET" == "y" || "$CREATE_S3_BUCKET" == "Y" ]]; then
+read -p "Deploy S3 bucket for website content? (y/n): " DEPLOY_S3_BUCKET
+if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
   read -p "S3 bucket name (default: ${DOMAIN_NAME}-content): " S3_BUCKET_NAME
   S3_BUCKET_NAME=${S3_BUCKET_NAME:-"${DOMAIN_NAME}-content"}
   
-  echo "Creating S3 bucket: $S3_BUCKET_NAME..."
-  aws s3api create-bucket \
-    --bucket $S3_BUCKET_NAME \
-    --region $REGION \
-    $(if [[ "$REGION" != "us-east-1" ]]; then echo "--create-bucket-configuration LocationConstraint=$REGION"; fi)
+  echo "Deploying S3 bucket for website content..."
+  aws cloudformation deploy \
+    --template-file s3.yaml \
+    --stack-name $S3_WEBSITE_STACK \
+    --parameter-overrides \
+      BucketName=$S3_BUCKET_NAME \
+    --capabilities CAPABILITY_IAM \
+    --no-fail-on-empty-changeset
   
-  # Configure bucket properties
-  aws s3api put-public-access-block \
-    --bucket $S3_BUCKET_NAME \
-    --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
-  
-  aws s3api put-bucket-versioning \
-    --bucket $S3_BUCKET_NAME \
-    --versioning-configuration Status=Enabled
-  
-  aws s3api put-bucket-encryption \
-    --bucket $S3_BUCKET_NAME \
-    --server-side-encryption-configuration '{
-      "Rules": [
-        {
-          "ApplyServerSideEncryptionByDefault": {
-            "SSEAlgorithm": "AES256"
-          },
-          "BucketKeyEnabled": true
-        }
-      ]
-    }'
+  # Get the S3 bucket name from the stack outputs
+  S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
+    --stack-name $S3_WEBSITE_STACK \
+    --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucketName'].OutputValue" \
+    --output text)
   
   # Create a sample index.html file
   echo "Creating a sample index.html file..."
@@ -189,6 +189,8 @@ if [[ "$CREATE_S3_BUCKET" == "y" || "$CREATE_S3_BUCKET" == "Y" ]]; then
   aws s3 cp /tmp/index.html s3://$S3_BUCKET_NAME/index.html \
     --content-type "text/html" \
     --metadata-directive REPLACE
+  
+  echo "S3 bucket created and sample index.html uploaded."
 else
   read -p "Enter existing S3 bucket name: " S3_BUCKET_NAME
   while [[ -z "$S3_BUCKET_NAME" ]]; do
@@ -205,7 +207,7 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
   
   echo "Deploying S3 Access Logs Bucket..."
   aws cloudformation deploy \
-    --template-file s3-access-logs.yaml \
+    --template-file s3-access-log-bucket.yaml \
     --stack-name $S3_ACCESS_LOGS_STACK \
     --parameter-overrides \
       LogRetentionDays=$S3_LOG_RETENTION_DAYS \
@@ -237,7 +239,7 @@ if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
   
   echo "Deploying CloudFront Logs Bucket..."
   aws cloudformation deploy \
-    --template-file cloudfront-logs.yaml \
+    --template-file s3-cloudfront-access-log-bucket.yaml \
     --stack-name $CLOUDFRONT_LOGS_STACK \
     --parameter-overrides \
       LogRetentionDays=$CF_LOG_RETENTION_DAYS \
@@ -291,7 +293,10 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
   read -p "Origin Shield region (default: $REGION): " ORIGIN_SHIELD_REGION
   ORIGIN_SHIELD_REGION=${ORIGIN_SHIELD_REGION:-$REGION}
   
-  echo "Deploying CloudFront Distribution..."
+  Display the rest of the script starting from the last line above
+
+Here's the rest of the script starting from the incomplete line:
+
   aws cloudformation deploy \
     --template-file cloudfront.yaml \
     --stack-name $CLOUDFRONT_STACK \
