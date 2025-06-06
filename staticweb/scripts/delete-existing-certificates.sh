@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 echo "delete-existing-certificates.sh"
 
 # Ask if user wants to force delete any existing certificates
