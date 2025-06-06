@@ -65,7 +65,7 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     # Deploy the certificate using CloudFormation in the background
     # Use nohup to ensure the process continues even if the terminal is closed
     echo "Deploying certificate stack in the background..."
-    aws cloudformation deploy \
+    nohup aws cloudformation deploy \
       --template-file cfn/tls-certificate.yaml \
       --stack-name $TLS_CERTIFICATE_STACK \
       --parameter-overrides \
