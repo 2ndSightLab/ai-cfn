@@ -6,12 +6,36 @@ CERT_VALIDATION_STACK="$2"
 TLS_CERTIFICATE_STACK="$3"
 
 echo "Certificate ARN: $ACM_CERTIFICATE_ARN"
+# Loop until the stack exists and we can get its parameters
+echo "Waiting for stack to be created..."
+MAX_ATTEMPTS=30
+ATTEMPT=0
+STACK_PARAMS=""
 
-  # Get stack parameters to determine certificate type
+while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+  # Try to get stack parameters
   STACK_PARAMS=$(aws cloudformation describe-stacks \
     --stack-name $TLS_CERTIFICATE_STACK \
     --query 'Stacks[0].Parameters' \
-    --output json)
+    --output json 2>/dev/null)
+  
+  # Check if we got valid parameters
+  if [ $? -eq 0 ] && [ -n "$STACK_PARAMS" ] && [ "$STACK_PARAMS" != "null" ]; then
+    echo "Stack exists! Retrieved stack parameters."
+    break
+  fi
+  
+  # Increment attempt counter and wait
+  ATTEMPT=$((ATTEMPT+1))
+  echo "Waiting for stack to be created (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
+  sleep 5
+done
+
+# Check if we exceeded max attempts
+if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
+  echo "Timed out waiting for stack to be created. Please check the AWS console."
+  exit 1
+fi
   
   CERT_TYPE=$(echo "$STACK_PARAMS" | jq -r '.[] | select(.ParameterKey=="CertificateType").ParameterValue')
   DOMAIN_NAME=$(echo "$STACK_PARAMS" | jq -r '.[] | select(.ParameterKey=="DomainName").ParameterValue')
