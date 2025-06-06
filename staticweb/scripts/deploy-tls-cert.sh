@@ -65,7 +65,7 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     # Deploy the certificate using CloudFormation in the background
     # Use nohup to ensure the process continues even if the terminal is closed
     echo "Deploying certificate stack in the background..."
-    '''
+  
     (
       aws cloudformation deploy \
         --template-file cfn/tls-certificate.yaml \
@@ -78,6 +78,7 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
           CustomSubdomains=${CUSTOM_SUBDOMAINS:-''} \
         --no-fail-on-empty-changeset > /tmp/cert-deploy.log 2>/dev/null
     ) &
+    
     '''
 
        # Deploy the certificate using CloudFormation in the background
@@ -107,6 +108,7 @@ EOF
     
     # Remove the temporary script
     rm "$TEMP_SCRIPT"
+    '''
     
       
     echo "Certificate stack creation has been initiated."
