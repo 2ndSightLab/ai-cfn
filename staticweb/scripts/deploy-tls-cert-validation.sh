@@ -1,4 +1,4 @@
-#!/bin/bash - e
+#!/bin/bash -e
 
 echo "deploy-tls-cert-validation.sh"
 
