@@ -4,8 +4,6 @@ REGION="$1"
 CERT_VALIDATION_STACK="$2"
 TLS_CERTIFICATE_STACK="$3"
 
-# Loop until we find validation records in stack events
-echo "Waiting for validation records to appear in stack events..."
 MAX_ATTEMPTS=30
 ATTEMPT=0
 FOUND_RECORDS=false
@@ -45,7 +43,10 @@ VALIDATION_RECORDS=$(echo "$STACK_EVENTS" | jq -r '.StackEvents[].ResourceStatus
 PARAMS="HostedZoneId=$HOSTED_ZONE_ID DomainName=$DOMAIN_NAME"
 RECORD_COUNT=0
 
-echo "$VALIDATION_RECORDS" | while read -r RECORD; do
+# Store validation records in an array to avoid subshell issues
+mapfile -t VALIDATION_RECORD_ARRAY <<< "$VALIDATION_RECORDS"
+
+for RECORD in "${VALIDATION_RECORD_ARRAY[@]}"; do
   # Extract record name, type, and value using regex
   if [[ $RECORD =~ Name:\ ([^,]+),Type:\ ([^,]+),Value:\ ([^}]+) ]]; then
     RECORD_NAME="${BASH_REMATCH[1]}"
@@ -71,4 +72,6 @@ if [ $RECORD_COUNT -eq 0 ]; then
   echo "Error: Failed to parse any validation records."
   exit 1
 fi
+
+
 
