@@ -66,11 +66,11 @@ source ./scripts/check-certificate-exists.sh
 source ./scripts/delete-existing-certificates.sh
 ./scripts/deploy-tls-cert-validation.sh $REGION $CERT_VALIDATION_STACK $TLS_CERTIFICATE_STACK $DOMAIN_NAME &
 source ./scripts/deploy-tls-cert.sh
-source ./scripts/deploy-s3-content-bucket.sh
-source ./scripts/deploy-s3-access-log-bucket.sh
-source ./scripts/deploy-cloudfront-logs-bucket.sh
-source ./scripts/deploy-cloudfront-distribution.sh
-source ./scripts/deploy-validation-dns-records.sh
+#source ./scripts/deploy-s3-content-bucket.sh
+#source ./scripts/deploy-s3-access-log-bucket.sh
+#source ./scripts/deploy-cloudfront-logs-bucket.sh
+#source ./scripts/deploy-cloudfront-distribution.sh
+#source ./scripts/deploy-validation-dns-records.sh
 
 echo "Deployment complete!"
 echo "Website URL: https://$DOMAIN_NAME"
