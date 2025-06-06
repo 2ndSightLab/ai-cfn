@@ -73,16 +73,20 @@ echo "deploy-validation-dns-records.sh"
       fi
       
       echo "Creating Route 53 records using CloudFormation..."
-      aws cloudformation deploy \
-        --template-file cfn/dns-records.yaml \
-        --stack-name $DNS_RECORDS_STACK \
-        --parameter-overrides \
-          DomainName=$DOMAIN_NAME \
-          HostedZoneId=$HOSTED_ZONE_ID \
-          CloudFrontDomainName=$CLOUDFRONT_DOMAIN \
-          IncludeWWW=$INCLUDE_WWW \
-        --capabilities CAPABILITY_IAM \
-        --no-fail-on-empty-changeset
+      # Deploy the certificate using CloudFormation in the background
+      # Use nohup to ensure the process continues even if the terminal is closed
+      echo "Deploying certificate stack in the background..."
+      
+      nohup aws cloudformation deploy \
+       --template-file cfn/tls-certificate.yaml \
+       --stack-name $TLS_CERTIFICATE_STACK \
+       --parameter-overrides \
+        DomainName=$DOMAIN_NAME \
+        CertificateType=$CERT_TYPE \
+        ValidationMethod=$VALIDATION_METHOD \
+        HostedZoneId=$HOSTED_ZONE_ID \
+        CustomSubdomains=${CUSTOM_SUBDOMAINS:-''} \
+       --no-fail-on-empty-changeset > /tmp/cert-deploy-$$.log 2>&1 &
       
       echo "DNS records created successfully."
     fi
