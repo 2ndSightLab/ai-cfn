@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 # TLS Certificate 
 ACM_CERTIFICATE_ARN=""
@@ -13,11 +13,6 @@ fi
 
 read -p "Deploy TLS certificate? (y/n): " DEPLOY_CERTIFICATE
 if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
-  
-    if [[ -z "$HOSTED_ZONE_ID" ]]; then
-      echo "Enter hosted zone ID:"
-      read HOSTED_ZONE_ID
-    fi
   
     # Ask for certificate type
     echo "Select certificate type:"
@@ -69,7 +64,6 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
         DomainName=$DOMAIN_NAME \
         CertificateType=$CERT_TYPE \
         ValidationMethod=$VALIDATION_METHOD \
-        HostedZoneId=$HOSTED_ZONE_ID \
         CustomSubdomains=${CUSTOM_SUBDOMAINS:-''} \
       --no-fail-on-empty-changeset
       
@@ -80,4 +74,12 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
           --output text)
         
     echo "Certificate ARN: $ACM_CERTIFICATE_ARN"
+    
+    if [ "$VALIDATION_METHOD" == "DNS" ]; then
+      echo ""
+      echo "IMPORTANT: You need to manually create DNS validation records."
+      echo "Go to the AWS Certificate Manager console, find your certificate,"
+      echo "and click on 'Create records in Route 53' to complete validation."
+    fi
 fi
+
