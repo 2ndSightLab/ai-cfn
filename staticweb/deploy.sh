@@ -15,6 +15,7 @@ read -p "Stack name prefix (default: my-website): " STACK_NAME_PREFIX
 if [[ $STACK_NAME_PREFIX =~ ^[0-9] ]]; then
    STACK_NAME_PREFIX="s-$STACK_NAME_PREFIX"
 fi
+
 STACK_NAME_PREFIX=${STACK_NAME_PREFIX:-my-website}
 S3_ACCESS_LOGS_STACK="${STACK_NAME_PREFIX}-s3-access-logs"
 CLOUDFRONT_LOGS_STACK="${STACK_NAME_PREFIX}-cloudfront-logs"
@@ -27,6 +28,20 @@ CLOUDFRONT_STACK="${STACK_NAME_PREFIX}-cloudfront"
 
 # Function to check if a CloudFormation stack exists
 stack_exists() {
+  local stack_name=$1
+  if aws cloudformation describe-stacks --stack-name $stack_name &>/dev/null; then
+  
+    # Check if stack exists in a failed state
+    echo "Checking for existing CloudFormation stack..."
+    STACK_STATUS=$(aws cloudformation describe-stacks --stack-name $stack_name --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "STACK_NOT_FOUND")
+    return 0  # Stack exists
+       
+  else
+    return 1  # Stack does not exist
+  fi
+}
+
+delete_failed_stack_if_exists() {
   local stack_name=$1
   if aws cloudformation describe-stacks --stack-name $stack_name &>/dev/null; then
   
@@ -46,8 +61,6 @@ stack_exists() {
     
      return 0  # Stack exists
        
-  else
-    return 1  # Stack does not exist
   fi
 }
 
