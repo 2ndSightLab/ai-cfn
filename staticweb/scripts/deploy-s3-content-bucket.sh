@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "deploy-s3-content-bucket.sh"
+
 # S3 bucket for website content
 read -p "Deploy S3 bucket for website content? (y/n): " DEPLOY_S3_BUCKET
 if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
