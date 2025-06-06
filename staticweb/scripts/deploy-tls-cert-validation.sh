@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "deploy-tls-cert-validation.sh"
 
 # Verify that required variables are set
 if [[ -z "$TLS_CERTIFICATE_STACK" ]]; then
