@@ -3,17 +3,6 @@ echo "deploy-tls-cert-validation.sh"
 
 echo "Certificate ARN: $ACM_CERTIFICATE_ARN"
 
-# Check if validation is already complete
-CERT_STATUS=$(aws acm describe-certificate \
-  --certificate-arn $ACM_CERTIFICATE_ARN \
-  --region us-east-1 \
-  --query 'Certificate.Status' \
-  --output text)
-
-if [[ "$CERT_STATUS" == "ISSUED" ]]; then
-  echo "Certificate is already validated and active."
-else
-  echo "Extracting validation information from CloudFormation stack events..."
   
   # Get stack parameters to determine certificate type
   STACK_PARAMS=$(aws cloudformation describe-stacks \
@@ -113,4 +102,3 @@ else
       sleep 30
     done
   fi
-fi
