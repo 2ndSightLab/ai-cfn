@@ -1,9 +1,12 @@
 #!/bin/bash
 echo "deploy-tls-cert-validation.sh"
 
+REGION="$1"
+CERT_VALIDATION_STACK="$2"
+TLS_CERTIFICATE_STACK="$3"
+
 echo "Certificate ARN: $ACM_CERTIFICATE_ARN"
 
-  
   # Get stack parameters to determine certificate type
   STACK_PARAMS=$(aws cloudformation describe-stacks \
     --stack-name $TLS_CERTIFICATE_STACK \
