@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "deploy-cloudfront-distribution.sh"
+
 # CloudFront Distribution
 read -p "Deploy CloudFront Distribution? (y/n): " DEPLOY_CLOUDFRONT
 if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
