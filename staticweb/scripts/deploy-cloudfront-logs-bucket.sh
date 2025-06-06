@@ -1,5 +1,7 @@
 #!/bin/bash
-  
+
+echo "deploy-cloudfront-logs-bucket.sh"
+
 # CloudFront Logs Bucket
 read -p "Deploy CloudFront Logs Bucket? (y/n): " DEPLOY_CF_LOGS
 if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
