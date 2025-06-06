@@ -58,12 +58,10 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
         VALIDATION_METHOD="EMAIL"
     fi
     
-    # Check if stack exists
-    echo "Check if stack exists"
+    # Check if stack exists and delete if failed
     delete_failed_stack_if_exists "$TLS_CERTIFICATE_STACK"
   
     # Deploy the certificate using CloudFormation (in background)
-    echo "Deploy certificate"
     aws cloudformation deploy \
       --template-file cfn/tls-certificate.yaml \
       --stack-name $TLS_CERTIFICATE_STACK \
@@ -83,10 +81,11 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     MAX_ATTEMPTS=30
     ATTEMPT=0
     while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-      # Try to get the certificate ARN
-      ACM_CERTIFICATE_ARN=$(aws cloudformation describe-stacks \
+      # Try to get the certificate ARN from stack resources
+      # Look for a resource of type AWS::CertificateManager::Certificate
+      ACM_CERTIFICATE_ARN=$(aws cloudformation list-stack-resources \
         --stack-name $TLS_CERTIFICATE_STACK \
-        --query "Stacks[0].Outputs[?OutputKey=='CertificateArn'].OutputValue" \
+        --query "StackResourceSummaries[?ResourceType=='AWS::CertificateManager::Certificate'].PhysicalResourceId" \
         --output text 2>/dev/null)
       
       # Check if we got a valid ARN
@@ -107,5 +106,6 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
       echo "Stack name: $TLS_CERTIFICATE_STACK"
     fi
 fi
+
 
 
