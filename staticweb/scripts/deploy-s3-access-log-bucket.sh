@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "deploy-s3-access-log-bucket.sh"
+
 # S3 Access Logs Bucket
 read -p "Deploy S3 Access Logs Bucket? (y/n): " DEPLOY_S3_ACCESS_LOGS
 if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; then
