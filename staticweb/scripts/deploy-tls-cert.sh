@@ -74,13 +74,8 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
       --no-fail-on-empty-changeset \
       --no-wait
       
-    # Get the certificate ARN from the stack outputs
-    ACM_CERTIFICATE_ARN=$(aws cloudformation describe-stacks \
-          --stack-name $TLS_CERTIFICATE_STACK \
-          --query "Stacks[0].Outputs[?OutputKey=='CertificateArn'].OutputValue" \
-          --output text)
-        
-    echo "Certificate ARN: $ACM_CERTIFICATE_ARN"
+    echo "Certificate stack creation has been initiated."
+    echo "Stack name: $TLS_CERTIFICATE_STACK"
 fi
 
 
