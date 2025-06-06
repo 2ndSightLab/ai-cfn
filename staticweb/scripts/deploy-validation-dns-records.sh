@@ -86,7 +86,7 @@ echo "deploy-validation-dns-records.sh"
         ValidationMethod=$VALIDATION_METHOD \
         HostedZoneId=$HOSTED_ZONE_ID \
         CustomSubdomains=${CUSTOM_SUBDOMAINS:-''} \
-       --no-fail-on-empty-changeset > /tmp/cert-deploy-$$.log 2>&1 &
+       --no-fail-on-empty-changeset || echo "Error deploying cert" > /tmp/cert-deploy-$$.log 2>&1 &
       
       echo "DNS records created successfully."
     fi
