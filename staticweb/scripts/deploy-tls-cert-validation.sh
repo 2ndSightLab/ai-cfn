@@ -7,17 +7,22 @@ CERT_VALIDATION_STACK="$2"
 TLS_CERTIFICATE_STACK="$3"
 DOMAIN_NAME="$4"
 
-# Wait for the certificate stack to be created
-echo "Waiting for certificate stack to be created..."
-aws cloudformation wait stack-create-complete --stack-name $TLS_CERTIFICATE_STACK --region $REGION
-
-# Now that the stack is created, wait for validation records to appear
-echo "Certificate stack created. Looking for validation records..."
+# Look for validation records immediately
+echo "Looking for validation records in stack events..."
 MAX_ATTEMPTS=30
 ATTEMPT=0
 FOUND_RECORDS=false
 
 while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+  # Check if stack exists first
+  aws cloudformation describe-stacks --stack-name $TLS_CERTIFICATE_STACK --region $REGION > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    echo "Certificate stack does not exist yet. Waiting..."
+    ATTEMPT=$((ATTEMPT+1))
+    sleep 10
+    continue
+  fi
+  
   # Get stack events
   STACK_EVENTS=$(aws cloudformation describe-stack-events \
     --stack-name $TLS_CERTIFICATE_STACK \
@@ -107,4 +112,5 @@ eval "aws cloudformation deploy \
 echo "Validation stack deployment complete!"
 echo "Certificate validation records have been created in Route 53."
 echo "It may take some time for AWS to validate the certificate."
+
 
