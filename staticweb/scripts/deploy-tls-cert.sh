@@ -74,7 +74,7 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
         ValidationMethod=$VALIDATION_METHOD \
         HostedZoneId=$HOSTED_ZONE_ID \
         CustomSubdomains=${CUSTOM_SUBDOMAINS:-''} \
-      --no-fail-on-empty-changeset > /tmp/cert-deploy-$$.log 2>&1 &
+      --no-fail-on-empty-changeset > /tmp/cert-deploy-$$.log 1>&2 &
       
     echo "Certificate stack creation has been initiated."
     echo "Stack name: $TLS_CERTIFICATE_STACK"
