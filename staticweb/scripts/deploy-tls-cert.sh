@@ -118,4 +118,31 @@ fi
 
 echo "ACM_CERTIFICATE_ARN: $ACM_CERTIFICATE_ARN"
 
+# Wait for the validation stack to be created
+  echo "Waiting for validation stack to be created..."
+  MAX_ATTEMPTS=30
+  ATTEMPT=0
+  VALIDATION_STACK_CREATED=false
+  
+  while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+    # Check if validation stack exists
+    aws cloudformation describe-stacks --stack-name $CERT_VALIDATION_STACK --region $REGION > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      echo "Validation stack has been created."
+      VALIDATION_STACK_CREATED=true
+      break
+    fi
+    
+    ATTEMPT=$((ATTEMPT+1))
+    echo "Waiting for validation stack to be created (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
+    sleep 10
+  done
+  
+  if [ "$VALIDATION_STACK_CREATED" = false ]; then
+    echo "WARNING: Validation stack was not created within the timeout period."
+    echo "The certificate may not be validated automatically."
+  else
+    echo "Validation stack created successfully: $CERT_VALIDATION_STACK"
+  fi
+
 
