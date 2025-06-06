@@ -1,4 +1,5 @@
 #/bin/bash
+echo "delete-existing-certificates.sh"
 
 # Ask if user wants to force delete any existing certificates
 read -p "Force delete any existing certificates for $DOMAIN_NAME? (y/n): " FORCE_DELETE_CERT
