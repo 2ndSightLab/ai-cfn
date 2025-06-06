@@ -59,11 +59,9 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     fi
     
     # Check if stack exists
-    echo "Checking to see if the stack exists."
-    delete_failed_stack_if_exists "$TLS_CERTIFICATE_STACK"
+    stack_exists "$TLS_CERTIFICATE_STACK"
   
-    # Deploy the certificate using CloudFormation
-    echo "Deploying the TLS certificate"
+    # Deploy the certificate using CloudFormation (in background)
     aws cloudformation deploy \
       --template-file cfn/tls-certificate.yaml \
       --stack-name $TLS_CERTIFICATE_STACK \
@@ -77,6 +75,35 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
       
     echo "Certificate stack creation has been initiated."
     echo "Stack name: $TLS_CERTIFICATE_STACK"
+    echo "Waiting for certificate ARN to become available..."
+    
+    # Loop until the ARN is available
+    MAX_ATTEMPTS=30
+    ATTEMPT=0
+    while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+      # Try to get the certificate ARN
+      ACM_CERTIFICATE_ARN=$(aws cloudformation describe-stacks \
+        --stack-name $TLS_CERTIFICATE_STACK \
+        --query "Stacks[0].Outputs[?OutputKey=='CertificateArn'].OutputValue" \
+        --output text 2>/dev/null)
+      
+      # Check if we got a valid ARN
+      if [ -n "$ACM_CERTIFICATE_ARN" ] && [ "$ACM_CERTIFICATE_ARN" != "None" ]; then
+        echo "Certificate ARN: $ACM_CERTIFICATE_ARN"
+        break
+      fi
+      
+      # Increment attempt counter and wait
+      ATTEMPT=$((ATTEMPT+1))
+      echo "Waiting for certificate ARN to become available (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
+      sleep 5
+    done
+    
+    # Check if we exceeded max attempts
+    if [ $ATTEMPT -ge $MAX_ATTEMPTS ]; then
+      echo "Timed out waiting for certificate ARN. You can check the CloudFormation console for status."
+      echo "Stack name: $TLS_CERTIFICATE_STACK"
+    fi
 fi
 
 
