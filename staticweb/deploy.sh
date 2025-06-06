@@ -78,36 +78,4 @@ if [[ ! -z "$CLOUDFRONT_DOMAIN" ]]; then
   echo "CloudFront Distribution Domain: $CLOUDFRONT_DOMAIN"
 fi
 
-echo "Script execution completed."
-
-'''
-# Final certificate status check and instructions
-if [[ ! -z "$ACM_CERTIFICATE_ARN" ]]; then
-  FINAL_CERT_STATUS=$(aws acm describe-certificate \
-    --certificate-arn $ACM_CERTIFICATE_ARN \
-    --region us-east-1 \
-    --query 'Certificate.Status' \
-    --output text)
-  
-  if [[ "$FINAL_CERT_STATUS" != "ISSUED" ]]; then
-    echo ""
-    echo "============================================================"
-    echo "IMPORTANT: Certificate Status: $FINAL_CERT_STATUS"
-    echo "============================================================"
-    echo "Your CloudFront distribution has been created, but the SSL/TLS certificate"
-    echo "is still being validated. HTTPS access will not work until validation completes."
-    echo ""
-    echo "To check validation status:"
-    echo "  aws acm describe-certificate --certificate-arn $ACM_CERTIFICATE_ARN --region us-east-1"
-    echo ""
-    echo "You can also check the status in the AWS Console:"
-    echo "  https://console.aws.amazon.com/acm/home?region=us-east-1#/certificates/list"
-    echo ""
-    echo "Once validation is complete, your site will be accessible via HTTPS."
-  else
-    echo ""
-    echo "Certificate is validated and active. Your site is ready to serve HTTPS traffic."
-  fi
-fi
-'''
 
