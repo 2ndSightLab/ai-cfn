@@ -13,22 +13,30 @@ ATTEMPT=0
 STACK_PARAMS=""
 
 while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-  # Try to get stack parameters
-  STACK_PARAMS=$(aws cloudformation describe-stacks \
+  # Get stack events
+  STACK_EVENTS=$(aws cloudformation describe-stack-events \
     --stack-name $TLS_CERTIFICATE_STACK \
-    --query 'Stacks[0].Parameters' \
-    --output json 2>/dev/null)
+    --output json)
   
-  # Check if we got valid parameters
-  if [ $? -eq 0 ] && [ -n "$STACK_PARAMS" ] && [ "$STACK_PARAMS" != "null" ]; then
-    echo "Stack exists! Retrieved stack parameters."
+  # Extract validation records from stack events
+  # Look for ResourceStatusReason containing "Content of DNS Record is:"
+  while read -r line; do
+    if [[ "$line" == *"Content of DNS Record is:"* ]]; then
+      VALIDATION_RECORDS+=("$line")
+      echo "Found validation record: $line"
+    fi
+  done < <(echo "$STACK_EVENTS" | jq -r '.StackEvents[] | select(.ResourceType=="AWS::CertificateManager::Certificate") | .ResourceStatusReason // empty')
+  
+  # Check if we found any validation records
+  if [ ${#VALIDATION_RECORDS[@]} -gt 0 ]; then
+    echo "Found ${#VALIDATION_RECORDS[@]} validation records."
     break
   fi
   
   # Increment attempt counter and wait
   ATTEMPT=$((ATTEMPT+1))
-  echo "Waiting for stack to be created (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
-  sleep 5
+  echo "Waiting for validation records to appear (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
+  sleep 10
 done
 
 # Check if we exceeded max attempts
