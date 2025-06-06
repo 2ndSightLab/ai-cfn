@@ -107,5 +107,6 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     fi
 fi
 
+echo "ACM_CERTIFICATE_ARN: $ACM_CERTIFICATE_ARN"
 
 
