@@ -63,7 +63,7 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     delete_failed_stack_if_exists "$TLS_CERTIFICATE_STACK"
   
     # Deploy the certificate using CloudFormation (in background)
-    aws cloudformation deploy \
+    r=$(aws cloudformation deploy \
       --template-file cfn/tls-certificate.yaml \
       --stack-name $TLS_CERTIFICATE_STACK \
       --parameter-overrides \
@@ -72,7 +72,7 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
         ValidationMethod=$VALIDATION_METHOD \
         HostedZoneId=$HOSTED_ZONE_ID \
         CustomSubdomains=${CUSTOM_SUBDOMAINS:-''} \
-      --no-fail-on-empty-changeset &
+      --no-fail-on-empty-changeset) &
       
     echo "Certificate stack creation has been initiated."
     echo "Stack name: $TLS_CERTIFICATE_STACK"
