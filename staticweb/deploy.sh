@@ -58,9 +58,6 @@ delete_failed_stack_if_exists() {
         aws cloudformation wait stack-delete-complete --stack-name $TLS_CERTIFICATE_STACK
         echo "Stack deletion complete."
      fi
-    
-     return 0  # Stack exists
-       
   fi
 }
 
