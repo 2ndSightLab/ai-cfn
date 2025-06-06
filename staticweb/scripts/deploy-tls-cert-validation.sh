@@ -5,6 +5,7 @@ echo "deploy-tls-cert-validation.sh"
 REGION="$1"
 CERT_VALIDATION_STACK="$2"
 TLS_CERTIFICATE_STACK="$3"
+DOMAIN_NAME="$4"
 
 MAX_ATTEMPTS=30
 ATTEMPT=0
