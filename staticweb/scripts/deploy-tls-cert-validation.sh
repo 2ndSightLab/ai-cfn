@@ -1,36 +1,6 @@
 #!/bin/bash
 echo "deploy-tls-cert-validation.sh"
 
-# Verify that required variables are set
-if [[ -z "$TLS_CERTIFICATE_STACK" ]]; then
-  echo "Error: TLS_CERTIFICATE_STACK environment variable is not set."
-  echo "Please set this variable before running this script."
-  exit 1
-fi
-
-if [[ -z "$CERT_VALIDATION_STACK" ]]; then
-  echo "Error: CERT_VALIDATION_STACK environment variable is not set."
-  echo "Please set this variable before running this script."
-  exit 1
-fi
-
-if [[ -z "$HOSTED_ZONE_ID" ]]; then
-  echo "Error: HOSTED_ZONE_ID environment variable is not set."
-  echo "Please set this variable before running this script."
-  exit 1
-fi
-
-# Get the certificate ARN from the stack outputs
-ACM_CERTIFICATE_ARN=$(aws cloudformation describe-stacks \
-  --stack-name $TLS_CERTIFICATE_STACK \
-  --query "Stacks[0].Outputs[?OutputKey=='CertificateArn'].OutputValue" \
-  --output text)
-
-if [[ -z "$ACM_CERTIFICATE_ARN" ]]; then
-  echo "Error: Could not retrieve certificate ARN from stack $TLS_CERTIFICATE_STACK."
-  exit 1
-fi
-
 echo "Certificate ARN: $ACM_CERTIFICATE_ARN"
 
 # Check if validation is already complete
