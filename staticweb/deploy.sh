@@ -32,7 +32,6 @@ stack_exists() {
   if aws cloudformation describe-stacks --stack-name $stack_name &>/dev/null; then
   
     # Check if stack exists in a failed state
-    echo "Checking for existing CloudFormation stack..."
     STACK_STATUS=$(aws cloudformation describe-stacks --stack-name $stack_name --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "STACK_NOT_FOUND")
     return 0  # Stack exists
        
