@@ -1,49 +1,33 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'ACM Certificate with user-selected configuration'
+Description: 'ACM Certificate with DNS Validation'
 
 Parameters:
   DomainName:
     Type: String
-    Description: The domain name for the certificate
+    Description: 'The domain name for the certificate'
   
   CertificateType:
     Type: String
-    Description: The type of certificate to create
-    AllowedValues:
-      - Basic
-      - WWW
-      - Wildcard
-      - CustomSubdomains
-    Default: Basic
-  
-  CustomSubdomains:
-    Type: CommaDelimitedList
-    Description: List of fully qualified subdomains (only used if CertificateType is CustomSubdomains)
-    Default: ''
+    AllowedValues: [Basic, WWW, Wildcard, CustomSubdomains]
+    Default: WWW
+    Description: 'Type of certificate to create'
   
   ValidationMethod:
     Type: String
-    Default: 'DNS'
-    AllowedValues:
-      - 'DNS'
-      - 'EMAIL'
-    Description: Validation method for the certificate
+    AllowedValues: [DNS, EMAIL]
+    Default: DNS
+    Description: 'Method to validate domain ownership'
   
-  HostedZoneId:
+  CustomSubdomains:
     Type: String
+    Description: 'Comma-separated list of subdomains (only for CustomSubdomains type)'
     Default: ''
-    Description: The Route 53 Hosted Zone ID (required for DNS validation)
 
 Conditions:
   IsBasicCertificate: !Equals [!Ref CertificateType, 'Basic']
   IsWWWCertificate: !Equals [!Ref CertificateType, 'WWW']
   IsWildcardCertificate: !Equals [!Ref CertificateType, 'Wildcard']
-  IsCustomSubdomainsCertificate: !Equals [!Ref CertificateType, 'CustomSubdomains']
-  
-  UseDNSValidation: !Equals [!Ref ValidationMethod, 'DNS']
-  UseHostedZoneId: !And 
-    - !Condition UseDNSValidation
-    - !Not [!Equals [!Ref HostedZoneId, '']]
+  IsCustomCertificate: !Equals [!Ref CertificateType, 'CustomSubdomains']
 
 Resources:
   # Basic Certificate (domain only)
@@ -53,9 +37,6 @@ Resources:
     Properties:
       DomainName: !Ref DomainName
       ValidationMethod: !Ref ValidationMethod
-      DomainValidationOptions:
-        - DomainName: !Ref DomainName
-          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
   
   # Certificate with www subdomain
   WWWCertificate:
@@ -66,13 +47,8 @@ Resources:
       SubjectAlternativeNames:
         - !Sub "www.${DomainName}"
       ValidationMethod: !Ref ValidationMethod
-      DomainValidationOptions:
-        - DomainName: !Ref DomainName
-          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
-        - DomainName: !Sub "www.${DomainName}"
-          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
   
-  # Certificate with wildcard subdomain
+  # Wildcard Certificate
   WildcardCertificate:
     Type: AWS::CertificateManager::Certificate
     Condition: IsWildcardCertificate
@@ -81,27 +57,19 @@ Resources:
       SubjectAlternativeNames:
         - !Sub "*.${DomainName}"
       ValidationMethod: !Ref ValidationMethod
-      DomainValidationOptions:
-        - DomainName: !Ref DomainName
-          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
-        - DomainName: !Sub "*.${DomainName}"
-          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
   
-  # Certificate with custom subdomains
-  CustomSubdomainsCertificate:
+  # Custom Subdomains Certificate
+  CustomCertificate:
     Type: AWS::CertificateManager::Certificate
-    Condition: IsCustomSubdomainsCertificate
+    Condition: IsCustomCertificate
     Properties:
       DomainName: !Ref DomainName
-      SubjectAlternativeNames: !Ref CustomSubdomains
+      SubjectAlternativeNames: !Split [',', !Ref CustomSubdomains]
       ValidationMethod: !Ref ValidationMethod
-      DomainValidationOptions:
-        - DomainName: !Ref DomainName
-          HostedZoneId: !If [UseHostedZoneId, !Ref HostedZoneId, !Ref "AWS::NoValue"]
 
 Outputs:
   CertificateArn:
-    Description: The ARN of the certificate
+    Description: 'ARN of the created certificate'
     Value: !If
       - IsBasicCertificate
       - !Ref BasicCertificate
@@ -111,5 +79,6 @@ Outputs:
         - !If
           - IsWildcardCertificate
           - !Ref WildcardCertificate
-          - !Ref CustomSubdomainsCertificate
+          - !Ref CustomCertificate
+
 
