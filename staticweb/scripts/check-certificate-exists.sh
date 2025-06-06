@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "check-certificate-exists.sh"
 
 # Function to check if a certificate exists and is valid
 check_certificate_exists() {
