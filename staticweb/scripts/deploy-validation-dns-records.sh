@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "deploy-validation-dns-records.sh"
 
   # Create DNS records if we have a hosted zone
   if [[ ! -z "$HOSTED_ZONE_ID" && ! -z "$CLOUDFRONT_DOMAIN" ]]; then
