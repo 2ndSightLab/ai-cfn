@@ -7,6 +7,8 @@ CERT_VALIDATION_STACK="$2"
 TLS_CERTIFICATE_STACK="$3"
 DOMAIN_NAME="$4"
 
+# Loop until we find validation records in stack events
+echo "Waiting for validation records to appear in stack events..."
 MAX_ATTEMPTS=30
 ATTEMPT=0
 FOUND_RECORDS=false
@@ -76,5 +78,28 @@ if [ $RECORD_COUNT -eq 0 ]; then
   exit 1
 fi
 
+# Deploy the validation stack
+echo "Deploying validation stack: $CERT_VALIDATION_STACK"
+echo "Parameters: $PARAMS"
 
+# Check if validation stack exists and delete if it does
+aws cloudformation describe-stacks --stack-name $CERT_VALIDATION_STACK --region $REGION > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+  echo "Validation stack already exists. Deleting..."
+  aws cloudformation delete-stack --stack-name $CERT_VALIDATION_STACK --region $REGION
+  echo "Waiting for stack deletion to complete..."
+  aws cloudformation wait stack-delete-complete --stack-name $CERT_VALIDATION_STACK --region $REGION
+fi
 
+# Deploy the validation stack
+echo "Creating validation stack..."
+eval "aws cloudformation deploy \
+  --template-file cfn/tls-certificate-validation.yaml \
+  --stack-name $CERT_VALIDATION_STACK \
+  --parameter-overrides $PARAMS \
+  --region $REGION \
+  --no-fail-on-empty-changeset"
+
+echo "Validation stack deployment complete!"
+echo "Certificate validation records have been created in Route 53."
+echo "It may take some time for AWS to validate the certificate."
