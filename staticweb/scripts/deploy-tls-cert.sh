@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "deploy-tls-cert.sh"
 
 # TLS Certificate 
 ACM_CERTIFICATE_ARN=""
