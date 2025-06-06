@@ -1,70 +1,83 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'DNS validation records for ACM certificate'
+Description: 'ACM Certificate with DNS Validation'
 
 Parameters:
-  HostedZoneId:
-    Type: String
-    Description: The Route 53 Hosted Zone ID
-  
   DomainName:
     Type: String
-    Description: The domain name for the certificate
+    Description: 'The domain name for the certificate'
   
-  ValidationDomain1RecordName:
+  CertificateType:
     Type: String
-    Description: The DNS record name for domain validation (from ACM console)
+    AllowedValues: [Basic, WWW, Wildcard, CustomSubdomains]
+    Default: WWW
+    Description: 'Type of certificate to create'
   
-  ValidationDomain1RecordValue:
+  ValidationMethod:
     Type: String
-    Description: The DNS record value for domain validation (from ACM console)
+    AllowedValues: [DNS, EMAIL]
+    Default: DNS
+    Description: 'Method to validate domain ownership'
   
-  IncludeWWW:
+  CustomSubdomains:
     Type: String
-    Default: 'true'
-    AllowedValues: ['true', 'false']
-    Description: Whether to include www subdomain validation
-  
-  ValidationDomain2RecordName:
-    Type: String
+    Description: 'Comma-separated list of subdomains (only for CustomSubdomains type)'
     Default: ''
-    Description: The DNS record name for www subdomain validation (from ACM console)
-  
-  ValidationDomain2RecordValue:
-    Type: String
-    Default: ''
-    Description: The DNS record value for www subdomain validation (from ACM console)
 
 Conditions:
-  IncludeWWWDomain: !Equals [!Ref IncludeWWW, 'true']
+  IsBasicCertificate: !Equals [!Ref CertificateType, 'Basic']
+  IsWWWCertificate: !Equals [!Ref CertificateType, 'WWW']
+  IsWildcardCertificate: !Equals [!Ref CertificateType, 'Wildcard']
+  IsCustomCertificate: !Equals [!Ref CertificateType, 'CustomSubdomains']
 
 Resources:
-  DomainValidationRecord:
-    Type: AWS::Route53::RecordSet
+  # Basic Certificate (domain only)
+  BasicCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Condition: IsBasicCertificate
     Properties:
-      HostedZoneId: !Ref HostedZoneId
-      Name: !Ref ValidationDomain1RecordName
-      Type: CNAME
-      TTL: 300
-      ResourceRecords:
-        - !Ref ValidationDomain1RecordValue
-
-  WWWDomainValidationRecord:
-    Type: AWS::Route53::RecordSet
-    Condition: IncludeWWWDomain
+      DomainName: !Ref DomainName
+      ValidationMethod: !Ref ValidationMethod
+  
+  # Certificate with www subdomain
+  WWWCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Condition: IsWWWCertificate
     Properties:
-      HostedZoneId: !Ref HostedZoneId
-      Name: !Ref ValidationDomain2RecordName
-      Type: CNAME
-      TTL: 300
-      ResourceRecords:
-        - !Ref ValidationDomain2RecordValue
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Sub "www.${DomainName}"
+      ValidationMethod: !Ref ValidationMethod
+  
+  # Wildcard Certificate
+  WildcardCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Condition: IsWildcardCertificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Sub "*.${DomainName}"
+      ValidationMethod: !Ref ValidationMethod
+  
+  # Custom Subdomains Certificate
+  CustomCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Condition: IsCustomCertificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames: !Split [',', !Ref CustomSubdomains]
+      ValidationMethod: !Ref ValidationMethod
 
 Outputs:
-  DomainValidationRecordName:
-    Description: The domain validation record name
-    Value: !Ref ValidationDomain1RecordName
-  
-  WWWDomainValidationRecordName:
-    Description: The www domain validation record name
-    Value: !Ref ValidationDomain2RecordName
-    Condition: IncludeWWWDomain
+  CertificateArn:
+    Description: 'ARN of the created certificate'
+    Value: !If
+      - IsBasicCertificate
+      - !Ref BasicCertificate
+      - !If
+        - IsWWWCertificate
+        - !Ref WWWCertificate
+        - !If
+          - IsWildcardCertificate
+          - !Ref WildcardCertificate
+          - !Ref CustomCertificate
+
