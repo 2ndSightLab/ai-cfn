@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+echo "deploy-hosted-zone.sh"
+
 # Domain name
 read -p "Domain name (e.g., example.com): " DOMAIN_NAME
 while [[ -z "$DOMAIN_NAME" ]]; do
