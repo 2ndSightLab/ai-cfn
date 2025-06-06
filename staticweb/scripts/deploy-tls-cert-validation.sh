@@ -9,7 +9,7 @@ DOMAIN_NAME="$4"
 
 # Look for validation records immediately
 echo "Looking for validation records in stack events..."
-MAX_ATTEMPTS=30
+MAX_ATTEMPTS=5
 ATTEMPT=0
 FOUND_RECORDS=false
 
