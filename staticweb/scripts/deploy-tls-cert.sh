@@ -59,9 +59,11 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     fi
     
     # Check if stack exists
+    echo "Check if stack exists"
     stack_exists "$TLS_CERTIFICATE_STACK"
   
     # Deploy the certificate using CloudFormation (in background)
+    echo "Deploy certificate"
     aws cloudformation deploy \
       --template-file cfn/tls-certificate.yaml \
       --stack-name $TLS_CERTIFICATE_STACK \
@@ -71,7 +73,7 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
         ValidationMethod=$VALIDATION_METHOD \
         HostedZoneId=$HOSTED_ZONE_ID \
         CustomSubdomains=${CUSTOM_SUBDOMAINS:-''} \
-      --no-fail-on-empty-changeset &
+      --no-fail-on-empty-changeset & || echo "Error trying to deploy certficate"
       
     echo "Certificate stack creation has been initiated."
     echo "Stack name: $TLS_CERTIFICATE_STACK"
