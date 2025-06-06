@@ -64,7 +64,7 @@ delete_failed_stack_if_exists() {
 source ./scripts/deploy-hosted-zone.sh
 source ./scripts/check-certificate-exists.sh
 source ./scripts/delete-existing-certificates.sh
-./scripts/deploy-tls-cert-validation.sh $REGION $CERT_VALIDATION_STACK $TLS_CERTIFICATE_STACK &
+./scripts/deploy-tls-cert-validation.sh $REGION $CERT_VALIDATION_STACK $TLS_CERTIFICATE_STACK $DOMAIN_NAME &
 source ./scripts/deploy-tls-cert.sh
 source ./scripts/deploy-s3-content-bucket.sh
 source ./scripts/deploy-s3-access-log-bucket.sh
