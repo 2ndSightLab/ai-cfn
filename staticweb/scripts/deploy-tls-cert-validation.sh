@@ -2,7 +2,7 @@ echo "deploy-tls-cert-validation.sh"
 
 REGION="$1"
 CERT_VALIDATION_STACK="$2"
-TLS_CERTIFICATION_STACK="$3"
+TLS_CERTIFICATE_STACK="$3"
 
 # Loop until we find validation records in stack events
 echo "Waiting for validation records to appear in stack events..."
