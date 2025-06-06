@@ -60,7 +60,7 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     
     # Check if stack exists
     echo "Checking to see if the stack exists."
-    stack_exists "$TLS_CERTIFICATE_STACK"
+    delete_stack_if_exists "$TLS_CERTIFICATE_STACK"
   
     # Deploy the certificate using CloudFormation
     echo "Deploying the TLS certificate"
