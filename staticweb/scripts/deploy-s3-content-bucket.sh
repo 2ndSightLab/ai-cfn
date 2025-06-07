@@ -8,11 +8,7 @@ if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
   read -p "S3 bucket name (default: ${DOMAIN_NAME}-content): " S3_BUCKET_NAME
   S3_BUCKET_NAME=${S3_BUCKET_NAME:-"${DOMAIN_NAME}-content"}
   
-  if stack_exists $S3_WEBSITE_STACK; then
-    echo "S3 website stack already exists. Updating..."
-  else
-    echo "Creating new S3 website stack..."
-  fi
+  delete_failed_stack_if_exists $S3_WEBSITE_STACK $REGION
   
   echo "Deploying S3 bucket for website content..."
   aws cloudformation deploy \
@@ -22,6 +18,8 @@ if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
       BucketName=$S3_BUCKET_NAME \
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
+
+  stack_exists $S3_WEBSITE_STACK $REGION
   
   # Get the S3 bucket name from the stack outputs
   S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
