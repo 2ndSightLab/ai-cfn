@@ -7,8 +7,6 @@ REGION=us-east-1
 # TLS Certificate 
 ACM_CERTIFICATE_ARN=""
 
-./scripts/deploy-tls-cert-validation.sh $CERT_VALIDATION_STACK $TLS_CERTIFICATE_STACK $HOSTED_ZONE_ID $DOMAIN_NAME $REGION &
-
 # Check if any valid certificates exist
 if check_certificate_exists "$DOMAIN_NAME" "us-east-1"; then
   echo "Existing certificate ARN: $ACM_CERTIFICATE_ARN"
@@ -73,8 +71,7 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     # Use nohup to ensure the process continues even if the terminal is closed
     echo "Deploying certificate stack in the background..."
   
-    (
-      aws cloudformation deploy \
+    aws cloudformation deploy \
         --template-file cfn/tls-certificate.yaml \
         --stack-name $TLS_CERTIFICATE_STACK \
         --parameter-overrides \
@@ -83,9 +80,8 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
           ValidationMethod=$VALIDATION_METHOD \
           HostedZoneId=$HOSTED_ZONE_ID \
           CustomSubdomains=${CUSTOM_SUBDOMAINS:-''} \
-        --no-fail-on-empty-changeset > /tmp/cert-deploy.log 2>/dev/null
-    ) &
-
+        --no-fail-on-empty-changeset
+        
     stack_exists $TLS_CERTIFICATE_STACK $REGION
       
     echo "Certificate stack creation has been initiated."
