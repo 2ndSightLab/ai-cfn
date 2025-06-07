@@ -4,7 +4,7 @@ source ./scripts/delete_failed_stack_if_exists.sh
 source ./scripts/stack_exists.sh
 
 # Arguments
-CERT_VALIDATION_STACK="$1"
+CERT_VALIDATION_STACK_PREFIX="$1"
 TLS_CERTIFICATE_STACK="$2"
 HOSTED_ZONE_ID="$3"
 DOMAIN_NAME="$4"
@@ -65,12 +65,10 @@ while [ $VALIDATION_ATTEMPTS -lt $MAX_VALIDATION_ATTEMPTS ]; do
   fi
 done
 
-# Parse validation records
-# Format is typically: "Content of DNS Record is: {Name: _x1.example.com,Type: CNAME,Value: _x2.acm-validations.aws.}"
-PARAMS="HostedZoneId=$HOSTED_ZONE_ID DomainName=$DOMAIN_NAME"
-
 # Store validation records in an array to avoid subshell issues
 mapfile -t VALIDATION_RECORD_ARRAY <<< "$VALIDATION_RECORDS"
+
+# Loop through each validation record and create a separate stack for each
 for RECORD in "${VALIDATION_RECORD_ARRAY[@]}"; do
   # Extract record name, type, and value using regex
   if [[ $RECORD =~ Name:\ ([^,]+),Type:\ ([^,]+),Value:\ ([^}]+) ]]; then
@@ -85,36 +83,40 @@ for RECORD in "${VALIDATION_RECORD_ARRAY[@]}"; do
     echo "  Type: $RECORD_TYPE"
     echo "  Value: $RECORD_VALUE"
     
-    # Add to parameters
-    PARAMS="$PARAMS ValidationDomain${RECORD_COUNT}RecordName=\"$RECORD_NAME\" ValidationDomain${RECORD_COUNT}RecordValue=\"$RECORD_VALUE\" ValidationDomain${RECORD_COUNT}RecordType=\"$RECORD_TYPE\""
+    # Create a unique stack name for this validation record
+    CURRENT_VALIDATION_STACK="${CERT_VALIDATION_STACK_PREFIX}-${RECORD_COUNT}"
+    
+    # Delete the stack if it exists and is in a failed state
+    delete_failed_stack_if_exists $CURRENT_VALIDATION_STACK
+    
+    # Create parameters for this validation record
+    PARAMS="HostedZoneId=$HOSTED_ZONE_ID DomainName=$DOMAIN_NAME RecordName=\"$RECORD_NAME\" RecordValue=\"$RECORD_VALUE\""
+    
+    # Deploy the validation stack for this record
+    echo "Deploying validation stack: $CURRENT_VALIDATION_STACK"
+    echo "Parameters: $PARAMS"
+    
+    echo "Creating validation stack..."
+    eval "aws cloudformation deploy \
+      --template-file cfn/tls-certificate-validation.yaml \
+      --stack-name $CURRENT_VALIDATION_STACK \
+      --parameter-overrides $PARAMS \
+      --region $REGION \
+      --no-fail-on-empty-changeset"
+    
+    # Check if the stack was created successfully
+    stack_exists $CURRENT_VALIDATION_STACK
+    
+    echo "TLS Certificate Validation DNS record $RECORD_COUNT created successfully."
   fi
 done
 
-# Add record count to parameters
-PARAMS="$PARAMS ValidationRecordCount=$RECORD_COUNT"
-
 if [ $RECORD_COUNT -eq 0 ]; then
   echo "Error: Failed to parse any validation records." && exit 1
+else
+  echo "Total TLS Certificate Validation DNS records created: $RECORD_COUNT"
 fi
 
-delete_failed_stack_if_exists $CERT_VALIDATION_STACK
-
-# Deploy the validation stack
-echo "Deploying validation stack: $CERT_VALIDATION_STACK"
-echo "Parameters: $PARAMS"
-
-# Deploy the validation stack
-echo "Creating validation stack..."
-eval "aws cloudformation deploy \
-  --template-file cfn/tls-certificate-validation.yaml \
-  --stack-name $CERT_VALIDATION_STACK \
-  --parameter-overrides $PARAMS \
-  --region $REGION \
-  --no-fail-on-empty-changeset"
-
-stack_exists $CERT_VALIDATION_STACK
-
-echo "TLS Certificate Validation DNS records created successfully."
 
 
 
