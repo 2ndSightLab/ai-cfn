@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'ACM Certificate with DNS Validation'
+Description: 'ACM TLS Certificate'
 
 Parameters:
   DomainName:
