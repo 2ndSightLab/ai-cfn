@@ -8,6 +8,8 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
   read -p "S3 access logs retention days (default: 90): " S3_LOG_RETENTION_DAYS
   S3_LOG_RETENTION_DAYS=${S3_LOG_RETENTION_DAYS:-90}
 
+  S3_ACCESS_LOGS_BUCKET_NAME="$STACK_NAME_PREFIX-s3-logs-$BUCKET_NAMIE_SUFFIX"
+
   delete_failed_stack_if_exists $S3_ACCESS_LOGS_STACK $REGION
   
   echo "Deploying S3 Access Logs Bucket..."
@@ -15,6 +17,7 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
     --template-file cfn/s3-access-log-bucket.yaml \
     --stack-name $S3_ACCESS_LOGS_STACK \
     --region $REGION \
+    --bucket-name S3_ACCESS_LOGS_BUCKET_NAME \
     --parameter-overrides \
       LogRetentionDays=$S3_LOG_RETENTION_DAYS \
       BucketNameSuffix=$BUCKET_NAME_SUFFIX \
