@@ -2,7 +2,8 @@
 
 echo "deploy-cloudfront-logs-bucket.sh"
 
-S3_ACCESS_LOGS_BUCKET_NAME="$STACK_NAME_PREFIX-CloudFront-Logs-$BUCKET_NAMIE_SUFFIX"
+
+BUCKET_NAME=${BUCKET_NAME:-"${DOMAIN_NAME}-cloudfront-logs"}
 
 # CloudFront Logs Bucket
 read -p "Deploy CloudFront Logs Bucket? (y/n): " DEPLOY_CF_LOGS
@@ -26,7 +27,7 @@ if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
       LogRetentionDays=$CF_LOG_RETENTION_DAYS \
       TransitionToStandardIADays=$TRANSITION_STANDARD_IA_DAYS \
       TransitionToGlacierDays=$TRANSITION_GLACIER_DAYS \
-      BucketNameSuffix=$BUCKET_NAME_SUFFIX \
+      BucketName=$BUCKET_NAME \
       S3AccessLogsBucketName=$S3_ACCESS_LOGS_BUCKET_NAME \
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
