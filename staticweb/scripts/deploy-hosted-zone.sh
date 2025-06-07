@@ -38,8 +38,8 @@ stack_exists $HOSTED_ZONE_STACK $REGION
 # Get the Hosted Zone ID from the stack outputs
 HOSTED_ZONE_ID=$(aws cloudformation describe-stacks \
     --stack-name $HOSTED_ZONE_STACK \
-    --query "Stacks[0].Outputs[?OutputKey=='HostedZoneId'].OutputValue" \
     --region $REGION \
+    --query "Stacks[0].Outputs[?OutputKey=='HostedZoneId'].OutputValue" \
     --output text)
   
 NAME_SERVERS=$(aws cloudformation describe-stacks \
