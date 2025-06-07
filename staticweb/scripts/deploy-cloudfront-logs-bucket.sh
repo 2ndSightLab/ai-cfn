@@ -13,13 +13,8 @@ if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
   
   read -p "Days before transitioning to Glacier (default: 90): " TRANSITION_GLACIER_DAYS
   TRANSITION_GLACIER_DAYS=${TRANSITION_GLACIER_DAYS:-90}
-  
-  if stack_exists $CLOUDFRONT_LOGS_STACK; then
-    echo "CloudFront logs stack already exists. Updating..."
-  else
-    echo "Creating new CloudFront logs stack..."
-  fi
-  
+
+  delete_failed_stack_if_exists $CLOUDFRONT_LOGS_STACK $REGION
   echo "Deploying CloudFront Logs Bucket..."
   aws cloudformation deploy \
     --template-file cfn/s3-cloudfront-access-log-bucket.yaml \
@@ -33,6 +28,8 @@ if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
       S3AccessLogsBucketName=$S3_ACCESS_LOGS_BUCKET_NAME \
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
+    
+  stack_exists $CLOUDFRONT_LOGS_STACK $REGION  
   
   CLOUDFRONT_LOGS_BUCKET_NAME=$(aws cloudformation describe-stacks \
     --stack-name $CLOUDFRONT_LOGS_STACK \
