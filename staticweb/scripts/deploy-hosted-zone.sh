@@ -22,6 +22,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
   
   echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."
   aws cloudformation deploy \
+    --region $REGION
     --template-file cfn/hosted-zone.yaml \
     --stack-name $HOSTED_ZONE_STACK \
     --parameter-overrides \
@@ -34,12 +35,14 @@ fi
 HOSTED_ZONE_ID=$(aws cloudformation describe-stacks \
     --stack-name $HOSTED_ZONE_STACK \
     --query "Stacks[0].Outputs[?OutputKey=='HostedZoneId'].OutputValue" \
-    --output text)
+    --output text
+    --region $REGION)
   
 NAME_SERVERS=$(aws cloudformation describe-stacks \
     --stack-name $HOSTED_ZONE_STACK \
     --query "Stacks[0].Outputs[?OutputKey=='NameServers'].OutputValue" \
-    --output text)
+    --output text
+    --region $REGION)
   
 echo "Hosted Zone ID: $HOSTED_ZONE_ID"
 echo "IMPORTANT: Update your domain's name servers with your registrar to point to:"
