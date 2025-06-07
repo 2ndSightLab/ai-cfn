@@ -8,7 +8,7 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
   read -p "S3 access logs retention days (default: 90): " S3_LOG_RETENTION_DAYS
   S3_LOG_RETENTION_DAYS=${S3_LOG_RETENTION_DAYS:-90}
 
-  delete_failed_stack_if_exists $S3_ACCESS_LOG_STACK $REGION
+  delete_failed_stack_if_exists $S3_ACCESS_LOGS_STACK $REGION
   
   echo "Deploying S3 Access Logs Bucket..."
   aws cloudformation deploy \
@@ -21,7 +21,7 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
 
-   stack_exists $S3_ACCESS_LOG_STACK $REGION
+   stack_exists $S3_ACCESS_LOGS_STACK $REGION
   
   S3_ACCESS_LOGS_BUCKET_NAME=$(aws cloudformation describe-stacks \
     --stack-name $S3_ACCESS_LOGS_STACK \
