@@ -19,7 +19,6 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
     --template-file cfn/s3-access-log-bucket.yaml \
     --stack-name $S3_ACCESS_LOGS_STACK \
     --region $REGION \
-    --bucket-name S3_ACCESS_LOGS_BUCKET_NAME \
     --parameter-overrides \
       LogRetentionDays=$S3_LOG_RETENTION_DAYS \
       BucketName=$BUCKET_NAME \
