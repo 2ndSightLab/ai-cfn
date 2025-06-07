@@ -2,6 +2,12 @@
 
 # Prompt for domain name and name servers as a comma-separated list
 read -p "Enter the domain name (e.g., example.com): " domain_name
+
+if [[ ! "$domain_name" =~ \. ]]; then
+  echo "Invalid domain name. No dot found."
+  exit 1
+fi
+
 read -p "Enter name servers as a comma-separated list (WITHOUT trailing dots, e.g., ns-1234.awsdns-56.org,ns-789.awsdns-12.com,ns-3456.awsdns-78.co.uk,ns-901.awsdns-34.net): " nameservers
 
 # Generate identifier from domain name (replace periods with dashes) and add -nameservers
