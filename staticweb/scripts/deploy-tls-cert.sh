@@ -7,7 +7,7 @@ REGION=us-east-1
 # TLS Certificate 
 ACM_CERTIFICATE_ARN=""
 
-./scripts/deploy-tls-cert-validation.sh $REGION $CERT_VALIDATION_STACK $TLS_CERTIFICATE_STACK $DOMAIN_NAME &
+./scripts/deploy-tls-cert-validation.sh $CERT_VALIDATION_STACK $TLS_CERTIFICATE_STACK $HOSTED_ZONE_ID $DOMAIN_NAME $REGION &
 
 # Check if any valid certificates exist
 if check_certificate_exists "$DOMAIN_NAME" "us-east-1"; then
