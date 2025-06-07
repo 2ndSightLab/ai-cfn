@@ -14,7 +14,7 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
     echo "Creating new S3 access logs stack..."
   fi
 
-  delete-failed-stack-if-exists $S3_ACCESS_LOG_STACK $REGION
+  delete_failed_stack_if_exists $S3_ACCESS_LOG_STACK $REGION
   
   echo "Deploying S3 Access Logs Bucket..."
   aws cloudformation deploy \
