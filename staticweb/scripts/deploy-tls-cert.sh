@@ -65,7 +65,7 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     fi
     
     # Check if stack exists and delete if failed
-    delete-failed-stack-if-exists "$TLS_CERTIFICATE_STACK" $REGION
+    delete_failed_stack_if_exists $TLS_CERTIFICATE_STACK $REGION
   
     # Deploy the certificate using CloudFormation in the background
     # Use nohup to ensure the process continues even if the terminal is closed
