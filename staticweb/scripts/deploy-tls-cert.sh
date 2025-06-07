@@ -83,15 +83,12 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
           CustomSubdomains=${CUSTOM_SUBDOMAINS:-''} \
         --no-fail-on-empty-changeset > /tmp/cert-deploy.log 2>/dev/null
     ) &
-    
-   
-    
       
     echo "Certificate stack creation has been initiated."
     echo "Stack name: $TLS_CERTIFICATE_STACK"
     echo "Waiting for certificate ARN to become available..."
-    
-    # Loop until the ARN is available
+
+      # Loop until the ARN is available
     MAX_ATTEMPTS=30
     ATTEMPT=0
     while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
@@ -122,6 +119,7 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
 fi
 
 echo "ACM_CERTIFICATE_ARN: $ACM_CERTIFICATE_ARN"
+    
 
 # Wait for the validation stack to be created
   echo "Waiting for validation stack to be created..."
