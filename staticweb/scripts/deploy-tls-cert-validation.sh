@@ -92,7 +92,29 @@ done
 # Add record count to parameters
 PARAMS="$PARAMS ValidationRecordCount=$RECORD_COUNT"
 
-if [ $RECORD_COUNT -eq
+if [ $RECORD_COUNT -eq 0 ]; then
+  echo "Error: Failed to parse any validation records." && exit 1
+fi
+
+delete_failed_stack_if_exists $CERT_VALIDATION_STACK
+
+# Deploy the validation stack
+echo "Deploying validation stack: $CERT_VALIDATION_STACK"
+echo "Parameters: $PARAMS"
+
+# Deploy the validation stack
+echo "Creating validation stack..."
+eval "aws cloudformation deploy \
+  --template-file cfn/tls-certificate-validation.yaml \
+  --stack-name $CERT_VALIDATION_STACK \
+  --parameter-overrides $PARAMS \
+  --region $REGION \
+  --no-fail-on-empty-changeset"
+
+stack_exists $CERT_VALIDATION_STACK
+
+echo "TLS Certificate Validation DNS records created successfully."
+
 
 
 
