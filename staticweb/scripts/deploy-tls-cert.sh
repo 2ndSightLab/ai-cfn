@@ -118,6 +118,7 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
 fi
 
 echo "ACM_CERTIFICATE_ARN: $ACM_CERTIFICATE_ARN"
-    
+
+#must wait for the child process to complete before exiting or bad things happen
 wait
 
