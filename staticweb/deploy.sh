@@ -28,7 +28,7 @@ CLOUDFRONT_STACK="${STACK_NAME_PREFIX}-cloudfront"
 
 
 source ./scripts/stack_exists.sh
-source ./scripts/delete_failed_stack_if_exists.sh
+source ./scripts/delete-failed-stack-if-exists.sh
 source ./scripts/deploy-hosted-zone.sh
 source ./scripts/check-certificate-exists.sh
 source ./scripts/delete-existing-certificates.sh
