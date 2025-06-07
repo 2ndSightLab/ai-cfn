@@ -20,7 +20,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
     echo "Creating new hosted zone stack..."
   fi
 
-  delete-failed-stack-if-exists $HOSTED_ZONE_STACK $REGION
+  delete_failed_stack_if_exists $HOSTED_ZONE_STACK $REGION
   
   echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."
   aws cloudformation deploy \
