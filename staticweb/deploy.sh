@@ -27,7 +27,7 @@ DNS_RECORDS_STACK="${STACK_NAME_PREFIX}-dns-records"
 CLOUDFRONT_STACK="${STACK_NAME_PREFIX}-cloudfront"
 
 
-source ./scripts/stack_exists.sh
+source ./scripts/stack-exists.sh
 source ./scripts/delete-failed-stack-if-exists.sh
 source ./scripts/deploy-hosted-zone.sh
 source ./scripts/check-certificate-exists.sh
