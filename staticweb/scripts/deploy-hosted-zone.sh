@@ -45,7 +45,7 @@ HOSTED_ZONE_ID=$(aws cloudformation describe-stacks \
 NAME_SERVERS=$(aws cloudformation describe-stacks \
     --stack-name $HOSTED_ZONE_STACK \
     --query "Stacks[0].Outputs[?OutputKey=='NameServers'].OutputValue" \
-    --output text
+    --output text \
     --region $REGION)
   
 echo "Hosted Zone ID: $HOSTED_ZONE_ID"
