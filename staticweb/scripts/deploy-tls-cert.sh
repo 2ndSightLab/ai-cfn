@@ -16,8 +16,7 @@ else
 fi
 
 #causes problems due to child process
-#read -p "Deploy TLS certificate? (y/n): " DEPLOY_CERTIFICATE
-DEPLOY_CERTIFICATE="Y"
+read -p "Deploy TLS certificate? (y/n): " DEPLOY_CERTIFICATE
 if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
   
     if [[ -z "$HOSTED_ZONE_ID" ]]; then
@@ -66,11 +65,11 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     
     # Check if stack exists and delete if failed
     delete_failed_stack_if_exists $TLS_CERTIFICATE_STACK $REGION
-  
-    # Deploy the certificate using CloudFormation in the background
-    # Use nohup to ensure the process continues even if the terminal is closed
-    echo "Deploying certificate stack in the background..."
-  
+
+   # Starting validation script to wait for certificate stack
+   ./scripts/deploy-tls-cert-validation.sh $CERT_VALIDATION_STACK $TLS_CERTIFICATE_STACK $HOSTED_ZONE_ID $DOMAIN_NAME $REGION &
+
+    # Deploy certificate
     aws cloudformation deploy \
         --template-file cfn/tls-certificate.yaml \
         --stack-name $TLS_CERTIFICATE_STACK \
