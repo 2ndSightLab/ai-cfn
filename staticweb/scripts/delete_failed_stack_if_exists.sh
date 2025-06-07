@@ -1,9 +1,14 @@
 #!/bin/bash
-echo "delete_failed_stack_if_exists.sh"
+echo "delete-failed-stack-if-exists.sh"
 
 delete_failed_stack_if_exists() {
   local stack_name="$1"
   local region="$2"
+  
+  if [ "$region" == "" ]; then
+     echo "Region not set checking to see if $stack_name exists in a failed state and needs to be deleted"; exit
+  fi
+  
 
   if [ "$region" == "" ]; then region="us-east-1"; fi
   
