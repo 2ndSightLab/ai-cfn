@@ -26,41 +26,9 @@ CERT_VALIDATION_STACK="${STACK_NAME_PREFIX}-cert-validation"
 DNS_RECORDS_STACK="${STACK_NAME_PREFIX}-dns-records"
 CLOUDFRONT_STACK="${STACK_NAME_PREFIX}-cloudfront"
 
-# Function to check if a CloudFormation stack exists
-stack_exists() {
-  local stack_name=$1
-  if aws cloudformation describe-stacks --stack-name $stack_name &>/dev/null; then
-  
-    # Check if stack exists in a failed state
-    echo "Checking to see if stack exists in stack_exists function"
-    STACK_STATUS=$(aws cloudformation describe-stacks --stack-name $stack_name --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "STACK_NOT_FOUND")
-    return 0  # Stack exists
-       
-  else
-    return 1  # Stack does not exist
-  fi
-}
 
-delete_failed_stack_if_exists() {
-  local stack_name=$1
-  if aws cloudformation describe-stacks --stack-name $stack_name &>/dev/null; then
-  
-    echo "Checking for existing CloudFormation stack..."
-    STACK_STATUS=$(aws cloudformation describe-stacks --stack-name $stack_name --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "STACK_NOT_FOUND")
-    
-    if [[ "$STACK_STATUS" == *"FAILED"* || "$STACK_STATUS" == *"ROLLBACK_COMPLETE"* ]]; then
-        echo "Check if status exists in a failed state"
-        echo "Stack $TLS_CERTIFICATE_STACK exists in a failed state ($STACK_STATUS)."
-        echo "Deleting it before redeployment..."
-        aws cloudformation delete-stack --stack-name $stack_name
-        
-        echo "Waiting for stack deletion to complete..."
-        aws cloudformation wait stack-delete-complete --stack-name $TLS_CERTIFICATE_STACK
-        echo "Stack deletion complete."
-     fi
-  fi
-}
-
+source ./scripts/stack_exists.sh
+source ./scripts/delete_failed_stack_if_exists.sh
 source ./scripts/deploy-hosted-zone.sh
 source ./scripts/check-certificate-exists.sh
 source ./scripts/delete-existing-certificates.sh
