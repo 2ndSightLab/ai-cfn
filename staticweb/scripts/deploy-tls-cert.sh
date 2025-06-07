@@ -17,7 +17,9 @@ else
   ACM_CERTIFICATE_ARN=""
 fi
 
-read -p "Deploy TLS certificate? (y/n): " DEPLOY_CERTIFICATE
+#causes problems due to child process
+#read -p "Deploy TLS certificate? (y/n): " DEPLOY_CERTIFICATE
+DEPLOY_CERTIFICATE="Y"
 if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
   
     if [[ -z "$HOSTED_ZONE_ID" ]]; then
