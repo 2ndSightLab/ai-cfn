@@ -1,8 +1,13 @@
 #!/bin/bash
 echo "deploy-tls-cert.sh"
 
+# Override Region 
+REGION=us-east-1
+
 # TLS Certificate 
 ACM_CERTIFICATE_ARN=""
+
+./scripts/deploy-tls-cert-validation.sh $REGION $CERT_VALIDATION_STACK $TLS_CERTIFICATE_STACK $DOMAIN_NAME &
 
 # Check if any valid certificates exist
 if check_certificate_exists "$DOMAIN_NAME" "us-east-1"; then
