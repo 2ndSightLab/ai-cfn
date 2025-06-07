@@ -24,6 +24,7 @@ if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
   aws cloudformation deploy \
     --template-file cfn/s3-cloudfront-access-log-bucket.yaml \
     --stack-name $CLOUDFRONT_LOGS_STACK \
+    --region $REGION \
     --parameter-overrides \
       LogRetentionDays=$CF_LOG_RETENTION_DAYS \
       TransitionToStandardIADays=$TRANSITION_STANDARD_IA_DAYS \
@@ -36,7 +37,8 @@ if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
   CLOUDFRONT_LOGS_BUCKET_NAME=$(aws cloudformation describe-stacks \
     --stack-name $CLOUDFRONT_LOGS_STACK \
     --query "Stacks[0].Outputs[?ExportName=='${CLOUDFRONT_LOGS_STACK}-CloudFrontLogsBucketName'].OutputValue" \
-    --output text)
+    --output text
+    --region $REGION)
   
   echo "CloudFront Logs Bucket: $CLOUDFRONT_LOGS_BUCKET_NAME"
 else
