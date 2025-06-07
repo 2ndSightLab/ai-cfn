@@ -2,7 +2,7 @@
 
 echo "deploy-s3-access-log-bucket.sh"
 
-BUCKET_NAME=${BUCKET_NAME:-"${STACK_NAME_PREFIX}-s3-access-logs"}
+BUCKET_NAME=${BUCKET_NAME:-"${DOMAIN_NAME}-s3-access-logs"}
 
 # S3 Access Logs Bucket
 read -p "Deploy S3 Access Logs Bucket? (y/n): " DEPLOY_S3_ACCESS_LOGS
