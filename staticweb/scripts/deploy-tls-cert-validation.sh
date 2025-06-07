@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source ./scripts/delete_failed_stack_if_exists.sh
+source ./scripts/stack_exists.sh
 
 # Arguments
 CERT_VALIDATION_STACK="$1"
