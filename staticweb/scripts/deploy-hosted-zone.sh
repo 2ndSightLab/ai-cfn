@@ -56,5 +56,7 @@ echo "DNS propagation may take up to 48 hours."
 echo -e "\nEnter to continue after you have upated the records."
 read ok
 
-check_name_servers $NAME_SERVERS
+#this doesn't work in cloudshell because dig is not installed.
+#I wonder why ? ;^)
+#check_name_servers $NAME_SERVERS
 
