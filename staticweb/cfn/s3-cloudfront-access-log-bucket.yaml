@@ -20,10 +20,8 @@ Parameters:
     Default: 90
     MinValue: 90
     
-  BucketNameSuffix:
+  BucketName:
     Type: String
-    Description: 'Suffix to add to the bucket name for uniqueness'
-    Default: ''
     
   EnableAccessLogging:
     Type: String
@@ -43,10 +41,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      BucketName: !If 
-        - HasBucketNameSuffix
-        - !Sub 'cloudfront-logs-${AWS::AccountId}-${BucketNameSuffix}'
-        - !Sub 'cloudfront-logs-${AWS::AccountId}'
+      BucketName: !Ref BucketName
       VersioningConfiguration:
         Status: Enabled
       BucketEncryption:
