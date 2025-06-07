@@ -19,6 +19,8 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
   else
     echo "Creating new hosted zone stack..."
   fi
+
+  delete-failed-stack-if-exists $HOSTED_ZONE_STACK $REGION
   
   echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."
   aws cloudformation deploy \
@@ -30,7 +32,9 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
 fi
-  
+
+stack_exists $HOSTED_ZONE_STACK $REGION
+
 # Get the Hosted Zone ID from the stack outputs
 HOSTED_ZONE_ID=$(aws cloudformation describe-stacks \
     --stack-name $HOSTED_ZONE_STACK \
