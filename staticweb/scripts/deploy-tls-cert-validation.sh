@@ -87,7 +87,7 @@ for RECORD in "${VALIDATION_RECORD_ARRAY[@]}"; do
     CURRENT_VALIDATION_STACK="${CERT_VALIDATION_STACK_PREFIX}-${RECORD_COUNT}"
     
     # Delete the stack if it exists and is in a failed state
-    delete-failed-stack-if-exists $CURRENT_VALIDATION_STACK $REGION
+    delete_failed_stack_if_exists $CURRENT_VALIDATION_STACK $REGION
     
     # Create parameters for this validation record
     PARAMS="HostedZoneId=$HOSTED_ZONE_ID DomainName=$DOMAIN_NAME RecordName=\"$RECORD_NAME\" RecordValue=\"$RECORD_VALUE\""
@@ -116,6 +116,7 @@ if [ $RECORD_COUNT -eq 0 ]; then
 else
   echo "Total TLS Certificate Validation DNS records created: $RECORD_COUNT"
 fi
+
 
 
 
