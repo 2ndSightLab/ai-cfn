@@ -65,7 +65,7 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
     fi
     
     # Check if stack exists and delete if failed
-    delete_failed_stack_if_exists "$TLS_CERTIFICATE_STACK"
+    delete-failed-stack-if-exists "$TLS_CERTIFICATE_STACK" $REGION
   
     # Deploy the certificate using CloudFormation in the background
     # Use nohup to ensure the process continues even if the terminal is closed
@@ -83,6 +83,8 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
           CustomSubdomains=${CUSTOM_SUBDOMAINS:-''} \
         --no-fail-on-empty-changeset > /tmp/cert-deploy.log 2>/dev/null
     ) &
+
+    stack_exists $TLS_CERTIFICATE_STACK $REGION
       
     echo "Certificate stack creation has been initiated."
     echo "Stack name: $TLS_CERTIFICATE_STACK"
