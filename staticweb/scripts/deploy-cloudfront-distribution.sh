@@ -34,12 +34,8 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
   
   read -p "Origin Shield region (default: $REGION): " ORIGIN_SHIELD_REGION
   ORIGIN_SHIELD_REGION=${ORIGIN_SHIELD_REGION:-$REGION}
-  
-  if stack_exists $CLOUDFRONT_STACK; then
-    echo "CloudFront stack already exists. Updating..."
-  else
-    echo "Creating new CloudFront stack..."
-  fi
+
+  delete_failed_stack_if_exists $CLOUDFRONT_STACK $REGION
   
   echo "Deploying CloudFront Distribution..."
   aws cloudformation deploy \
@@ -60,6 +56,8 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
       OriginShieldRegion=$ORIGIN_SHIELD_REGION \
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
+
+  stack_exists $CLOUDFRONT_STACK $REGION
   
   # Get the CloudFront Distribution domain name
   CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks \
