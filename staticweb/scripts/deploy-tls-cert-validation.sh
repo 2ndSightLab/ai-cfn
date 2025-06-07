@@ -1,7 +1,7 @@
 #!/bin/bash
 
-source ./scripts/delete_failed_stack_if_exists.sh
-source ./scripts/stack_exists.sh
+source ./scripts/delete-failed-stack-if-exists.sh
+source ./scripts/stack-exists.sh
 
 # Arguments
 CERT_VALIDATION_STACK_PREFIX="$1"
