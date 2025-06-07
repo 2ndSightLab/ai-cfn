@@ -2,6 +2,8 @@
 
 echo "deploy-cloudfront-logs-bucket.sh"
 
+S3_ACCESS_LOGS_BUCKET_NAME="$STACK_NAME_PREFIX-CloudFront-Logs-$BUCKET_NAMIE_SUFFIX"
+
 # CloudFront Logs Bucket
 read -p "Deploy CloudFront Logs Bucket? (y/n): " DEPLOY_CF_LOGS
 if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
