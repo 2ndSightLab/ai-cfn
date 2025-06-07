@@ -1,65 +1,73 @@
 #!/bin/bash
 
-echo "deploy-tls-cert-validation.sh"
-
-REGION="$1"
-CERT_VALIDATION_STACK="$2"
-TLS_CERTIFICATE_STACK="$3"
+# Arguments
+CERT_VALIDATION_STACK="$1"
+TLS_CERTIFICATE_STACK="$2"
+HOSTED_ZONE_ID="$3"
 DOMAIN_NAME="$4"
+REGION="$5"
 
-# Look for validation records immediately
-echo "Looking for validation records in stack events..."
+echo "deploy-validation-dns-records.sh"
+
+# Initialize loop variables
 MAX_ATTEMPTS=5
 ATTEMPT=0
-FOUND_RECORDS=false
+RECORD_COUNT=0
 
+# Check if the TLS_CERTIFICATE_STACK exists, with up to 5 attempts
 while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-  # Check if stack exists first
-  aws cloudformation describe-stacks --stack-name $TLS_CERTIFICATE_STACK --region $REGION > /dev/null 2>&1
-  if [ $? -ne 0 ]; then
-    echo "Certificate stack does not exist yet. Waiting..."
+  if aws cloudformation describe-stacks --stack-name "$TLS_CERTIFICATE_STACK" --region $REGION >/dev/null 2>&1; then
+    echo "TLS Certificate stack '$TLS_CERTIFICATE_STACK' exists. Checking for validation records..."
+    break
+  else
+    echo "Attempt $((ATTEMPT+1)): TLS Certificate stack '$TLS_CERTIFICATE_STACK' does not exist yet. Waiting..."
     ATTEMPT=$((ATTEMPT+1))
-    sleep 10
-    continue
+    
+    if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+      sleep 10
+    else
+      echo "Error: Maximum attempts reached. TLS Certificate stack '$TLS_CERTIFICATE_STACK' not found."
+      exit 1
+    fi
   fi
-  
-  # Get stack events
-  STACK_EVENTS=$(aws cloudformation describe-stack-events \
-    --stack-name $TLS_CERTIFICATE_STACK \
-    --output json)
-  
-  # Check if any event contains validation information
+done
+
+# Now check for validation records in a separate loop
+VALIDATION_ATTEMPTS=0
+MAX_VALIDATION_ATTEMPTS=5
+
+while [ $VALIDATION_ATTEMPTS -lt $MAX_VALIDATION_ATTEMPTS ]; do
+  # Get stack events and check for validation records
+  STACK_EVENTS=$(aws cloudformation describe-stack-events --stack-name "$TLS_CERTIFICATE_STACK" --region $REGION)
   VALIDATION_INFO=$(echo "$STACK_EVENTS" | jq -r '.StackEvents[].ResourceStatusReason' | grep -F "Content of DNS Record is:" || echo "")
   
   if [ -n "$VALIDATION_INFO" ]; then
     echo "Found validation records!"
-    FOUND_RECORDS=true
+    # Extract validation records using grep instead of jq for the pattern matching
+    VALIDATION_RECORDS=$(echo "$STACK_EVENTS" | jq -r '.StackEvents[].ResourceStatusReason' | grep -F "Content of DNS Record is:")
+    
+    echo "VALIDATION_RECORDS: $VALIDATION_RECORDS"
+    
     break
+  else
+    echo "Attempt $((VALIDATION_ATTEMPTS+1)): No validation records found yet. Waiting..."
+    VALIDATION_ATTEMPTS=$((VALIDATION_ATTEMPTS+1))
+    
+    if [ $VALIDATION_ATTEMPTS -lt $MAX_VALIDATION_ATTEMPTS ]; then
+      sleep 10
+    else
+      echo "Error: Maximum attempts reached. No validation records found in stack '$TLS_CERTIFICATE_STACK'."
+      exit 1
+    fi
   fi
-  
-  # Increment attempt counter and wait
-  ATTEMPT=$((ATTEMPT+1))
-  echo "Waiting for validation records to appear (attempt $ATTEMPT/$MAX_ATTEMPTS)..."
-  sleep 10
 done
-
-# Check if we exceeded max attempts
-if [ "$FOUND_RECORDS" = false ]; then
-  echo "Timed out waiting for validation records to appear. Please check the AWS console."
-  exit 1
-fi
-
-# Extract validation records using grep instead of jq for the pattern matching
-VALIDATION_RECORDS=$(echo "$STACK_EVENTS" | jq -r '.StackEvents[].ResourceStatusReason' | grep -F "Content of DNS Record is:")
 
 # Parse validation records
 # Format is typically: "Content of DNS Record is: {Name: _x1.example.com,Type: CNAME,Value: _x2.acm-validations.aws.}"
 PARAMS="HostedZoneId=$HOSTED_ZONE_ID DomainName=$DOMAIN_NAME"
-RECORD_COUNT=0
 
 # Store validation records in an array to avoid subshell issues
 mapfile -t VALIDATION_RECORD_ARRAY <<< "$VALIDATION_RECORDS"
-
 for RECORD in "${VALIDATION_RECORD_ARRAY[@]}"; do
   # Extract record name, type, and value using regex
   if [[ $RECORD =~ Name:\ ([^,]+),Type:\ ([^,]+),Value:\ ([^}]+) ]]; then
@@ -83,22 +91,14 @@ done
 PARAMS="$PARAMS ValidationRecordCount=$RECORD_COUNT"
 
 if [ $RECORD_COUNT -eq 0 ]; then
-  echo "Error: Failed to parse any validation records."
-  exit 1
+  echo "Error: Failed to parse any validation records." && exit 1
 fi
+
+delete_failed_stack_if_exists $CERT_VALIDATION_STACK
 
 # Deploy the validation stack
 echo "Deploying validation stack: $CERT_VALIDATION_STACK"
 echo "Parameters: $PARAMS"
-
-# Check if validation stack exists and delete if it does
-aws cloudformation describe-stacks --stack-name $CERT_VALIDATION_STACK --region $REGION > /dev/null 2>&1
-if [ $? -eq 0 ]; then
-  echo "Validation stack already exists. Deleting..."
-  aws cloudformation delete-stack --stack-name $CERT_VALIDATION_STACK --region $REGION
-  echo "Waiting for stack deletion to complete..."
-  aws cloudformation wait stack-delete-complete --stack-name $CERT_VALIDATION_STACK --region $REGION
-fi
 
 # Deploy the validation stack
 echo "Creating validation stack..."
@@ -109,8 +109,7 @@ eval "aws cloudformation deploy \
   --region $REGION \
   --no-fail-on-empty-changeset"
 
-echo "Validation stack deployment complete!"
-echo "Certificate validation records have been created in Route 53."
-echo "It may take some time for AWS to validate the certificate."
+echo "TLS Certificate Validation DNS records created successfully."
+
 
 
