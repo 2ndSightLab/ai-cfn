@@ -7,12 +7,6 @@ read -p "Deploy S3 Access Logs Bucket? (y/n): " DEPLOY_S3_ACCESS_LOGS
 if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; then
   read -p "S3 access logs retention days (default: 90): " S3_LOG_RETENTION_DAYS
   S3_LOG_RETENTION_DAYS=${S3_LOG_RETENTION_DAYS:-90}
-  
-  if stack_exists $S3_ACCESS_LOGS_STACK; then
-    echo "S3 access logs stack already exists. Updating..."
-  else
-    echo "Creating new S3 access logs stack..."
-  fi
 
   delete_failed_stack_if_exists $S3_ACCESS_LOG_STACK $REGION
   
