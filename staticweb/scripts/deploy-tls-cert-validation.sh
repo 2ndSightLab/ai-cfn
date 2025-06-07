@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 source ./scripts/delete_failed_stack_if_exists.sh
 
