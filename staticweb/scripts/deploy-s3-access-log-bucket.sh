@@ -18,6 +18,7 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
   aws cloudformation deploy \
     --template-file cfn/s3-access-log-bucket.yaml \
     --stack-name $S3_ACCESS_LOGS_STACK \
+    --region $REGION \
     --parameter-overrides \
       LogRetentionDays=$S3_LOG_RETENTION_DAYS \
       BucketNameSuffix=$BUCKET_NAME_SUFFIX \
@@ -26,6 +27,7 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
   
   S3_ACCESS_LOGS_BUCKET_NAME=$(aws cloudformation describe-stacks \
     --stack-name $S3_ACCESS_LOGS_STACK \
+    --region $REGION \
     --query "Stacks[0].Outputs[?ExportName=='${S3_ACCESS_LOGS_STACK}-S3AccessLogsBucketName'].OutputValue" \
     --output text)
   
