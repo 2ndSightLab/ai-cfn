@@ -2,7 +2,7 @@
 
 echo "check-name_servers.sh"
 
-check_nameservers() {
+check_name_servers() {
   # Parameters
   local domain="$1"
   local expected_nameservers="$2"
