@@ -32,7 +32,6 @@ Parameters:
       - 'false'
 
 Conditions:
-  HasBucketNameSuffix: !Not [!Equals [!Ref BucketNameSuffix, '']]
   EnableS3AccessLogging: !Equals [!Ref EnableAccessLogging, 'true']
 
 Resources:
@@ -111,10 +110,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      BucketName: !If 
-        - HasBucketNameSuffix
-        - !Sub 's3-access-logs-${AWS::AccountId}-${BucketNameSuffix}'
-        - !Sub 's3-access-logs-${AWS::AccountId}'
+      BucketName: !Ref BucketName
       VersioningConfiguration:
         Status: Enabled
       BucketEncryption:
