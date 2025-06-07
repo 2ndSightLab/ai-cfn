@@ -8,10 +8,8 @@ Parameters:
     Default: 90
     MinValue: 30
     
-  BucketNameSuffix:
+  BucketName:
     Type: String
-    Description: 'Suffix to add to the bucket name for uniqueness'
-    Default: ''
 
 Conditions:
   HasBucketNameSuffix: !Not [!Equals [!Ref BucketNameSuffix, '']]
@@ -22,10 +20,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      BucketName: !If 
-        - HasBucketNameSuffix
-        - !Sub 's3-access-logs-${AWS::AccountId}-${BucketNameSuffix}'
-        - !Sub 's3-access-logs-${AWS::AccountId}'
+      BucketName: !Ref BucketName
       VersioningConfiguration:
         Status: Enabled
       BucketEncryption:
