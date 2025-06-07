@@ -11,9 +11,6 @@ Parameters:
   BucketName:
     Type: String
 
-Conditions:
-  HasBucketNameSuffix: !Not [!Equals [!Ref BucketNameSuffix, '']]
-
 Resources:
   S3AccessLogsBucket:
     Type: 'AWS::S3::Bucket'
