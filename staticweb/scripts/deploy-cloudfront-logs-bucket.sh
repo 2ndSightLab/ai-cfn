@@ -3,7 +3,7 @@
 echo "deploy-cloudfront-logs-bucket.sh"
 
 
-BUCKET_NAME=${BUCKET_NAME:-"${STACK_NAME_PREFIX}-cloudfront-logs"}
+BUCKET_NAME=${BUCKET_NAME:-"${DOMAIN_NAME}-cloudfront-logs"}
 
 # CloudFront Logs Bucket
 read -p "Deploy CloudFront Logs Bucket? (y/n): " DEPLOY_CF_LOGS
