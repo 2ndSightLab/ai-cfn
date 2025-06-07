@@ -2,6 +2,8 @@
 
 echo "deploy-s3-access-log-bucket.sh"
 
+BUCKET_NAME=${BUCKET_NAME:-"${STACK_NAME_PREFIX}-s3-access-logs"}
+
 # S3 Access Logs Bucket
 read -p "Deploy S3 Access Logs Bucket? (y/n): " DEPLOY_S3_ACCESS_LOGS
 if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; then
@@ -20,7 +22,7 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
     --bucket-name S3_ACCESS_LOGS_BUCKET_NAME \
     --parameter-overrides \
       LogRetentionDays=$S3_LOG_RETENTION_DAYS \
-      BucketNameSuffix=$BUCKET_NAME_SUFFIX \
+      BucketName=$BUCKET_NAME \
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
 
