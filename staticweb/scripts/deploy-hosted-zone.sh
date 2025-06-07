@@ -56,5 +56,5 @@ echo "DNS propagation may take up to 48 hours."
 echo -e "\nEnter to continue after you have upated the records."
 read ok
 
-check-name-servers $NAME_SERVERS
+check_name_servers $NAME_SERVERS
 
