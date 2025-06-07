@@ -16,5 +16,5 @@ aws cloudformation deploy \
 --capabilities CAPABILITY_IAM \
 --no-fail-on-empty-changeset
 
-echo "DNS records created successfully."
+echo "TLS Certificate Validation DNS records created successfully."
       
