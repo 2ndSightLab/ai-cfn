@@ -13,4 +13,4 @@ rm -rf ai-cfn
 git clone https://github.com/2ndSightLab/ai-cfn.git
 cd ai-cfn/staticweb
 chmod 700 update-nameservers.sh
-./deploy.sh
+./update-nameservers.sh
