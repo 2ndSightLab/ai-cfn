@@ -13,6 +13,8 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
   else
     echo "Creating new S3 access logs stack..."
   fi
+
+  delete-failed-stack-if-exists $S3_ACCESS_LOG_STACK $REGION
   
   echo "Deploying S3 Access Logs Bucket..."
   aws cloudformation deploy \
@@ -24,6 +26,8 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
       BucketNameSuffix=$BUCKET_NAME_SUFFIX \
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
+
+   stack_exists $S3_ACCESS_LOG_STACK $REGION
   
   S3_ACCESS_LOGS_BUCKET_NAME=$(aws cloudformation describe-stacks \
     --stack-name $S3_ACCESS_LOGS_STACK \
