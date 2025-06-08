@@ -3,14 +3,13 @@
 echo "deploy-s3-access-log-bucket.sh"
 
 BUCKET_NAME=${BUCKET_NAME:-"${DOMAIN_NAME}-s3-access-logs"}
+S3_ACCESS_LOGS_BUCKET_NAME="$STACK_NAME_PREFIX-s3-logs-$BUCKET_NAME_SUFFIX"
 
 # S3 Access Logs Bucket
 read -p "Deploy S3 Access Logs Bucket? (y/n): " DEPLOY_S3_ACCESS_LOGS
 if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; then
   read -p "S3 access logs retention days (default: 90): " S3_LOG_RETENTION_DAYS
   S3_LOG_RETENTION_DAYS=${S3_LOG_RETENTION_DAYS:-90}
-
-  S3_ACCESS_LOGS_BUCKET_NAME="$STACK_NAME_PREFIX-s3-logs-$BUCKET_NAMIE_SUFFIX"
 
   delete_failed_stack_if_exists $S3_ACCESS_LOGS_STACK $REGION
   
@@ -37,6 +36,4 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
     --output text)
   
   echo "S3 Access Logs Bucket: $S3_ACCESS_LOGS_BUCKET_NAME"
-else
-  S3_ACCESS_LOGS_BUCKET_NAME=""
 fi
