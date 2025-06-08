@@ -2,6 +2,49 @@
 
 echo "deploy-s3-access-log-bucket.sh"
 
+# Check for required variables
+if [ -z "$DOMAIN_NAME" ]; then
+  echo "Error: DOMAIN_NAME environment variable is not set"
+  exit 1
+fi
+
+if [ -z "$STACK_NAME_PREFIX" ]; then
+  echo "Error: STACK_NAME_PREFIX environment variable is not set"
+  exit 1
+fi
+
+if [ -z "$BUCKET_NAME_SUFFIX" ]; then
+  echo "Error: BUCKET_NAME_SUFFIX environment variable is not set"
+  exit 1
+fi
+
+if [ -z "$S3_ACCESS_LOGS_STACK" ]; then
+  echo "Error: S3_ACCESS_LOGS_STACK environment variable is not set"
+  exit 1
+fi
+
+if [ -z "$REGION" ]; then
+  echo "Error: REGION environment variable is not set"
+  exit 1
+fi
+
+# Check for required functions
+if ! command -v delete_failed_stack_if_exists &> /dev/null; then
+  echo "Error: delete_failed_stack_if_exists function is not defined"
+  exit 1
+fi
+
+if ! command -v stack_exists &> /dev/null; then
+  echo "Error: stack_exists function is not defined"
+  exit 1
+fi
+
+# Check if template file exists
+if [ ! -f "cfn/s3-bucket.yaml" ]; then
+  echo "Error: CloudFormation template file not found at cfn/s3-bucket.yaml"
+  exit 1
+fi
+
 BUCKET_NAME=${BUCKET_NAME:-"${DOMAIN_NAME}-s3-access-logs"}
 S3_ACCESS_LOGS_BUCKET_NAME="$STACK_NAME_PREFIX-s3-logs-$BUCKET_NAME_SUFFIX"
 
