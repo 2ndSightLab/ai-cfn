@@ -684,7 +684,6 @@ Resources:
               - !Split [',', !Join [',', !Ref MetricsTagFilters]]
               - !Ref 'AWS::NoValue'
         - !Ref 'AWS::NoValue'
-      
       # NotificationConfiguration
       NotificationConfiguration: !If
         - HasNotificationConfiguration
@@ -693,7 +692,7 @@ Resources:
             - - Event: !Ref NotificationLambdaEvent
                 Function: !Ref NotificationLambdaFunction
                 Filter: !If
-                  - !Or [!Condition HasLambdaFilterPrefix, !Condition HasLambdaFilterSuffix]
+                  - !Or [HasLambdaFilterPrefix, HasLambdaFilterSuffix]
                   - S3Key:
                       Rules:
                         - !If
