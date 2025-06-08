@@ -22,10 +22,10 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
     --parameter-overrides \
       BucketName=$BUCKET_NAME \
       AccessControl=LogDeliveryWrite \
-      Versioning_Status=Enabled \
-      Lifecycle_Rule_Id=ExpireLogsRule \
-      Lifecycle_Rule_Status=Enabled \
-      Lifecycle_Rule_ExpirationDays=$S3_LOG_RETENTION_DAYS \
+      VersioningStatus=Enabled \
+      LifecycleRuleId=ExpireLogsRule \
+      LifecycleRuleStatus=Enabled \
+      LifecycleRuleExpirationDays=$S3_LOG_RETENTION_DAYS \
     --no-fail-on-empty-changeset
 
   stack_exists $S3_ACCESS_LOGS_STACK $REGION
