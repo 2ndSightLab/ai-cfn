@@ -692,62 +692,57 @@ Resources:
             - - Event: !Ref NotificationLambdaEvent
                 Function: !Ref NotificationLambdaFunction
                 Filter: !If
-                  - !Or [HasLambdaFilterPrefix, HasLambdaFilterSuffix]
+                  - HasLambdaFilterPrefix
                   - S3Key:
                       Rules:
-                        - !If
-                          - HasLambdaFilterPrefix
-                          - Name: prefix
-                            Value: !Ref NotificationLambdaFilterPrefix
-                          - !Ref 'AWS::NoValue'
-                        - !If
-                          - HasLambdaFilterSuffix
+                        - Name: prefix
+                          Value: !Ref NotificationLambdaFilterPrefix
+                  - !If
+                    - HasLambdaFilterSuffix
+                    - S3Key:
+                        Rules:
                           - Name: suffix
                             Value: !Ref NotificationLambdaFilterSuffix
-                          - !Ref 'AWS::NoValue'
-                  - !Ref 'AWS::NoValue'
+                    - !Ref 'AWS::NoValue'
             - !Ref 'AWS::NoValue'
           QueueConfigurations: !If
             - HasQueueNotification
             - - Event: !Ref NotificationQueueEvent
                 Queue: !Ref NotificationQueueQueue
                 Filter: !If
-                  - !Or [!Condition HasQueueFilterPrefix, !Condition HasQueueFilterSuffix]
+                  - HasQueueFilterPrefix
                   - S3Key:
                       Rules:
-                        - !If
-                          - HasQueueFilterPrefix
-                          - Name: prefix
-                            Value: !Ref NotificationQueueFilterPrefix
-                          - !Ref 'AWS::NoValue'
-                        - !If
-                          - HasQueueFilterSuffix
+                        - Name: prefix
+                          Value: !Ref NotificationQueueFilterPrefix
+                  - !If
+                    - HasQueueFilterSuffix
+                    - S3Key:
+                        Rules:
                           - Name: suffix
                             Value: !Ref NotificationQueueFilterSuffix
-                          - !Ref 'AWS::NoValue'
-                  - !Ref 'AWS::NoValue'
+                    - !Ref 'AWS::NoValue'
             - !Ref 'AWS::NoValue'
           TopicConfigurations: !If
             - HasTopicNotification
             - - Event: !Ref NotificationTopicEvent
                 Topic: !Ref NotificationTopicTopic
                 Filter: !If
-                  - !Or [!Condition HasTopicFilterPrefix, !Condition HasTopicFilterSuffix]
+                  - HasTopicFilterPrefix
                   - S3Key:
                       Rules:
-                        - !If
-                          - HasTopicFilterPrefix
-                          - Name: prefix
-                            Value: !Ref NotificationTopicFilterPrefix
-                          - !Ref 'AWS::NoValue'
-                        - !If
-                          - HasTopicFilterSuffix
+                        - Name: prefix
+                          Value: !Ref NotificationTopicFilterPrefix
+                  - !If
+                    - HasTopicFilterSuffix
+                    - S3Key:
+                        Rules:
                           - Name: suffix
                             Value: !Ref NotificationTopicFilterSuffix
-                          - !Ref 'AWS::NoValue'
-                  - !Ref 'AWS::NoValue'
+                    - !Ref 'AWS::NoValue'
             - !Ref 'AWS::NoValue'
         - !Ref 'AWS::NoValue'
+
       
       # ObjectLockConfiguration
       ObjectLockConfiguration: !If
