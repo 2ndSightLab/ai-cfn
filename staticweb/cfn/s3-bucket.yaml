@@ -37,7 +37,7 @@ Parameters:
     Default: ''
     
   # AccelerateConfiguration parameters
-  AccelerateConfiguration_AccelerationStatus:
+  AccelerateConfigurationAccelerationStatus:
     Type: String
     Description: Accelerate configuration status
     Default: ''
@@ -47,43 +47,43 @@ Parameters:
       - Suspended
       
   # AnalyticsConfiguration parameters
-  AnalyticsConfiguration_Id:
+  AnalyticsConfigurationId:
     Type: String
     Description: ID for the analytics configuration
     Default: ''
     
-  AnalyticsConfiguration_Prefix:
+  AnalyticsConfigurationPrefix:
     Type: String
     Description: Prefix for the analytics configuration
     Default: ''
     
-  AnalyticsConfiguration_TagFilters:
+  AnalyticsConfigurationTagFilters:
     Type: CommaDelimitedList
     Description: Tag filters for the analytics configuration (Key=Value format)
     Default: ''
     
-  AnalyticsConfiguration_StorageClassAnalysis_DataExport_OutputSchemaVersion:
+  AnalyticsConfigurationStorageClassAnalysisDataExportOutputSchemaVersion:
     Type: String
     Description: Output schema version for storage class analysis data export
     Default: 'V_1'
     
-  AnalyticsConfiguration_StorageClassAnalysis_DataExport_Destination_S3BucketDestination_Bucket:
+  AnalyticsConfigurationStorageClassAnalysisDataExportDestinationS3BucketDestinationBucket:
     Type: String
     Description: Destination bucket for analytics data export
     Default: ''
     
-  AnalyticsConfiguration_StorageClassAnalysis_DataExport_Destination_S3BucketDestination_Format:
+  AnalyticsConfigurationStorageClassAnalysisDataExportDestinationS3BucketDestinationFormat:
     Type: String
     Description: Format for analytics data export
     Default: 'CSV'
     
-  AnalyticsConfiguration_StorageClassAnalysis_DataExport_Destination_S3BucketDestination_Prefix:
+  AnalyticsConfigurationStorageClassAnalysisDataExportDestinationS3BucketDestinationPrefix:
     Type: String
     Description: Prefix for analytics data export
     Default: ''
     
   # BucketEncryption parameters
-  BucketEncryption_SSEAlgorithm:
+  BucketEncryptionSSEAlgorithm:
     Type: String
     Description: Server-side encryption algorithm
     Default: ''
@@ -92,12 +92,12 @@ Parameters:
       - AES256
       - aws:kms
     
-  BucketEncryption_KMSMasterKeyID:
+  BucketEncryptionKMSMasterKeyID:
     Type: String
     Description: KMS master key ID for server-side encryption
     Default: ''
     
-  BucketEncryption_BucketKeyEnabled:
+  BucketEncryptionBucketKeyEnabled:
     Type: String
     Description: Enable S3 Bucket Key
     Default: ''
@@ -107,48 +107,48 @@ Parameters:
       - 'false'
     
   # CorsConfiguration parameters
-  CorsConfiguration_AllowedHeaders:
+  CorsConfigurationAllowedHeaders:
     Type: CommaDelimitedList
     Description: Headers allowed in CORS requests
     Default: ''
     
-  CorsConfiguration_AllowedMethods:
+  CorsConfigurationAllowedMethods:
     Type: CommaDelimitedList
     Description: HTTP methods allowed in CORS requests
     Default: ''
     
-  CorsConfiguration_AllowedOrigins:
+  CorsConfigurationAllowedOrigins:
     Type: CommaDelimitedList
     Description: Origins allowed in CORS requests
     Default: ''
     
-  CorsConfiguration_ExposedHeaders:
+  CorsConfigurationExposedHeaders:
     Type: CommaDelimitedList
     Description: Headers exposed in CORS responses
     Default: ''
     
-  CorsConfiguration_MaxAge:
+  CorsConfigurationMaxAge:
     Type: Number
     Description: Maximum age in seconds for CORS preflight cache
     Default: 0
     
   # IntelligentTieringConfiguration parameters
-  IntelligentTiering_Id:
+  IntelligentTieringId:
     Type: String
     Description: ID for intelligent tiering configuration
     Default: ''
     
-  IntelligentTiering_Prefix:
+  IntelligentTieringPrefix:
     Type: String
     Description: Prefix for intelligent tiering configuration
     Default: ''
     
-  IntelligentTiering_TagFilters:
+  IntelligentTieringTagFilters:
     Type: CommaDelimitedList
     Description: Tag filters for intelligent tiering (Key=Value format)
     Default: ''
     
-  IntelligentTiering_Status:
+  IntelligentTieringStatus:
     Type: String
     Description: Status for intelligent tiering
     Default: 'Enabled'
@@ -156,18 +156,18 @@ Parameters:
       - 'Enabled'
       - 'Disabled'
     
-  IntelligentTiering_Tierings:
+  IntelligentTieringTierings:
     Type: CommaDelimitedList
     Description: List of tiering configurations
     Default: 'ARCHIVE_ACCESS=90,DEEP_ARCHIVE_ACCESS=180'
     
   # InventoryConfiguration parameters
-  Inventory_Id:
+  InventoryId:
     Type: String
     Description: ID for inventory configuration
     Default: ''
     
-  Inventory_Enabled:
+  InventoryEnabled:
     Type: String
     Description: Enable inventory configuration
     Default: 'true'
@@ -175,7 +175,7 @@ Parameters:
       - 'true'
       - 'false'
     
-  Inventory_IncludedObjectVersions:
+  InventoryIncludedObjectVersions:
     Type: String
     Description: Object versions to include in inventory
     Default: 'All'
@@ -183,7 +183,7 @@ Parameters:
       - 'All'
       - 'Current'
     
-  Inventory_Schedule_Frequency:
+  InventoryScheduleFrequency:
     Type: String
     Description: Frequency of inventory generation
     Default: 'Weekly'
@@ -191,12 +191,12 @@ Parameters:
       - 'Daily'
       - 'Weekly'
     
-  Inventory_Destination_BucketArn:
+  InventoryDestinationBucketArn:
     Type: String
     Description: ARN of the destination bucket for inventory
     Default: ''
     
-  Inventory_Destination_Format:
+  InventoryDestinationFormat:
     Type: String
     Description: Format of inventory report
     Default: 'CSV'
@@ -205,23 +205,23 @@ Parameters:
       - 'ORC'
       - 'Parquet'
     
-  Inventory_Destination_Prefix:
+  InventoryDestinationPrefix:
     Type: String
     Description: Prefix for inventory report
     Default: ''
     
-  Inventory_OptionalFields:
+  InventoryOptionalFields:
     Type: CommaDelimitedList
     Description: Optional fields to include in inventory
     Default: 'Size,LastModifiedDate,StorageClass,ETag,IsMultipartUploaded,ReplicationStatus,EncryptionStatus,ObjectLockRetainUntilDate,ObjectLockMode,ObjectLockLegalHoldStatus,IntelligentTieringAccessTier,BucketKeyStatus,ChecksumAlgorithm'
     
   # LifecycleConfiguration parameters
-  Lifecycle_Rule_Id:
+  LifecycleRuleId:
     Type: String
     Description: ID for lifecycle rule
     Default: ''
     
-  Lifecycle_Rule_Status:
+  LifecycleRuleStatus:
     Type: String
     Description: Status of lifecycle rule
     Default: 'Enabled'
@@ -229,116 +229,116 @@ Parameters:
       - 'Enabled'
       - 'Disabled'
     
-  Lifecycle_Rule_Prefix:
+  LifecycleRulePrefix:
     Type: String
     Description: Prefix for lifecycle rule
     Default: ''
     
-  Lifecycle_Rule_TagFilters:
+  LifecycleRuleTagFilters:
     Type: CommaDelimitedList
     Description: Tag filters for lifecycle rule (Key=Value format)
     Default: ''
     
-  Lifecycle_Rule_ExpirationDays:
+  LifecycleRuleExpirationDays:
     Type: Number
     Description: Days after which objects expire
     Default: 0
     
-  Lifecycle_Rule_NoncurrentVersionExpirationDays:
+  LifecycleRuleNoncurrentVersionExpirationDays:
     Type: Number
     Description: Days after which noncurrent versions expire
     Default: 0
     
   # LoggingConfiguration parameters
-  Logging_DestinationBucketName:
+  LoggingDestinationBucketName:
     Type: String
     Description: Destination bucket for access logs
     Default: ''
     
-  Logging_LogFilePrefix:
+  LoggingLogFilePrefix:
     Type: String
     Description: Prefix for access logs
     Default: ''
     
   # MetricsConfiguration parameters
-  Metrics_Id:
+  MetricsId:
     Type: String
     Description: ID for metrics configuration
     Default: ''
     
-  Metrics_Prefix:
+  MetricsPrefix:
     Type: String
     Description: Prefix for metrics configuration
     Default: ''
     
-  Metrics_TagFilters:
+  MetricsTagFilters:
     Type: CommaDelimitedList
     Description: Tag filters for metrics configuration (Key=Value format)
     Default: ''
     
   # NotificationConfiguration parameters
-  Notification_Lambda_Event:
+  NotificationLambdaEvent:
     Type: String
     Description: Event for Lambda notification
     Default: ''
     
-  Notification_Lambda_Function:
+  NotificationLambdaFunction:
     Type: String
     Description: ARN of Lambda function for notification
     Default: ''
     
-  Notification_Lambda_Filter_Prefix:
+  NotificationLambdaFilterPrefix:
     Type: String
     Description: Prefix filter for Lambda notification
     Default: ''
     
-  Notification_Lambda_Filter_Suffix:
+  NotificationLambdaFilterSuffix:
     Type: String
     Description: Suffix filter for Lambda notification
     Default: ''
     
-  Notification_Queue_Event:
+  NotificationQueueEvent:
     Type: String
     Description: Event for queue notification
     Default: ''
     
-  Notification_Queue_Queue:
+  NotificationQueueQueue:
     Type: String
     Description: ARN of queue for notification
     Default: ''
     
-  Notification_Queue_Filter_Prefix:
+  NotificationQueueFilterPrefix:
     Type: String
     Description: Prefix filter for queue notification
     Default: ''
     
-  Notification_Queue_Filter_Suffix:
+  NotificationQueueFilterSuffix:
     Type: String
     Description: Suffix filter for queue notification
     Default: ''
     
-  Notification_Topic_Event:
+  NotificationTopicEvent:
     Type: String
     Description: Event for topic notification
     Default: ''
     
-  Notification_Topic_Topic:
+  NotificationTopicTopic:
     Type: String
     Description: ARN of topic for notification
     Default: ''
     
-  Notification_Topic_Filter_Prefix:
+  NotificationTopicFilterPrefix:
     Type: String
     Description: Prefix filter for topic notification
     Default: ''
     
-  Notification_Topic_Filter_Suffix:
+  NotificationTopicFilterSuffix:
     Type: String
     Description: Suffix filter for topic notification
     Default: ''
     
   # ObjectLockConfiguration parameters
-  ObjectLock_DefaultRetention_Mode:
+  ObjectLockDefaultRetentionMode:
     Type: String
     Description: Default retention mode for object lock
     Default: ''
@@ -347,18 +347,18 @@ Parameters:
       - GOVERNANCE
       - COMPLIANCE
     
-  ObjectLock_DefaultRetention_Days:
+  ObjectLockDefaultRetentionDays:
     Type: Number
     Description: Default retention period in days for object lock
     Default: 0
     
-  ObjectLock_DefaultRetention_Years:
+  ObjectLockDefaultRetentionYears:
     Type: Number
     Description: Default retention period in years for object lock
     Default: 0
     
   # OwnershipControls parameters
-  OwnershipControls_Rule:
+  OwnershipControlsRule:
     Type: String
     Description: Ownership controls rule
     Default: ''
@@ -369,17 +369,17 @@ Parameters:
       - BucketOwnerEnforced
     
   # ReplicationConfiguration parameters
-  Replication_Role:
+  ReplicationRole:
     Type: String
     Description: IAM role ARN for replication
     Default: ''
     
-  Replication_Rule_Id:
+  ReplicationRuleId:
     Type: String
     Description: ID for replication rule
     Default: ''
     
-  Replication_Rule_Status:
+  ReplicationRuleStatus:
     Type: String
     Description: Status of replication rule
     Default: 'Enabled'
@@ -387,28 +387,28 @@ Parameters:
       - 'Enabled'
       - 'Disabled'
     
-  Replication_Rule_Priority:
+  ReplicationRulePriority:
     Type: Number
     Description: Priority of replication rule
     Default: 0
     
-  Replication_Rule_Prefix:
+  ReplicationRulePrefix:
     Type: String
     Description: Prefix for replication rule
     Default: ''
     
-  Replication_Rule_Destination_Bucket:
+  ReplicationRuleDestinationBucket:
     Type: String
     Description: ARN of destination bucket for replication
     Default: ''
     
-  Replication_Rule_Destination_StorageClass:
+  ReplicationRuleDestinationStorageClass:
     Type: String
     Description: Storage class for replicated objects
     Default: ''
     
   # VersioningConfiguration parameters
-  Versioning_Status:
+  VersioningStatus:
     Type: String
     Description: Versioning state of the bucket
     Default: ''
@@ -418,22 +418,22 @@ Parameters:
       - Suspended
     
   # WebsiteConfiguration parameters
-  Website_IndexDocument:
+  WebsiteIndexDocument:
     Type: String
     Description: Index document for website configuration
     Default: ''
     
-  Website_ErrorDocument:
+  WebsiteErrorDocument:
     Type: String
     Description: Error document for website configuration
     Default: ''
     
-  Website_RedirectAllRequestsTo_HostName:
+  WebsiteRedirectAllRequestsToHostName:
     Type: String
     Description: Host name for redirect all requests
     Default: ''
     
-  Website_RedirectAllRequestsTo_Protocol:
+  WebsiteRedirectAllRequestsToProtocol:
     Type: String
     Description: Protocol for redirect all requests
     Default: ''
@@ -442,7 +442,7 @@ Parameters:
       - http
       - https
     
-  Website_RoutingRules:
+  WebsiteRoutingRules:
     Type: CommaDelimitedList
     Description: Routing rules for website configuration
     Default: ''
@@ -454,73 +454,73 @@ Conditions:
   HasTags: !Not [!Equals [!Select [0, !Ref Tags], '']]
   
   # Child object conditions
-  HasAccelerateConfiguration: !Not [!Equals [!Ref AccelerateConfiguration_AccelerationStatus, '']]
+  HasAccelerateConfiguration: !Not [!Equals [!Ref AccelerateConfigurationAccelerationStatus, '']]
   
-  HasAnalyticsConfiguration: !Not [!Equals [!Ref AnalyticsConfiguration_Id, '']]
-  HasAnalyticsConfigurationPrefix: !Not [!Equals [!Ref AnalyticsConfiguration_Prefix, '']]
-  HasAnalyticsConfigurationTagFilters: !Not [!Equals [!Select [0, !Ref AnalyticsConfiguration_TagFilters], '']]
+  HasAnalyticsConfiguration: !Not [!Equals [!Ref AnalyticsConfigurationId, '']]
+  HasAnalyticsConfigurationPrefix: !Not [!Equals [!Ref AnalyticsConfigurationPrefix, '']]
+  HasAnalyticsConfigurationTagFilters: !Not [!Equals [!Select [0, !Ref AnalyticsConfigurationTagFilters], '']]
   
   # BucketEncryption conditions
-  HasBucketEncryption: !Not [!Equals [!Ref BucketEncryption_SSEAlgorithm, '']]
+  HasBucketEncryption: !Not [!Equals [!Ref BucketEncryptionSSEAlgorithm, '']]
   HasBucketEncryptionKMS: !And 
-    - !Not [!Equals [!Ref BucketEncryption_SSEAlgorithm, '']]
-    - !Equals [!Ref BucketEncryption_SSEAlgorithm, 'aws:kms']
+    - !Not [!Equals [!Ref BucketEncryptionSSEAlgorithm, '']]
+    - !Equals [!Ref BucketEncryptionSSEAlgorithm, 'aws:kms']
   HasBucketEncryptionKMSKey: !And
-    - !Not [!Equals [!Ref BucketEncryption_KMSMasterKeyID, '']]
-    - !Equals [!Ref BucketEncryption_SSEAlgorithm, 'aws:kms']
-  HasBucketKeyEnabled: !Not [!Equals [!Ref BucketEncryption_BucketKeyEnabled, '']]
+    - !Not [!Equals [!Ref BucketEncryptionKMSMasterKeyID, '']]
+    - !Equals [!Ref BucketEncryptionSSEAlgorithm, 'aws:kms']
+  HasBucketKeyEnabled: !Not [!Equals [!Ref BucketEncryptionBucketKeyEnabled, '']]
   
   # CORS conditions
-  HasCorsConfiguration: !Not [!Equals [!Select [0, !Ref CorsConfiguration_AllowedMethods], '']]
-  HasCorsAllowedHeaders: !Not [!Equals [!Select [0, !Ref CorsConfiguration_AllowedHeaders], '']]
-  HasCorsAllowedOrigins: !Not [!Equals [!Select [0, !Ref CorsConfiguration_AllowedOrigins], '']]
-  HasCorsExposedHeaders: !Not [!Equals [!Select [0, !Ref CorsConfiguration_ExposedHeaders], '']]
-  HasCorsMaxAge: !Not [!Equals [!Ref CorsConfiguration_MaxAge, 0]]
+  HasCorsConfiguration: !Not [!Equals [!Select [0, !Ref CorsConfigurationAllowedMethods], '']]
+  HasCorsAllowedHeaders: !Not [!Equals [!Select [0, !Ref CorsConfigurationAllowedHeaders], '']]
+  HasCorsAllowedOrigins: !Not [!Equals [!Select [0, !Ref CorsConfigurationAllowedOrigins], '']]
+  HasCorsExposedHeaders: !Not [!Equals [!Select [0, !Ref CorsConfigurationExposedHeaders], '']]
+  HasCorsMaxAge: !Not [!Equals [!Ref CorsConfigurationMaxAge, 0]]
   
   # IntelligentTiering conditions
-  HasIntelligentTiering: !Not [!Equals [!Ref IntelligentTiering_Id, '']]
-  HasIntelligentTieringPrefix: !Not [!Equals [!Ref IntelligentTiering_Prefix, '']]
-  HasIntelligentTieringTagFilters: !Not [!Equals [!Select [0, !Ref IntelligentTiering_TagFilters], '']]
+  HasIntelligentTiering: !Not [!Equals [!Ref IntelligentTieringId, '']]
+  HasIntelligentTieringPrefix: !Not [!Equals [!Ref IntelligentTieringPrefix, '']]
+  HasIntelligentTieringTagFilters: !Not [!Equals [!Select [0, !Ref IntelligentTieringTagFilters], '']]
   
-   # Inventory conditions
-  HasInventory: !Not [!Equals [!Ref Inventory_Id, '']]
-  HasInventoryDestination: !Not [!Equals [!Ref Inventory_Destination_BucketArn, '']]
-  HasInventoryPrefix: !Not [!Equals [!Ref Inventory_Destination_Prefix, '']]
+  # Inventory conditions
+  HasInventory: !Not [!Equals [!Ref InventoryId, '']]
+  HasInventoryDestination: !Not [!Equals [!Ref InventoryDestinationBucketArn, '']]
+  HasInventoryPrefix: !Not [!Equals [!Ref InventoryDestinationPrefix, '']]
   
   # Lifecycle conditions
-  HasLifecycle: !Not [!Equals [!Ref Lifecycle_Rule_Id, '']]
-  HasLifecyclePrefix: !Not [!Equals [!Ref Lifecycle_Rule_Prefix, '']]
-  HasLifecycleTagFilters: !Not [!Equals [!Select [0, !Ref Lifecycle_Rule_TagFilters], '']]
-  HasLifecycleExpiration: !Not [!Equals [!Ref Lifecycle_Rule_ExpirationDays, 0]]
-  HasLifecycleNoncurrentVersionExpiration: !Not [!Equals [!Ref Lifecycle_Rule_NoncurrentVersionExpirationDays, 0]]
+  HasLifecycle: !Not [!Equals [!Ref LifecycleRuleId, '']]
+  HasLifecyclePrefix: !Not [!Equals [!Ref LifecycleRulePrefix, '']]
+  HasLifecycleTagFilters: !Not [!Equals [!Select [0, !Ref LifecycleRuleTagFilters], '']]
+  HasLifecycleExpiration: !Not [!Equals [!Ref LifecycleRuleExpirationDays, 0]]
+  HasLifecycleNoncurrentVersionExpiration: !Not [!Equals [!Ref LifecycleRuleNoncurrentVersionExpirationDays, 0]]
   
   # Logging conditions
-  HasLogging: !Not [!Equals [!Ref Logging_DestinationBucketName, '']]
-  HasLoggingPrefix: !Not [!Equals [!Ref Logging_LogFilePrefix, '']]
+  HasLogging: !Not [!Equals [!Ref LoggingDestinationBucketName, '']]
+  HasLoggingPrefix: !Not [!Equals [!Ref LoggingLogFilePrefix, '']]
   
   # Metrics conditions
-  HasMetrics: !Not [!Equals [!Ref Metrics_Id, '']]
-  HasMetricsPrefix: !Not [!Equals [!Ref Metrics_Prefix, '']]
-  HasMetricsTagFilters: !Not [!Equals [!Select [0, !Ref Metrics_TagFilters], '']]
+  HasMetrics: !Not [!Equals [!Ref MetricsId, '']]
+  HasMetricsPrefix: !Not [!Equals [!Ref MetricsPrefix, '']]
+  HasMetricsTagFilters: !Not [!Equals [!Select [0, !Ref MetricsTagFilters], '']]
   
   # Notification conditions
   HasLambdaNotification: !And
-    - !Not [!Equals [!Ref Notification_Lambda_Event, '']]
-    - !Not [!Equals [!Ref Notification_Lambda_Function, '']]
-  HasLambdaFilterPrefix: !Not [!Equals [!Ref Notification_Lambda_Filter_Prefix, '']]
-  HasLambdaFilterSuffix: !Not [!Equals [!Ref Notification_Lambda_Filter_Suffix, '']]
+    - !Not [!Equals [!Ref NotificationLambdaEvent, '']]
+    - !Not [!Equals [!Ref NotificationLambdaFunction, '']]
+  HasLambdaFilterPrefix: !Not [!Equals [!Ref NotificationLambdaFilterPrefix, '']]
+  HasLambdaFilterSuffix: !Not [!Equals [!Ref NotificationLambdaFilterSuffix, '']]
   
   HasQueueNotification: !And
-    - !Not [!Equals [!Ref Notification_Queue_Event, '']]
-    - !Not [!Equals [!Ref Notification_Queue_Queue, '']]
-  HasQueueFilterPrefix: !Not [!Equals [!Ref Notification_Queue_Filter_Prefix, '']]
-  HasQueueFilterSuffix: !Not [!Equals [!Ref Notification_Queue_Filter_Suffix, '']]
+    - !Not [!Equals [!Ref NotificationQueueEvent, '']]
+    - !Not [!Equals [!Ref NotificationQueueQueue, '']]
+  HasQueueFilterPrefix: !Not [!Equals [!Ref NotificationQueueFilterPrefix, '']]
+  HasQueueFilterSuffix: !Not [!Equals [!Ref NotificationQueueFilterSuffix, '']]
   
   HasTopicNotification: !And
-    - !Not [!Equals [!Ref Notification_Topic_Event, '']]
-    - !Not [!Equals [!Ref Notification_Topic_Topic, '']]
-  HasTopicFilterPrefix: !Not [!Equals [!Ref Notification_Topic_Filter_Prefix, '']]
-  HasTopicFilterSuffix: !Not [!Equals [!Ref Notification_Topic_Filter_Suffix, '']]
+    - !Not [!Equals [!Ref NotificationTopicEvent, '']]
+    - !Not [!Equals [!Ref NotificationTopicTopic, '']]
+  HasTopicFilterPrefix: !Not [!Equals [!Ref NotificationTopicFilterPrefix, '']]
+  HasTopicFilterSuffix: !Not [!Equals [!Ref NotificationTopicFilterSuffix, '']]
   
   HasNotificationConfiguration: !Or
     - !Condition HasLambdaNotification
@@ -529,32 +529,32 @@ Conditions:
   
   # ObjectLock conditions
   HasObjectLockConfiguration: !Or
-    - !Not [!Equals [!Ref ObjectLock_DefaultRetention_Mode, '']]
-    - !Not [!Equals [!Ref ObjectLock_DefaultRetention_Days, 0]]
-    - !Not [!Equals [!Ref ObjectLock_DefaultRetention_Years, 0]]
-  HasObjectLockRetentionDays: !Not [!Equals [!Ref ObjectLock_DefaultRetention_Days, 0]]
-  HasObjectLockRetentionYears: !Not [!Equals [!Ref ObjectLock_DefaultRetention_Years, 0]]
+    - !Not [!Equals [!Ref ObjectLockDefaultRetentionMode, '']]
+    - !Not [!Equals [!Ref ObjectLockDefaultRetentionDays, 0]]
+    - !Not [!Equals [!Ref ObjectLockDefaultRetentionYears, 0]]
+  HasObjectLockRetentionDays: !Not [!Equals [!Ref ObjectLockDefaultRetentionDays, 0]]
+  HasObjectLockRetentionYears: !Not [!Equals [!Ref ObjectLockDefaultRetentionYears, 0]]
   
   # OwnershipControls conditions
-  HasOwnershipControls: !Not [!Equals [!Ref OwnershipControls_Rule, '']]
+  HasOwnershipControls: !Not [!Equals [!Ref OwnershipControlsRule, '']]
   
   # Replication conditions
   HasReplication: !And
-    - !Not [!Equals [!Ref Replication_Role, '']]
-    - !Not [!Equals [!Ref Replication_Rule_Id, '']]
-    - !Not [!Equals [!Ref Replication_Rule_Destination_Bucket, '']]
-  HasReplicationPrefix: !Not [!Equals [!Ref Replication_Rule_Prefix, '']]
-  HasReplicationStorageClass: !Not [!Equals [!Ref Replication_Rule_Destination_StorageClass, '']]
+    - !Not [!Equals [!Ref ReplicationRole, '']]
+    - !Not [!Equals [!Ref ReplicationRuleId, '']]
+    - !Not [!Equals [!Ref ReplicationRuleDestinationBucket, '']]
+  HasReplicationPrefix: !Not [!Equals [!Ref ReplicationRulePrefix, '']]
+  HasReplicationStorageClass: !Not [!Equals [!Ref ReplicationRuleDestinationStorageClass, '']]
   
   # Versioning conditions
-  HasVersioning: !Not [!Equals [!Ref Versioning_Status, '']]
+  HasVersioning: !Not [!Equals [!Ref VersioningStatus, '']]
   
   # Website conditions
-  HasWebsiteIndexDocument: !Not [!Equals [!Ref Website_IndexDocument, '']]
-  HasWebsiteErrorDocument: !Not [!Equals [!Ref Website_ErrorDocument, '']]
-  HasWebsiteRedirectAllRequestsTo: !Not [!Equals [!Ref Website_RedirectAllRequestsTo_HostName, '']]
-  HasWebsiteRedirectProtocol: !Not [!Equals [!Ref Website_RedirectAllRequestsTo_Protocol, '']]
-  HasWebsiteRoutingRules: !Not [!Equals [!Select [0, !Ref Website_RoutingRules], '']]
+  HasWebsiteIndexDocument: !Not [!Equals [!Ref WebsiteIndexDocument, '']]
+  HasWebsiteErrorDocument: !Not [!Equals [!Ref WebsiteErrorDocument, '']]
+  HasWebsiteRedirectAllRequestsTo: !Not [!Equals [!Ref WebsiteRedirectAllRequestsToHostName, '']]
+  HasWebsiteRedirectProtocol: !Not [!Equals [!Ref WebsiteRedirectAllRequestsToProtocol, '']]
+  HasWebsiteRoutingRules: !Not [!Equals [!Select [0, !Ref WebsiteRoutingRules], '']]
   HasWebsiteConfiguration: !Or
     - !Condition HasWebsiteIndexDocument
     - !Condition HasWebsiteRedirectAllRequestsTo
@@ -578,28 +578,28 @@ Resources:
       # AccelerateConfiguration
       AccelerateConfiguration: !If
         - HasAccelerateConfiguration
-        - AccelerationStatus: !Ref AccelerateConfiguration_AccelerationStatus
+        - AccelerationStatus: !Ref AccelerateConfigurationAccelerationStatus
         - !Ref 'AWS::NoValue'
       
       # AnalyticsConfigurations
       AnalyticsConfigurations: !If
         - HasAnalyticsConfiguration
-        - - Id: !Ref AnalyticsConfiguration_Id
-            Prefix: !If [HasAnalyticsConfigurationPrefix, !Ref AnalyticsConfiguration_Prefix, !Ref 'AWS::NoValue']
+        - - Id: !Ref AnalyticsConfigurationId
+            Prefix: !If [HasAnalyticsConfigurationPrefix, !Ref AnalyticsConfigurationPrefix, !Ref 'AWS::NoValue']
             TagFilters: !If 
               - HasAnalyticsConfigurationTagFilters
-              - !Split [',', !Join [',', !Ref AnalyticsConfiguration_TagFilters]]
+              - !Split [',', !Join [',', !Ref AnalyticsConfigurationTagFilters]]
               - !Ref 'AWS::NoValue'
             StorageClassAnalysis:
               DataExport:
-                OutputSchemaVersion: !Ref AnalyticsConfiguration_StorageClassAnalysis_DataExport_OutputSchemaVersion
+                OutputSchemaVersion: !Ref AnalyticsConfigurationStorageClassAnalysisDataExportOutputSchemaVersion
                 Destination:
                   S3BucketDestination:
-                    Bucket: !Ref AnalyticsConfiguration_StorageClassAnalysis_DataExport_Destination_S3BucketDestination_Bucket
-                    Format: !Ref AnalyticsConfiguration_StorageClassAnalysis_DataExport_Destination_S3BucketDestination_Format
+                    Bucket: !Ref AnalyticsConfigurationStorageClassAnalysisDataExportDestinationS3BucketDestinationBucket
+                    Format: !Ref AnalyticsConfigurationStorageClassAnalysisDataExportDestinationS3BucketDestinationFormat
                     Prefix: !If 
-                      - !Not [!Equals [!Ref AnalyticsConfiguration_StorageClassAnalysis_DataExport_Destination_S3BucketDestination_Prefix, '']]
-                      - !Ref AnalyticsConfiguration_StorageClassAnalysis_DataExport_Destination_S3BucketDestination_Prefix
+                      - !Not [!Equals [!Ref AnalyticsConfigurationStorageClassAnalysisDataExportDestinationS3BucketDestinationPrefix, '']]
+                      - !Ref AnalyticsConfigurationStorageClassAnalysisDataExportDestinationS3BucketDestinationPrefix
                       - !Ref 'AWS::NoValue'
         - !Ref 'AWS::NoValue'
       
@@ -608,80 +608,80 @@ Resources:
         - HasBucketEncryption
         - ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
-              SSEAlgorithm: !Ref BucketEncryption_SSEAlgorithm
-              KMSMasterKeyID: !If [HasBucketEncryptionKMSKey, !Ref BucketEncryption_KMSMasterKeyID, !Ref 'AWS::NoValue']
-            BucketKeyEnabled: !If [HasBucketKeyEnabled, !Ref BucketEncryption_BucketKeyEnabled, !Ref 'AWS::NoValue']
+              SSEAlgorithm: !Ref BucketEncryptionSSEAlgorithm
+              KMSMasterKeyID: !If [HasBucketEncryptionKMSKey, !Ref BucketEncryptionKMSMasterKeyID, !Ref 'AWS::NoValue']
+            BucketKeyEnabled: !If [HasBucketKeyEnabled, !Ref BucketEncryptionBucketKeyEnabled, !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # CorsConfiguration
       CorsConfiguration: !If
         - HasCorsConfiguration
         - CorsRules:
-          - AllowedHeaders: !If [HasCorsAllowedHeaders, !Ref CorsConfiguration_AllowedHeaders, !Ref 'AWS::NoValue']
-            AllowedMethods: !Ref CorsConfiguration_AllowedMethods
-            AllowedOrigins: !Ref CorsConfiguration_AllowedOrigins
-            ExposedHeaders: !If [HasCorsExposedHeaders, !Ref CorsConfiguration_ExposedHeaders, !Ref 'AWS::NoValue']
-            MaxAge: !If [HasCorsMaxAge, !Ref CorsConfiguration_MaxAge, !Ref 'AWS::NoValue']
+          - AllowedHeaders: !If [HasCorsAllowedHeaders, !Ref CorsConfigurationAllowedHeaders, !Ref 'AWS::NoValue']
+            AllowedMethods: !Ref CorsConfigurationAllowedMethods
+            AllowedOrigins: !Ref CorsConfigurationAllowedOrigins
+            ExposedHeaders: !If [HasCorsExposedHeaders, !Ref CorsConfigurationExposedHeaders, !Ref 'AWS::NoValue']
+            MaxAge: !If [HasCorsMaxAge, !Ref CorsConfigurationMaxAge, !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # IntelligentTieringConfigurations
       IntelligentTieringConfigurations: !If
         - HasIntelligentTiering
-        - - Id: !Ref IntelligentTiering_Id
-            Status: !Ref IntelligentTiering_Status
-            Prefix: !If [HasIntelligentTieringPrefix, !Ref IntelligentTiering_Prefix, !Ref 'AWS::NoValue']
+        - - Id: !Ref IntelligentTieringId
+            Status: !Ref IntelligentTieringStatus
+            Prefix: !If [HasIntelligentTieringPrefix, !Ref IntelligentTieringPrefix, !Ref 'AWS::NoValue']
             TagFilters: !If 
               - HasIntelligentTieringTagFilters
-              - !Split [',', !Join [',', !Ref IntelligentTiering_TagFilters]]
+              - !Split [',', !Join [',', !Ref IntelligentTieringTagFilters]]
               - !Ref 'AWS::NoValue'
-            Tierings: !Split [',', !Join [',', !Ref IntelligentTiering_Tierings]]
+            Tierings: !Split [',', !Join [',', !Ref IntelligentTieringTierings]]
         - !Ref 'AWS::NoValue'
       
       # InventoryConfigurations
       InventoryConfigurations: !If
         - HasInventory
-        - - Id: !Ref Inventory_Id
-            Enabled: !Ref Inventory_Enabled
-            IncludedObjectVersions: !Ref Inventory_IncludedObjectVersions
+        - - Id: !Ref InventoryId
+            Enabled: !Ref InventoryEnabled
+            IncludedObjectVersions: !Ref InventoryIncludedObjectVersions
             Schedule:
-              Frequency: !Ref Inventory_Schedule_Frequency
+              Frequency: !Ref InventoryScheduleFrequency
             Destination:
-              BucketArn: !Ref Inventory_Destination_BucketArn
-              Format: !Ref Inventory_Destination_Format
-              Prefix: !If [HasInventoryPrefix, !Ref Inventory_Destination_Prefix, !Ref 'AWS::NoValue']
-            OptionalFields: !Ref Inventory_OptionalFields
+              BucketArn: !Ref InventoryDestinationBucketArn
+              Format: !Ref InventoryDestinationFormat
+              Prefix: !If [HasInventoryPrefix, !Ref InventoryDestinationPrefix, !Ref 'AWS::NoValue']
+            OptionalFields: !Ref InventoryOptionalFields
         - !Ref 'AWS::NoValue'
       
       # LifecycleConfiguration
       LifecycleConfiguration: !If
         - HasLifecycle
         - Rules:
-          - Id: !Ref Lifecycle_Rule_Id
-            Status: !Ref Lifecycle_Rule_Status
-            Prefix: !If [HasLifecyclePrefix, !Ref Lifecycle_Rule_Prefix, !Ref 'AWS::NoValue']
+          - Id: !Ref LifecycleRuleId
+            Status: !Ref LifecycleRuleStatus
+            Prefix: !If [HasLifecyclePrefix, !Ref LifecycleRulePrefix, !Ref 'AWS::NoValue']
             TagFilters: !If 
               - HasLifecycleTagFilters
-              - !Split [',', !Join [',', !Ref Lifecycle_Rule_TagFilters]]
+              - !Split [',', !Join [',', !Ref LifecycleRuleTagFilters]]
               - !Ref 'AWS::NoValue'
-            ExpirationInDays: !If [HasLifecycleExpiration, !Ref Lifecycle_Rule_ExpirationDays, !Ref 'AWS::NoValue']
-            NoncurrentVersionExpirationInDays: !If [HasLifecycleNoncurrentVersionExpiration, !Ref Lifecycle_Rule_NoncurrentVersionExpirationDays, !Ref 'AWS::NoValue']
+            ExpirationInDays: !If [HasLifecycleExpiration, !Ref LifecycleRuleExpirationDays, !Ref 'AWS::NoValue']
+            NoncurrentVersionExpirationInDays: !If [HasLifecycleNoncurrentVersionExpiration, !Ref LifecycleRuleNoncurrentVersionExpirationDays, !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # LoggingConfiguration
       LoggingConfiguration: !If
         - HasLogging
-        - DestinationBucketName: !Ref Logging_DestinationBucketName
-          LogFilePrefix: !If [HasLoggingPrefix, !Ref Logging_LogFilePrefix, !Ref 'AWS::NoValue']
+        - DestinationBucketName: !Ref LoggingDestinationBucketName
+          LogFilePrefix: !If [HasLoggingPrefix, !Ref LoggingLogFilePrefix, !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # MetricsConfigurations
       MetricsConfigurations: !If
         - HasMetrics
-        - - Id: !Ref Metrics_Id
-            Prefix: !If [HasMetricsPrefix, !Ref Metrics_Prefix, !Ref 'AWS::NoValue']
+        - - Id: !Ref MetricsId
+            Prefix: !If [HasMetricsPrefix, !Ref MetricsPrefix, !Ref 'AWS::NoValue']
             TagFilters: !If 
               - HasMetricsTagFilters
-              - !Split [',', !Join [',', !Ref Metrics_TagFilters]]
+              - !Split [',', !Join [',', !Ref MetricsTagFilters]]
               - !Ref 'AWS::NoValue'
         - !Ref 'AWS::NoValue'
       
@@ -690,8 +690,8 @@ Resources:
         - HasNotificationConfiguration
         - LambdaConfigurations: !If
             - HasLambdaNotification
-            - - Event: !Ref Notification_Lambda_Event
-                Function: !Ref Notification_Lambda_Function
+            - - Event: !Ref NotificationLambdaEvent
+                Function: !Ref NotificationLambdaFunction
                 Filter: !If
                   - !Or [!Condition HasLambdaFilterPrefix, !Condition HasLambdaFilterSuffix]
                   - S3Key:
@@ -699,19 +699,19 @@ Resources:
                         - !If
                           - HasLambdaFilterPrefix
                           - Name: prefix
-                            Value: !Ref Notification_Lambda_Filter_Prefix
+                            Value: !Ref NotificationLambdaFilterPrefix
                           - !Ref 'AWS::NoValue'
                         - !If
                           - HasLambdaFilterSuffix
                           - Name: suffix
-                            Value: !Ref Notification_Lambda_Filter_Suffix
+                            Value: !Ref NotificationLambdaFilterSuffix
                           - !Ref 'AWS::NoValue'
                   - !Ref 'AWS::NoValue'
             - !Ref 'AWS::NoValue'
           QueueConfigurations: !If
             - HasQueueNotification
-            - - Event: !Ref Notification_Queue_Event
-                Queue: !Ref Notification_Queue_Queue
+            - - Event: !Ref NotificationQueueEvent
+                Queue: !Ref NotificationQueueQueue
                 Filter: !If
                   - !Or [!Condition HasQueueFilterPrefix, !Condition HasQueueFilterSuffix]
                   - S3Key:
@@ -719,19 +719,19 @@ Resources:
                         - !If
                           - HasQueueFilterPrefix
                           - Name: prefix
-                            Value: !Ref Notification_Queue_Filter_Prefix
+                            Value: !Ref NotificationQueueFilterPrefix
                           - !Ref 'AWS::NoValue'
                         - !If
                           - HasQueueFilterSuffix
                           - Name: suffix
-                            Value: !Ref Notification_Queue_Filter_Suffix
+                            Value: !Ref NotificationQueueFilterSuffix
                           - !Ref 'AWS::NoValue'
                   - !Ref 'AWS::NoValue'
             - !Ref 'AWS::NoValue'
           TopicConfigurations: !If
             - HasTopicNotification
-            - - Event: !Ref Notification_Topic_Event
-                Topic: !Ref Notification_Topic_Topic
+            - - Event: !Ref NotificationTopicEvent
+                Topic: !Ref NotificationTopicTopic
                 Filter: !If
                   - !Or [!Condition HasTopicFilterPrefix, !Condition HasTopicFilterSuffix]
                   - S3Key:
@@ -739,14 +739,12 @@ Resources:
                         - !If
                           - HasTopicFilterPrefix
                           - Name: prefix
-                            Value: !Ref Notification_Topic_Filter_Prefix
-                          - !Ref 'AWS::NoValue'
-                        - !If
+                            Value: !Ref NotificationTopicFilterPrefix
                           - !Ref 'AWS::NoValue'
                         - !If
                           - HasTopicFilterSuffix
                           - Name: suffix
-                            Value: !Ref Notification_Topic_Filter_Suffix
+                            Value: !Ref NotificationTopicFilterSuffix
                           - !Ref 'AWS::NoValue'
                   - !Ref 'AWS::NoValue'
             - !Ref 'AWS::NoValue'
@@ -757,11 +755,11 @@ Resources:
         - HasObjectLockConfiguration
         - ObjectLockEnabled: 'Enabled'
           Rule: !If
-            - !Not [!Equals [!Ref ObjectLock_DefaultRetention_Mode, '']]
+            - !Not [!Equals [!Ref ObjectLockDefaultRetentionMode, '']]
             - DefaultRetention:
-                Mode: !Ref ObjectLock_DefaultRetention_Mode
-                Days: !If [HasObjectLockRetentionDays, !Ref ObjectLock_DefaultRetention_Days, !Ref 'AWS::NoValue']
-                Years: !If [HasObjectLockRetentionYears, !Ref ObjectLock_DefaultRetention_Years, !Ref 'AWS::NoValue']
+                Mode: !Ref ObjectLockDefaultRetentionMode
+                Days: !If [HasObjectLockRetentionDays, !Ref ObjectLockDefaultRetentionDays, !Ref 'AWS::NoValue']
+                Years: !If [HasObjectLockRetentionYears, !Ref ObjectLockDefaultRetentionYears, !Ref 'AWS::NoValue']
             - !Ref 'AWS::NoValue'
         - !Ref 'AWS::NoValue'
       
@@ -769,27 +767,27 @@ Resources:
       OwnershipControls: !If
         - HasOwnershipControls
         - Rules:
-          - ObjectOwnership: !Ref OwnershipControls_Rule
+          - ObjectOwnership: !Ref OwnershipControlsRule
         - !Ref 'AWS::NoValue'
       
       # ReplicationConfiguration
       ReplicationConfiguration: !If
         - HasReplication
-        - Role: !Ref Replication_Role
+        - Role: !Ref ReplicationRole
           Rules:
-            - Id: !Ref Replication_Rule_Id
-              Status: !Ref Replication_Rule_Status
-              Priority: !Ref Replication_Rule_Priority
-              Prefix: !If [HasReplicationPrefix, !Ref Replication_Rule_Prefix, !Ref 'AWS::NoValue']
+            - Id: !Ref ReplicationRuleId
+              Status: !Ref ReplicationRuleStatus
+              Priority: !Ref ReplicationRulePriority
+              Prefix: !If [HasReplicationPrefix, !Ref ReplicationRulePrefix, !Ref 'AWS::NoValue']
               Destination:
-                Bucket: !Ref Replication_Rule_Destination_Bucket
-                StorageClass: !If [HasReplicationStorageClass, !Ref Replication_Rule_Destination_StorageClass, !Ref 'AWS::NoValue']
+                Bucket: !Ref ReplicationRuleDestinationBucket
+                StorageClass: !If [HasReplicationStorageClass, !Ref ReplicationRuleDestinationStorageClass, !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # VersioningConfiguration
       VersioningConfiguration: !If
         - HasVersioning
-        - Status: !Ref Versioning_Status
+        - Status: !Ref VersioningStatus
         - !Ref 'AWS::NoValue'
       
       # WebsiteConfiguration
@@ -798,15 +796,15 @@ Resources:
         - !If
           - HasWebsiteRedirectAllRequestsTo
           - RedirectAllRequestsTo:
-              HostName: !Ref Website_RedirectAllRequestsTo_HostName
-              Protocol: !If [HasWebsiteRedirectProtocol, !Ref Website_RedirectAllRequestsTo_Protocol, !Ref 'AWS::NoValue']
+              HostName: !Ref WebsiteRedirectAllRequestsToHostName
+              Protocol: !If [HasWebsiteRedirectProtocol, !Ref WebsiteRedirectAllRequestsToProtocol, !Ref 'AWS::NoValue']
           - !If
             - HasWebsiteIndexDocument
-            - IndexDocument: !Ref Website_IndexDocument
-              ErrorDocument: !If [HasWebsiteErrorDocument, !Ref Website_ErrorDocument, !Ref 'AWS::NoValue']
+            - IndexDocument: !Ref WebsiteIndexDocument
+              ErrorDocument: !If [HasWebsiteErrorDocument, !Ref WebsiteErrorDocument, !Ref 'AWS::NoValue']
               RoutingRules: !If
                 - HasWebsiteRoutingRules
-                - !Split [',', !Join [',', !Ref Website_RoutingRules]]
+                - !Split [',', !Join [',', !Ref WebsiteRoutingRules]]
                 - !Ref 'AWS::NoValue'
             - !Ref 'AWS::NoValue'
         - !Ref 'AWS::NoValue'
@@ -843,4 +841,4 @@ Outputs:
     Export:
       Name: !Sub "${AWS::StackName}-S3AccessLogsBucketWebsiteURL"
 
-                          
+
