@@ -1,0 +1,261 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for S3 bucket with all possible properties'
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Name of the S3 bucket
+    
+  AccessControl:
+    Type: String
+    Description: Canned ACL to apply to the bucket
+    Default: ''
+    AllowedValues:
+      - ''
+      - Private
+      - PublicRead
+      - PublicReadWrite
+      - AuthenticatedRead
+      - LogDeliveryWrite
+      - BucketOwnerRead
+      - BucketOwnerFullControl
+      - AwsExecRead
+      
+  AccelerateConfiguration:
+    Type: String
+    Description: Accelerate configuration status
+    Default: ''
+    AllowedValues:
+      - ''
+      - Enabled
+      - Suspended
+      
+  AnalyticsConfigurations:
+    Type: CommaDelimitedList
+    Description: List of analytics configurations (JSON format)
+    Default: ''
+    
+  BucketEncryption:
+    Type: String
+    Description: Server-side encryption configuration (JSON format)
+    Default: ''
+    
+  CorsConfiguration:
+    Type: String
+    Description: CORS configuration (JSON format)
+    Default: ''
+    
+  IntelligentTieringConfigurations:
+    Type: CommaDelimitedList
+    Description: List of intelligent tiering configurations (JSON format)
+    Default: ''
+    
+  InventoryConfigurations:
+    Type: CommaDelimitedList
+    Description: List of inventory configurations (JSON format)
+    Default: ''
+    
+  LifecycleConfiguration:
+    Type: String
+    Description: Lifecycle configuration (JSON format)
+    Default: ''
+    
+  LoggingConfiguration:
+    Type: String
+    Description: Logging configuration (JSON format)
+    Default: ''
+    
+  MetricsConfigurations:
+    Type: CommaDelimitedList
+    Description: List of metrics configurations (JSON format)
+    Default: ''
+    
+  NotificationConfiguration:
+    Type: String
+    Description: Notification configuration (JSON format)
+    Default: ''
+    
+  ObjectLockConfiguration:
+    Type: String
+    Description: Object lock configuration (JSON format)
+    Default: ''
+    
+  ObjectLockEnabled:
+    Type: String
+    Description: Enable object lock
+    Default: ''
+    AllowedValues:
+      - ''
+      - 'true'
+      - 'false'
+      
+  OwnershipControls:
+    Type: String
+    Description: Ownership controls configuration (JSON format)
+    Default: ''
+    
+  PublicAccessBlockConfiguration:
+    Type: String
+    Description: Public access block configuration (JSON format)
+    Default: ''
+    
+  ReplicationConfiguration:
+    Type: String
+    Description: Replication configuration (JSON format)
+    Default: ''
+    
+  Tags:
+    Type: CommaDelimitedList
+    Description: List of tags (Key=Value format)
+    Default: ''
+    
+  VersioningConfiguration:
+    Type: String
+    Description: Versioning configuration status
+    Default: ''
+    AllowedValues:
+      - ''
+      - Enabled
+      - Suspended
+      
+  WebsiteConfiguration:
+    Type: String
+    Description: Website configuration (JSON format)
+    Default: ''
+
+Conditions:
+  HasBucketName: !Not [!Equals [!Ref BucketName, '']]
+  HasAccessControl: !Not [!Equals [!Ref AccessControl, '']]
+  HasAccelerateConfiguration: !Not [!Equals [!Ref AccelerateConfiguration, '']]
+  HasAnalyticsConfigurations: !Not [!Equals [!Select [0, !Ref AnalyticsConfigurations], '']]
+  HasBucketEncryption: !Not [!Equals [!Ref BucketEncryption, '']]
+  HasCorsConfiguration: !Not [!Equals [!Ref CorsConfiguration, '']]
+  HasIntelligentTieringConfigurations: !Not [!Equals [!Select [0, !Ref IntelligentTieringConfigurations], '']]
+  HasInventoryConfigurations: !Not [!Equals [!Select [0, !Ref InventoryConfigurations], '']]
+  HasLifecycleConfiguration: !Not [!Equals [!Ref LifecycleConfiguration, '']]
+  HasLoggingConfiguration: !Not [!Equals [!Ref LoggingConfiguration, '']]
+  HasMetricsConfigurations: !Not [!Equals [!Select [0, !Ref MetricsConfigurations], '']]
+  HasNotificationConfiguration: !Not [!Equals [!Ref NotificationConfiguration, '']]
+  HasObjectLockConfiguration: !Not [!Equals [!Ref ObjectLockConfiguration, '']]
+  HasObjectLockEnabled: !Not [!Equals [!Ref ObjectLockEnabled, '']]
+  HasOwnershipControls: !Not [!Equals [!Ref OwnershipControls, '']]
+  HasPublicAccessBlockConfiguration: !Not [!Equals [!Ref PublicAccessBlockConfiguration, '']]
+  HasReplicationConfiguration: !Not [!Equals [!Ref ReplicationConfiguration, '']]
+  HasTags: !Not [!Equals [!Select [0, !Ref Tags], '']]
+  HasVersioningConfiguration: !Not [!Equals [!Ref VersioningConfiguration, '']]
+  HasWebsiteConfiguration: !Not [!Equals [!Ref WebsiteConfiguration, '']]
+
+Resources:
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !If [HasBucketName, !Ref BucketName, !Ref 'AWS::NoValue']
+      AccessControl: !If [HasAccessControl, !Ref AccessControl, !Ref 'AWS::NoValue']
+      AccelerateConfiguration: 
+        !If 
+          - HasAccelerateConfiguration
+          - AccelerationStatus: !Ref AccelerateConfiguration
+          - !Ref 'AWS::NoValue'
+      AnalyticsConfigurations: 
+        !If 
+          - HasAnalyticsConfigurations
+          - !Split [',', !Join [',', !Ref AnalyticsConfigurations]]
+          - !Ref 'AWS::NoValue'
+      BucketEncryption: 
+        !If 
+          - HasBucketEncryption
+          - !Ref BucketEncryption
+          - !Ref 'AWS::NoValue'
+      CorsConfiguration: 
+        !If 
+          - HasCorsConfiguration
+          - !Ref CorsConfiguration
+          - !Ref 'AWS::NoValue'
+      IntelligentTieringConfigurations: 
+        !If 
+          - HasIntelligentTieringConfigurations
+          - !Split [',', !Join [',', !Ref IntelligentTieringConfigurations]]
+          - !Ref 'AWS::NoValue'
+      InventoryConfigurations: 
+        !If 
+          - HasInventoryConfigurations
+          - !Split [',', !Join [',', !Ref InventoryConfigurations]]
+          - !Ref 'AWS::NoValue'
+      LifecycleConfiguration: 
+        !If 
+          - HasLifecycleConfiguration
+          - !Ref LifecycleConfiguration
+          - !Ref 'AWS::NoValue'
+      LoggingConfiguration: 
+        !If 
+          - HasLoggingConfiguration
+          - !Ref LoggingConfiguration
+          - !Ref 'AWS::NoValue'
+      MetricsConfigurations: 
+        !If 
+          - HasMetricsConfigurations
+          - !Split [',', !Join [',', !Ref MetricsConfigurations]]
+          - !Ref 'AWS::NoValue'
+      NotificationConfiguration: 
+        !If 
+          - HasNotificationConfiguration
+          - !Ref NotificationConfiguration
+          - !Ref 'AWS::NoValue'
+      ObjectLockConfiguration: 
+        !If 
+          - HasObjectLockConfiguration
+          - !Ref ObjectLockConfiguration
+          - !Ref 'AWS::NoValue'
+      ObjectLockEnabled: 
+        !If 
+          - HasObjectLockEnabled
+          - !Ref ObjectLockEnabled
+          - !Ref 'AWS::NoValue'
+      OwnershipControls: 
+        !If 
+          - HasOwnershipControls
+          - !Ref OwnershipControls
+          - !Ref 'AWS::NoValue'
+      PublicAccessBlockConfiguration: 
+        !If 
+          - HasPublicAccessBlockConfiguration
+          - !Ref PublicAccessBlockConfiguration
+          - !Ref 'AWS::NoValue'
+      ReplicationConfiguration: 
+        !If 
+          - HasReplicationConfiguration
+          - !Ref ReplicationConfiguration
+          - !Ref 'AWS::NoValue'
+      Tags: 
+        !If 
+          - HasTags
+          - !Split [',', !Join [',', !Ref Tags]]
+          - !Ref 'AWS::NoValue'
+      VersioningConfiguration: 
+        !If 
+          - HasVersioningConfiguration
+          - Status: !Ref VersioningConfiguration
+          - !Ref 'AWS::NoValue'
+      WebsiteConfiguration: 
+        !If 
+          - HasWebsiteConfiguration
+          - !Ref WebsiteConfiguration
+          - !Ref 'AWS::NoValue'
+
+Outputs:
+  BucketName:
+    Description: Name of the created S3 bucket
+    Value: !Ref S3Bucket
+  BucketARN:
+    Description: ARN of the created S3 bucket
+    Value: !GetAtt S3Bucket.Arn
+  BucketDomainName:
+    Description: Domain name of the created S3 bucket
+    Value: !GetAtt S3Bucket.DomainName
+  BucketRegionalDomainName:
+    Description: Regional domain name of the created S3 bucket
+    Value: !GetAtt S3Bucket.RegionalDomainName
+  BucketWebsiteURL:
+    Description: Website URL of the created S3 bucket (if website configuration is enabled)
+    Value: !GetAtt S3Bucket.WebsiteURL
+    Condition: HasWebsiteConfiguration
