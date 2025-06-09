@@ -16,9 +16,9 @@ Parameters:
     Type: String
     Description: 'The CloudFront Origin Access Identity (OAI) ID'
     Default: ''
-  OriginAccessControlId:
+  CloudFrontDistributionID:
     Type: String
-    Description: 'The CloudFront Origin Access Control (OAC) ID'
+    Description: 'The CloudFront Distribution ID (used for OAC)'
     Default: ''
 
 Conditions:
@@ -58,5 +58,5 @@ Resources:
                   - '/*'
               Condition:
                 StringEquals:
-                  'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/*'
+                  'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistributionID}'
 
