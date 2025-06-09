@@ -396,30 +396,30 @@ Outputs:
     Description: Name of the created S3 bucket
     Value: !Ref S3Bucket
     Export:
-      Name: !Sub '\${AWS::StackName}-S3AccessLogsBucketName'
+      Name: !Sub ${AWS::StackName}-S3AccessLogsBucketName
   
   BucketARN:
     Description: ARN of the created S3 bucket
     Value: !GetAtt S3Bucket.Arn
     Export:
-      Name: !Sub '\${AWS::StackName}-S3AccessLogsBucketArn'
+      Name: !Sub ${AWS::StackName}-S3AccessLogsBucketArn
   
   BucketDomainName:
     Description: Domain name of the created S3 bucket
     Value: !GetAtt S3Bucket.DomainName
     Export:
-      Name: !Sub '\${AWS::StackName}-S3AccessLogsBucketDomainName'
+      Name: !Sub ${AWS::StackName}-S3AccessLogsBucketDomainName
   
   BucketRegionalDomainName:
     Description: Regional domain name of the created S3 bucket
     Value: !GetAtt S3Bucket.RegionalDomainName
     Export:
-      Name: !Sub '\${AWS::StackName}-S3AccessLogsBucketRegionalDomainName'
+      Name: !Sub ${AWS::StackName}-S3AccessLogsBucketRegionalDomainName
   
   BucketWebsiteURL:
     Description: Website URL of the created S3 bucket (if website configuration is enabled)
     Value: !If [HasWebsiteConfiguration, !GetAtt S3Bucket.WebsiteURL, !Ref 'AWS::NoValue']
     Condition: HasWebsiteConfiguration
     Export:
-      Name: !Sub '\${AWS::StackName}-S3AccessLogsBucketWebsiteURL'
+      Name: !Sub ${AWS::StackName}-S3AccessLogsBucketWebsiteURL
       
