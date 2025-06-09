@@ -16,7 +16,7 @@ if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
   delete_failed_stack_if_exists $CLOUDFRONT_LOGS_STACK $REGION
   echo "Deploying CloudFront Logs Bucket..."
   aws cloudformation deploy \
-    --template-file cfn/s3-cloudfront-access-log-bucket.yaml \
+    --template-file cfn/s3-bucket.yaml \
     --stack-name $CLOUDFRONT_LOGS_STACK \
     --region $REGION \
     --parameter-overrides \
