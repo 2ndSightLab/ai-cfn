@@ -21,12 +21,6 @@ if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
 
   stack_exists $S3_WEBSITE_STACK $REGION
   
-  # Get the S3 bucket name from the stack outputs
-  S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
-    --stack-name $S3_WEBSITE_STACK \
-    --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucketName'].OutputValue" \
-    --output text)
-  
   # Create a sample index.html file
   read -p "Upload a sample index.html file? (y/n): " UPLOAD_SAMPLE
   if [[ "$UPLOAD_SAMPLE" == "y" || "$UPLOAD_SAMPLE" == "Y" ]]; then
@@ -39,10 +33,12 @@ if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
     
     echo "Sample index.html uploaded."
   fi
-else
-  read -p "Enter existing S3 bucket name: " S3_BUCKET_NAME
-  while [[ -z "$S3_BUCKET_NAME" ]]; do
-    echo "S3 bucket name cannot be empty."
-    read -p "Enter existing S3 bucket name: " S3_BUCKET_NAME
-  done
+  
 fi
+
+  # Get the S3 bucket name from the stack outputs
+  S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
+    --stack-name $S3_WEBSITE_STACK \
+    --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucketName'].OutputValue" \
+    --output text)
+  
