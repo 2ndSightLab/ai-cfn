@@ -65,3 +65,10 @@ CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks \
 
 echo "CloudFront Distribution Domain: $CLOUDFRONT_DOMAIN"
 
+# Get the S3 bucket name from the stack outputs
+CLOUDFRONT_DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
+    --stack-name $CLOUDFRONT_STACK \
+    --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" \
+    --output text)
+    
+echo "CloudFront Distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
