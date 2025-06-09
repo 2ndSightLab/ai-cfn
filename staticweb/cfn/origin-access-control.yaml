@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFront Origin Access Control'
+
+Parameters:
+  OACName:
+    Type: String
+    Description: Name for the Origin Access Control
+    Default: ExampleOAC
+  
+  OACDescription:
+    Type: String
+    Description: Description for the Origin Access Control
+    Default: Example Origin Access Control
+  
+  OriginType:
+    Type: String
+    Description: Type of origin that this Origin Access Control is for
+    Default: s3
+    AllowedValues:
+      - s3
+      - mediastore
+      - mediapackagev2
+      - lambda
+  
+  SigningBehavior:
+    Type: String
+    Description: Signing behavior for the Origin Access Control
+    Default: always
+    AllowedValues:
+      - always
+      - never
+      - no-override
+  
+  SigningProtocol:
+    Type: String
+    Description: Signing protocol for the Origin Access Control
+    Default: sigv4
+    AllowedValues:
+      - sigv4
+
+Resources:
+  ExampleOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Ref OACName
+        Description: !Ref OACDescription
+        OriginAccessControlOriginType: !Ref OriginType
+        SigningBehavior: !Ref SigningBehavior
+        SigningProtocol: !Ref SigningProtocol
+
+Outputs:
+  OriginAccessControlId:
+    Description: ID of the CloudFront Origin Access Control
+    Value: !GetAtt ExampleOriginAccessControl.Id
