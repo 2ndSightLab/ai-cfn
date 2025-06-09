@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'CloudFormation template to create an S3 bucket for static website hosting with CloudFront'
 
 Parameters:
-  DomainName:
+  BucketName:
     Type: String
     Description: 'The domain name for the static website (e.g., example.com)'
   CloudFrontOriginAccessIdentity:
@@ -34,18 +34,12 @@ Conditions:
   UseOAC: !Equals [!Ref OAIType, 'OAC']
 
 Resources:
-  StaticWebsiteBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Ref DomainName
-      AccessControl: Private
-    DeletionPolicy: Retain
 
   BucketPolicy:
     Type: AWS::S3::BucketPolicy
     Condition: CreateOAIBucketPolicy
     Properties:
-      Bucket: !Ref StaticWebsiteBucket
+      Bucket: !Ref BucketName
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -75,13 +69,3 @@ Resources:
                 StringEquals:
                   'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/*'
 
-Outputs:
-  BucketName:
-    Value: !Ref StaticWebsiteBucket
-    Description: Name of S3 bucket to hold website content
-  BucketRegionalDomainName:
-    Value: !GetAtt StaticWebsiteBucket.RegionalDomainName
-    Description: Regional domain name of the S3 bucket
-  BucketArn:
-    Value: !GetAtt StaticWebsiteBucket.Arn
-    Description: ARN of the S3 bucket
