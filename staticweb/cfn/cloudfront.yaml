@@ -273,7 +273,6 @@ Resources:
               - UseOAC
               - !Ref OriginAccessControlID
               - !Ref AWS::NoValue
-            S3OriginConfig: {}
             OriginShield: !If
               - UseOriginShield
               - Enabled: true
