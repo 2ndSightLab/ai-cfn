@@ -261,6 +261,9 @@ Conditions:
     - !Condition HasWebsiteIndexDocument
     - !Condition HasWebsiteRedirectAllRequestsToHostName
     
+
+Here's the corrected Resources section with the CorsConfiguration fixed:
+
 Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
