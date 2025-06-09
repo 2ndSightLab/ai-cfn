@@ -33,6 +33,26 @@ Parameters:
       - 'true'
       - 'false'
       
+  ObjectLockDefaultRetentionMode:
+    Type: String
+    Description: Default retention mode for object lock
+    Default: ''
+    AllowedValues:
+      - ''
+      - GOVERNANCE
+      - COMPLIANCE
+    
+  ObjectLockDefaultRetentionDays:
+    Type: Number
+    Description: Default retention period in days for object lock
+    Default: 0
+    
+  ObjectLockDefaultRetentionYears:
+    Type: Number
+    Description: Default retention period in years for object lock
+    Default: 0
+    
+      
   Tags:
     Type: CommaDelimitedList
     Description: List of tags (Key=Value format)
