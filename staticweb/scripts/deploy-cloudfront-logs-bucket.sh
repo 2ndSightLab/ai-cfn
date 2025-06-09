@@ -23,11 +23,7 @@ if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
     --stack-name $CLOUDFRONT_LOGS_STACK \
     --region $REGION \
     --parameter-overrides \
-      LogRetentionDays=$CF_LOG_RETENTION_DAYS \
-      TransitionToStandardIADays=$TRANSITION_STANDARD_IA_DAYS \
-      TransitionToGlacierDays=$TRANSITION_GLACIER_DAYS \
       BucketName=$BUCKET_NAME \
-    --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
     
   stack_exists $CLOUDFRONT_LOGS_STACK $REGION  
