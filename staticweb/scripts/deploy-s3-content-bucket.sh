@@ -5,9 +5,9 @@ echo "deploy-s3-content-bucket.sh"
 # S3 bucket for website content
 read -p "Deploy S3 bucket for website content? (y/n): " DEPLOY_S3_BUCKET
 if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
-  read -p "S3 bucket name (default: ${DOMAIN_NAME}-content): " S3_BUCKET_NAME
   S3_BUCKET_NAME=${S3_BUCKET_NAME:-"${DOMAIN_NAME}-content"}
-  
+  read -p "S3 bucket name: ${DOMAIN_NAME}-content. Enter to continue or enter a new bucket name: " S3_BUCKET_NAME
+
   delete_failed_stack_if_exists $S3_WEBSITE_STACK $REGION
   
   echo "Deploying S3 bucket for website content..."
