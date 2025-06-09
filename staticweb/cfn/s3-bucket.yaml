@@ -260,7 +260,7 @@ Conditions:
   HasWebsiteConfiguration: !Or
     - !Condition HasWebsiteIndexDocument
     - !Condition HasWebsiteRedirectAllRequestsToHostName
-    
+
 Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
