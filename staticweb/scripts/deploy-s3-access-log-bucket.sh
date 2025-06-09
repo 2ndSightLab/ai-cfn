@@ -45,7 +45,6 @@ if [ ! -f "cfn/s3-bucket.yaml" ]; then
   exit 1
 fi
 
-BUCKET_NAME=${BUCKET_NAME:-"${DOMAIN_NAME}-s3-access-logs"}
 S3_ACCESS_LOGS_BUCKET_NAME="$STACK_NAME_PREFIX-s3-logs-$BUCKET_NAME_SUFFIX"
 
 # S3 Access Logs Bucket
@@ -62,7 +61,7 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
     --stack-name $S3_ACCESS_LOGS_STACK \
     --region $REGION \
     --parameter-overrides \
-      BucketName=$BUCKET_NAME \
+      BucketName=$S3_ACCESS_LOGS_BUCKET_NAME \
       AccessControl=LogDeliveryWrite \
       VersioningStatus=Enabled \
       LifecycleRuleId=ExpireLogsRule \
