@@ -23,7 +23,7 @@ read -p "Do you want to use Origin Access Control (OAC) to permit CloudFront to 
 if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
 
   echo "Creating Origin Access Control Stack"
-  delete_stack $OAI_STACK
+  delete_stack $OAI_STACK $REGION
   TEMPLATE_FILE="cfn/origin-access-control.yaml"
   delete_failed_stack_if_exists $OAC_STACK $REGION
   
@@ -38,7 +38,7 @@ if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
 else
 
   echo "Creating Origin Access Identity Stack"
-  delete_stack $OAC_STACK
+  delete_stack $OAC_STACK $REGION
   TEMPLATE_FILE="cfn/origin-access-identity.yaml"
   # Delete failed stack if it exists
   delete_failed_stack_if_exists $OAI_STACK $REGION
