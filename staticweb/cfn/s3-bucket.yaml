@@ -1,4 +1,3 @@
-
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'CloudFormation template for S3 bucket with all possible properties as parameters'
 
@@ -43,7 +42,7 @@ Conditions:
   HasBucketName: !Not [!Equals [!Ref BucketName, '']]
   HasAccessControl: !Not [!Equals [!Ref AccessControl, '']]
   HasObjectLockEnabled: !Not [!Equals [!Ref ObjectLockEnabled, '']]
-  HasTags: !Not [!Equals [!Select [0, !Ref Tags], '']]
+  HasTags: !Not [!Equals [!Select [0, !Ref Tags], '']
   
   # Child object conditions
   HasAccelerateConfiguration: !Not [!Equals [!Ref AccelerateConfigurationAccelerationStatus, '']]
@@ -99,18 +98,10 @@ Conditions:
   HasLambdaNotification: !And
     - !Not [!Equals [!Ref NotificationLambdaEvent, '']]
     - !Not [!Equals [!Ref NotificationLambdaFunction, '']]
-  HasLambdaFilterPrefix: !Not [!Equals [!Ref NotificationLambdaFilterPrefix, '']]
-  HasLambdaFilterSuffix: !Not [!Equals [!Ref NotificationLambdaFilterSuffix, '']]
-  
   HasQueueNotification: !And
     - !Not [!Equals [!Ref NotificationQueueEvent, '']]
     - !Not [!Equals [!Ref NotificationQueueQueue, '']]
-  HasQueueFilterPrefix: !Not [!Equals [!Ref NotificationQueueFilterPrefix, '']]
-  HasQueueFilterSuffix: !Not [!Equals [!Ref NotificationQueueFilterSuffix, '']]
-  
-  HasTopicNotification: !And
-    - !Not [!Equals [!Ref NotificationTopicEvent, '']]
-    - !Not [!Equals [!Ref NotificationTopicTopic, '']]
+  HasTopicNotification: !Not [!Equals [!Ref NotificationTopicEvent, '']]
   HasTopicFilterPrefix: !Not [!Equals [!Ref NotificationTopicFilterPrefix, '']]
   HasTopicFilterSuffix: !Not [!Equals [!Ref NotificationTopicFilterSuffix, '']]
   
@@ -124,8 +115,6 @@ Conditions:
     - !Not [!Equals [!Ref ObjectLockDefaultRetentionMode, '']]
     - !Not [!Equals [!Ref ObjectLockDefaultRetentionDays, 0]]
     - !Not [!Equals [!Ref ObjectLockDefaultRetentionYears, 0]]
-  HasObjectLockRetentionDays: !Not [!Equals [!Ref ObjectLockDefaultRetentionDays, 0]]
-  HasObjectLockRetentionYears: !Not [!Equals [!Ref ObjectLockDefaultRetentionYears, 0]]
   
   # OwnershipControls conditions
   HasOwnershipControls: !Not [!Equals [!Ref OwnershipControlsRule, '']]
@@ -135,8 +124,6 @@ Conditions:
     - !Not [!Equals [!Ref ReplicationRole, '']]
     - !Not [!Equals [!Ref ReplicationRuleId, '']]
     - !Not [!Equals [!Ref ReplicationRuleDestinationBucket, '']]
-  HasReplicationPrefix: !Not [!Equals [!Ref ReplicationRulePrefix, '']]
-  HasReplicationStorageClass: !Not [!Equals [!Ref ReplicationRuleDestinationStorageClass, '']]
   
   # Versioning conditions
   HasVersioning: !Not [!Equals [!Ref VersioningStatus, '']]
@@ -191,7 +178,7 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: !Ref BucketEncryptionSSEAlgorithm
               KMSMasterKeyID: !If [HasBucketEncryptionKMSKey, !Ref BucketEncryptionKMSMasterKeyID, '']
-            BucketKeyEnabled: !If [HasBucketKeyEnabled, !Ref BucketEncryptionBucketKeyEnabled, 'false']
+              BucketKeyEnabled: !If [HasBucketKeyEnabled, !Ref BucketEncryptionBucketKeyEnabled, 'false']
         - !Ref 'AWS::NoValue'
       
       # CorsConfiguration
@@ -209,7 +196,6 @@ Resources:
       IntelligentTieringConfigurations: !If
         - HasIntelligentTiering
         - - Id: !Ref IntelligentTieringId
-            Status: !Ref IntelligentTieringStatus
             Prefix: !If [HasIntelligentTieringPrefix, !Ref IntelligentTieringPrefix, '']
             TagFilters: !If 
               - HasIntelligentTieringTagFilters
@@ -226,10 +212,9 @@ Resources:
             Schedule:
               Frequency: !If [HasInventoryScheduleFrequency, !Ref InventoryScheduleFrequency, 'Weekly']
             Destination:
-              BucketArn: !If [HasInventoryDestinationBucketArn, !Ref InventoryDestinationBucketArn, '']
-              Format: !If [HasInventoryDestinationFormat, !Ref InventoryDestinationFormat, 'CSV']
-              Prefix: !If [HasInventoryPrefix, !Ref InventoryDestinationPrefix, '']
-              OptionalFields: !If [HasInventoryOptionalFields, !Ref InventoryOptionalFields, '']
+              BucketArn: !If [HasInventoryDestination, !Ref InventoryDestinationBucketArn, '']
+              Format: !If [HasInventoryFormat, !Ref InventoryFormat, 'CSV']
+              Prefix: !If [HasInventoryPrefix, !Ref InventoryPrefix, '']
         - !Ref 'AWS::NoValue'
       
       # LifecycleConfiguration
@@ -277,13 +262,13 @@ Resources:
                   - S3Key:
                       Rules:
                         - Name: prefix
-                          Value: !Ref NotificationLambdaFilterPrefix
+                          Value: !Ref LambdaFilterPrefix
                   - !If
                     - HasLambdaFilterSuffix
                     - S3Key:
                         Rules:
                           - Name: suffix
-                            Value: !Ref NotificationLambdaFilterSuffix
+                            Value: !Ref LambdaFilterSuffix
                     - !Ref 'AWS::NoValue'
             - !Ref 'AWS::NoValue'
           QueueConfigurations: !If
@@ -295,13 +280,13 @@ Resources:
                   - S3Key:
                       Rules:
                         - Name: prefix
-                          Value: !Ref NotificationQueueFilterPrefix
+                          Value: !Ref QueueFilterPrefix
                   - !If
                     - HasQueueFilterSuffix
                     - S3Key:
                         Rules:
                           - Name: suffix
-                            Value: !Ref NotificationQueueFilterSuffix
+                            Value: !Ref QueueFilterSuffix
                     - !Ref 'AWS::NoValue'
             - !Ref 'AWS::NoValue'
           TopicConfigurations: !If
@@ -313,13 +298,13 @@ Resources:
                   - S3Key:
                       Rules:
                         - Name: prefix
-                          Value: !Ref NotificationTopicFilterPrefix
+                          Value: !Ref TopicFilterPrefix
                   - !If
                     - HasTopicFilterSuffix
                     - S3Key:
                         Rules:
                           - Name: suffix
-                            Value: !Ref NotificationTopicFilterSuffix
+                            Value: !Ref TopicFilterSuffix
                     - !Ref 'AWS::NoValue'
             - !Ref 'AWS::NoValue'
         - !Ref 'AWS::NoValue'
@@ -332,8 +317,8 @@ Resources:
             - !Not [!Equals [!Ref ObjectLockDefaultRetentionMode, '']]
             - DefaultRetention:
                 Mode: !Ref ObjectLockDefaultRetentionMode
-                Days: !If [HasObjectLockRetentionDays, !Ref ObjectLockDefaultRetentionDays, 0]
-                Years: !If [HasObjectLockRetentionYears, !Ref ObjectLockDefaultRetentionYears, 0]
+                Days: !If [HasObjectLockDefaultRetentionDays, !Ref ObjectLockDefaultRetentionDays, 0]
+                Years: !If [HasObjectLockDefaultRetentionYears, !Ref ObjectLockDefaultRetentionYears, 0]
             - !Ref 'AWS::NoValue'
         - !Ref 'AWS::NoValue'
       
@@ -351,11 +336,10 @@ Resources:
           Rules:
             - Id: !Ref ReplicationRuleId
               Status: !Ref ReplicationRuleStatus
-              Priority: !If [HasReplicationPriority, !Ref ReplicationRulePriority, 0]
-              Prefix: !If [HasReplicationPrefix, !Ref ReplicationRulePrefix, '']
+              Prefix: !If [HasReplicationPrefix, !Ref ReplicationPrefix, '']
               Destination:
                 Bucket: !Ref ReplicationRuleDestinationBucket
-                StorageClass: !If [HasReplicationStorageClass, !Ref ReplicationRuleDestinationStorageClass, '']
+                StorageClass: !If [HasReplicationStorageClass, !Ref ReplicationStorageClass, '']
         - !Ref 'AWS::NoValue'
       
       # VersioningConfiguration
@@ -371,7 +355,7 @@ Resources:
           - HasWebsiteRedirectAllRequestsTo
           - RedirectAllRequestsTo:
               HostName: !Ref WebsiteRedirectAllRequestsToHostName
-              Protocol: !If [HasWebsiteRedirectProtocol, !Ref WebsiteRedirectAllRequestsToProtocol, 'http']
+              Protocol: !If [HasWebsiteRedirectProtocol, !Ref WebsiteRedirectAllRequestsToProtocol, '']
           - !If
             - HasWebsiteIndexDocument
             - IndexDocument: !Ref WebsiteIndexDocument
