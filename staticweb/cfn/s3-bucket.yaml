@@ -261,9 +261,6 @@ Conditions:
     - !Condition HasWebsiteIndexDocument
     - !Condition HasWebsiteRedirectAllRequestsToHostName
     
-
-Here's the corrected Resources section with the CorsConfiguration fixed:
-
 Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
@@ -283,7 +280,8 @@ Resources:
       CorsConfiguration:
         !If [HasCorsConfiguration,
           CorsRules:
-            - AllowedHeaders: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedHeaders], !Ref 'AWS::NoValue']
+            - 
+              AllowedHeaders: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedHeaders], !Ref 'AWS::NoValue']
               AllowedMethods: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedMethods], !Ref 'AWS::NoValue']
               AllowedOrigins: !If [HasCorsAllowedOrigins, !Join [',', !Ref CorsConfigurationAllowedOrigins], !Ref 'AWS::NoValue']
         !Ref 'AWS::NoValue'
