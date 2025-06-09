@@ -217,7 +217,7 @@ Conditions:
   HasBucketName: !Not [!Equals [!Ref BucketName, '']]
   HasAccessControl: !Not [!Equals [!Ref AccessControl, '']]
   HasObjectLockEnabled: !Not [!Equals [!Ref ObjectLockEnabled, '']]
-  HasTags: !Not [!Equals [!Select [0, !Ref Tags], '']
+  HasTags: !Not [!Equals [!Select [0, !Ref Tags], '']]
   
   # CORS conditions
   HasCorsConfiguration: !Not [!Equals [!Select [0, !Ref CorsConfigurationAllowedHeaders], '']]
@@ -227,8 +227,7 @@ Conditions:
   HasCorsMaxAge: !Not [!Equals [!Select [0, !Ref CorsConfigurationMaxAge], '']]
   
   # Lifecycle conditions
-  HasLifecycleConfiguration: !Not [!Equals [!Select [0, !Ref LifecycleConfigurationTagFilters], '']]
-  HasLifecyclePrefix: !Not [!Equals [!Select [0, !Ref LifecycleConfigurationPrefix], '']]
+  HasLifecycleConfiguration: !Not [!Equals [!Select [0, !Ref LifecycleConfigurationPrefix], '']]
   
   # Logging conditions
   HasLoggingConfiguration: !Not [!Equals [!Select [0, !Ref LoggingConfigurationDestination], '']]
@@ -289,87 +288,76 @@ Resources:
           - AllowedOrigins: !If [HasCorsAllowedOrigins, !Join [',', !Ref CorsConfigurationAllowedOrigins], !Ref 'AWS::NoValue']
           - ExposedHeaders: !If [HasCorsExposedHeaders, !Join [',', !Ref CorsConfigurationExposedHeaders], !Ref 'AWS::NoValue']
           - MaxAge: !If [HasCorsMaxAge, !Ref CorsConfigurationMaxAge, !Ref 'AWS::NoValue']
-        - !Ref 'AWS::NoValue'
       
       # LifecycleConfiguration
       LifecycleConfiguration: !If
         - HasLifecycleConfiguration
         - Rules:
-          - Id: !If [HasLifecyclePrefix, !Ref LifecycleConfigurationPrefix, !Ref 'AWS::NoValue']
-        - !Ref 'AWS::NoValue'
+          - Id: !If [HasLifecycleConfigurationPrefix, !Ref LifecycleConfigurationPrefix, !Ref 'AWS::NoValue']
       
       # LoggingConfiguration
       LoggingConfiguration: !If
         - HasLoggingConfiguration
         - LoggingRules:
           - Destination: !If [HasLoggingConfigurationDestination, !Ref LoggingConfigurationDestination, !Ref 'AWS::NoValue']
-          - LogFilePrefix: !If [HasLoggingConfigurationLogFilePrefix, !Ref LoggingConfigurationLogFilePrefix, !Ref 'AWS::NoValue']
-        - !Ref 'AWS::NoValue'
+          - LogFilePrefix: !If [HasLoggingConfigurationDestination, !Ref LoggingConfigurationDestination, !Ref 'AWS::NoValue']
       
       # MetricsConfiguration
       MetricsConfiguration: !If
         - HasMetricsConfiguration
         - - Id: !If [HasMetricsConfigurationPrefix, !Ref MetricsConfigurationPrefix, !Ref 'AWS::NoValue']
-        - !Ref 'AWS::NoValue'
       
       # NotificationConfiguration
       NotificationConfiguration: !If
         - HasLambdaNotification
-        - LambdaConfigurations: !If
-            - HasLoggingConfiguration
-            - - Event: !If [HasLambdaNotification, !Ref NotificationLambdaEvent, !Ref 'AWS::NoValue']
-              Function: !If [HasLambdaNotification, !Ref NotificationLambdaFunction, !Ref 'AWS::NoValue']
-            - !Ref 'AWS::NoValue'
+        - LambdaConfigurations:
+          - Event: !If [HasLambdaNotification, !Ref NotificationLambdaEvent, !Ref 'AWS::NoValue']
+          - Function: !If [HasLambdaNotification, !Ref NotificationLambdaFunction, !Ref 'AWS::NoValue']
         - !If
-            - HasQueueNotification
-            - QueueConfigurations: !If
-                - HasLoggingConfiguration
-                - - Event: !If [HasQueueNotification, !Ref NotificationQueueEvent, !Ref 'AWS::NoValue']
-                  Queue: !If [HasQueueNotification, !Ref NotificationQueue, !Ref 'AWS::NoValue']
-            - !Ref 'AWS::NoValue'
-        - !Ref 'AWS::NoValue'
+          - HasQueueNotification
+          - QueueConfigurations:
+              - Event: !If [HasQueueNotification, !Ref NotificationQueueEvent, !Ref 'AWS::NoValue']
+          - !If
+              - HasTopicNotification
+              - TopicConfigurations:
+                  - Event: !If [HasTopicNotification, !Ref NotificationTopicEvent, !Ref 'AWS::NoValue']
+                  - Topic: !If [HasTopicNotification, !Ref NotificationTopic, !Ref 'AWS::NoValue']
       
       # BucketEncryption
       BucketEncryption: !If
         - HasBucketEncryptionSSEAlgorithm
-        - ServerSideEncryptionConfiguration:
-            ServerSideEncryptionByDefault:
-              SSEAlgorithm: !If [HasBucketEncryptionSSEAlgorithm, !Ref BucketEncryptionSSEAlgorithm, !Ref 'AWS::NoValue']
-        - !Ref 'AWS::NoValue'
+        - ServerSideEncryptionByDefault:
+            SSEAlgorithm: !If [HasBucketEncryptionSSEAlgorithm, !Ref BucketEncryptionSSEAlgorithm, !Ref 'AWS::NoValue']
       
       # OwnershipControls
       OwnershipControls: !If
         - HasOwnershipControls
-        - OwnershipControlsEnabled: !Ref OwnershipControls
-        - !Ref 'AWS::NoValue'
+        - OwnershipControlsEnabled: !If [HasOwnershipControls, !Ref OwnershipControls, !Ref 'AWS::NoValue']
       
       # ReplicationConfiguration
       ReplicationConfiguration: !If
         - HasReplicationConfiguration
         - Rules:
           - Id: !If [HasReplicationConfigurationPrefix, !Ref ReplicationConfigurationPrefix, !Ref 'AWS::NoValue']
-        - !Ref 'AWS::NoValue'
       
       # VersioningConfiguration
       VersioningConfiguration: !If
         - HasVersioningConfiguration
-        - Status: !If [HasVersioningConfigurationStatus, !Ref VersioningConfigurationStatus, !Ref 'AWS::NoValue']
-        - !Ref 'AWS::NoValue'
+        - Status: !If [HasVersioningConfiguration, !Ref VersioningConfigurationStatus, !Ref 'AWS::NoValue']
       
       # WebsiteConfiguration
       WebsiteConfiguration: !If
         - HasWebsiteConfiguration
         - !If
+          - HasWebsiteIndexDocument
+          - IndexDocument: !If [HasWebsiteIndexDocument, !Ref WebsiteIndexDocument, !Ref 'AWS::NoValue']
+            ErrorDocument: !If [HasWebsiteErrorDocument, !Ref WebsiteErrorDocument, !Ref 'AWS::NoValue']
+            RoutingRules: !If [HasWebsiteRoutingRules, !Join [',', !Ref WebsiteRoutingRules], !Ref 'AWS::NoValue']
+        - !If
           - HasWebsiteRedirectAllRequestsToHostName
           - RedirectAllRequestsTo:
               HostName: !If [HasWebsiteRedirectAllRequestsToHostName, !Ref WebsiteRedirectAllRequestsToHostName, !Ref 'AWS::NoValue']
               Protocol: !If [HasWebsiteRedirectProtocol, !Ref WebsiteRedirectAllRequestsToProtocol, !Ref 'AWS::NoValue']
-          - !If
-            - HasWebsiteIndexDocument
-            - IndexDocument: !If [HasWebsiteIndexDocument, !Ref WebsiteIndexDocument, !Ref 'AWS::NoValue']
-              ErrorDocument: !If [HasWebsiteErrorDocument, !Ref WebsiteErrorDocument, !Ref 'AWS::NoValue']
-              RoutingRules: !If [HasWebsiteRoutingRules, !Join [',', !Ref WebsiteRoutingRules], !Ref 'AWS::NoValue']
-        - !Ref 'AWS::NoValue'
 
 Outputs:
   BucketName:
