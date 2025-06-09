@@ -30,6 +30,7 @@ OAI_STACK="${STACK_NAME_PREFIX}-origin-access-identity"
 OAC_STACK="${STACK_NAME_PREFIX}-origin-access-control"
 
 source ./scripts/stack-exists.sh
+source ./scripts/delete-stack.sh
 source ./scripts/delete-failed-stack-if-exists.sh
 source ./scripts/deploy-hosted-zone.sh
 source ./scripts/check-certificate-exists.sh
