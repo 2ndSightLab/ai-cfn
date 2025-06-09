@@ -5,12 +5,10 @@ Parameters:
   OACName:
     Type: String
     Description: Name for the Origin Access Control
-    Default: ExampleOAC
   
   OACDescription:
     Type: String
     Description: Description for the Origin Access Control
-    Default: Example Origin Access Control
   
   OriginType:
     Type: String
