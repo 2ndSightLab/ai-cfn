@@ -37,7 +37,7 @@ source ./scripts/delete-existing-certificates.sh
 source ./scripts/deploy-tls-cert.sh
 source ./scripts/deploy-s3-access-log-bucket.sh
 source ./scripts/deploy-cloudfront-logs-bucket.sh
-source ./scripts/origin-access-identity.sh
+source ./scripts/deploy-origin-access-identity.sh
 source ./scripts/deploy-s3-content-bucket.sh
 source ./scripts/deploy-cloudfront-distribution.sh
 
