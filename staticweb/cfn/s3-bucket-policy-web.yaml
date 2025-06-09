@@ -53,7 +53,7 @@ Resources:
               Resource: !Join 
                 - ''
                 - - 'arn:aws:s3:::'
-                  - !Ref StaticWebsiteBucket
+                  - !Ref BucketName
                   - '/*'
             - Sid: AllowCloudFrontOACAccess
               Effect: Allow
@@ -63,7 +63,7 @@ Resources:
               Resource: !Join 
                 - ''
                 - - 'arn:aws:s3:::'
-                  - !Ref StaticWebsiteBucket
+                  - !Ref BucketName
                   - '/*'
               Condition:
                 StringEquals:
