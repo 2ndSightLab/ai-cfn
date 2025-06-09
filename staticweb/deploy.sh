@@ -27,7 +27,7 @@ CERT_VALIDATION_STACK="${STACK_NAME_PREFIX}-cert-validation"
 DNS_RECORDS_STACK="${STACK_NAME_PREFIX}-dns-records"
 CLOUDFRONT_STACK="${STACK_NAME_PREFIX}-cloudfront"
 OAI_STACK="${STACK_NAME_PREFIX}-origin-access-identity"
-
+OAC_STACK="${STACK_NAME_PREFIX}-origin-access-control"
 
 source ./scripts/stack-exists.sh
 source ./scripts/delete-failed-stack-if-exists.sh
@@ -37,7 +37,7 @@ source ./scripts/delete-existing-certificates.sh
 source ./scripts/deploy-tls-cert.sh
 source ./scripts/deploy-s3-access-log-bucket.sh
 source ./scripts/deploy-cloudfront-logs-bucket.sh
-source ./scripts/deploy-origin-access-identity.sh
+source ./scripts/deploy-cloudfront-access-control.sh
 source ./scripts/deploy-s3-content-bucket.sh
 source ./scripts/deploy-cloudfront-distribution.sh
 
