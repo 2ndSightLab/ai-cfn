@@ -1,7 +1,8 @@
 #!/bin/bash
 
-TEMPLATE_FILE="cfn/origin-access-identity.yaml"
+TEMPLATE_FILE=""
 OAI_ID=""
+OAC_ID=""
 
 # Check if OAI_STACK is set
 if [ -z "$OAI_STACK" ]; then
@@ -10,8 +11,35 @@ if [ -z "$OAI_STACK" ]; then
   exit 1
 fi
 
-read -p "Do you want to use an Origin Access Identity (OAI) in your S3 bucket policy instead of Origin Access Control (OAC)? OAC is the default and recommended by AWS. (y/n): " DEPLOY_OAI
-if [[ "$DEPLOY_OAI" == "y" || "$DEPLOY_OAI" == "Y" ]]; then
+# Check if OAC_STACK is set
+if [ -z "$OAC_STACK" ]; then
+  echo "Error: OAC_STACK variable is not set. Please set it before running this script."
+  echo "Example: export OAC_STACK=\"cloudfront-oac-stack\""
+  exit 1
+fi
+
+read -p "Do you want to use Origin Access Control (OAC) to permit CloudFront to access the S3 bucket (Recommended)? If you do not respond y then Origin Access Identity will be used (OAI) (y/n): " DEPLOY_OAC
+
+if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
+
+  echo "Creating Origin Access Control Stack"
+  delete_stack $OAI_STACK
+  TEMPLATE_FILE="cfn/origin-access-control.yaml"
+  delete_failed_stack_if_exists $OAC_STACK
+  
+  aws cloudformation deploy \
+    --stack-name $OAC_STACK \
+    --template-file $TEMPLATE_FILE \
+    --parameter-overrides OACName=$STACK_PREFIX OriginType=s3
+    
+  echo "CloudFront Origin Access Control created successfully."
+  echo "OAC ID: $OAC_ID"
+  
+else
+
+  echo "Creating Origin Access Identity Stack"
+  delete_stack $OAC_STACK
+  TEMPLATE_FILE="cfn/origin-access-identity.yaml"
   # Delete failed stack if it exists
   delete_failed_stack_if_exists $OAI_STACK
   
@@ -21,23 +49,7 @@ if [[ "$DEPLOY_OAI" == "y" || "$DEPLOY_OAI" == "Y" ]]; then
     --template-body file://$TEMPLATE_FILE
 
   stack_exists $OAI_STACK
-else
-  # Check if the stack exists
-  if aws cloudformation describe-stacks --stack-name $OAI_STACK &>/dev/null; then
-    # Delete the stack
-    echo "Deleting stack $OAI_STACK..."
-    aws cloudformation delete-stack --stack-name $OAI_STACK
-
-    # Wait for the stack deletion to complete
-    echo "Waiting for stack $OAI_STACK deletion to complete..."
-    aws cloudformation wait stack-delete-complete --stack-name $OAI_STACK
-
-    echo "Stack $OAI_STACK has been deleted successfully."
-  fi
-fi
-
-# Get the OAI ID from the stack outputs if the stack exists
-if aws cloudformation describe-stacks --stack-name $OAI_STACK &>/dev/null; then
+  
   OAI_ID=$(aws cloudformation describe-stacks \
     --stack-name $OAI_STACK \
     --query "Stacks[0].Outputs[?OutputKey=='OriginAccessIdentityId'].OutputValue" \
@@ -46,3 +58,4 @@ if aws cloudformation describe-stacks --stack-name $OAI_STACK &>/dev/null; then
   echo "CloudFront Origin Access Identity created successfully."
   echo "OAI ID: $OAI_ID"
 fi
+
