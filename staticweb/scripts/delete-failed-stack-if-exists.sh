@@ -19,12 +19,12 @@ delete_failed_stack_if_exists() {
     
     if [[ "$STACK_STATUS" == *"FAILED"* || "$STACK_STATUS" == *"ROLLBACK_COMPLETE"* ]]; then
         echo "Check if status exists in a failed state"
-        echo "Stack $TLS_CERTIFICATE_STACK exists in a failed state ($STACK_STATUS)."
+        echo "Stack $stack_name exists in a failed state ($STACK_STATUS)."
         echo "Deleting it before redeployment..."
         aws cloudformation delete-stack --stack-name $stack_name --region $region
         
         echo "Waiting for stack deletion to complete..."
-        aws cloudformation wait stack-delete-complete --stack-name $TLS_CERTIFICATE_STACK --region $region
+        aws cloudformation wait stack-delete-complete --stack-name $stack_name --region $region
         echo "Stack deletion complete."
      fi
   fi
