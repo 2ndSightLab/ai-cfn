@@ -18,6 +18,8 @@ fi
 #causes problems due to child process
 read -p "Deploy TLS certificate? (y/n): " DEPLOY_CERTIFICATE
 if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
+
+    source ./scripts/delete-existing-certificates.sh
   
     if [[ -z "$HOSTED_ZONE_ID" ]]; then
       echo "Enter hosted zone ID:"
