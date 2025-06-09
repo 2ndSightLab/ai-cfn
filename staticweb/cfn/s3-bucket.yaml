@@ -6,21 +6,23 @@ Parameters:
   BucketName:
     Type: String
     Description: Name of the S3 bucket
-    
-  AccessControl:
-    Type: String
-    Description: Canned ACL to apply to the bucket
-    Default: ''
-    AllowedValues:
-      - ''
-      - Private
-      - PublicRead
-      - PublicReadWrite
-      - AuthenticatedRead
-      - LogDeliveryWrite
-      - BucketOwnerRead
-      - BucketOwnerFullControl
-      - AwsExecRead
+
+  #Never use ACLs. Use a bucket policy.
+  #Should use CloudFront and never make bucket public
+  #AccessControl:
+  #  Type: String
+  #  Description: Canned ACL to apply to the bucket
+  #  Default: ''
+  #  AllowedValues:
+  #    - ''
+  #   - Private
+  #    - PublicRead
+  #    - PublicReadWrite
+  #    - AuthenticatedRead
+  #    - LogDeliveryWrite
+  #    - BucketOwnerRead
+  #    - BucketOwnerFullControl
+  #    - AwsExecRead
       
   ObjectLockEnabled:
     Type: String
@@ -229,7 +231,7 @@ Parameters:
 
 Conditions:
   HasBucketName: !Not [!Equals [!Ref BucketName, '']]
-  HasAccessControl: !Not [!Equals [!Ref AccessControl, '']]
+  #HasAccessControl: !Not [!Equals [!Ref AccessControl, '']]
   HasObjectLockEnabled: !Not [!Equals [!Ref ObjectLockEnabled, '']]
   HasTags: !Not [!Equals [!Select [0, !Ref Tags], '']]
   
@@ -282,15 +284,15 @@ Resources:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: !If [HasBucketName, !Ref BucketName, !Ref 'AWS::NoValue']
-      AccessControl: !If [HasAccessControl, !Ref AccessControl, !Ref 'AWS::NoValue']
+      #AccessControl: !If [HasAccessControl, !Ref AccessControl, !Ref 'AWS::NoValue']
       ObjectLockEnabled: !If [HasObjectLockEnabled, !Ref ObjectLockEnabled, !Ref 'AWS::NoValue']
       Tags: !If [HasTags, !Join [',', !Ref Tags], !Ref 'AWS::NoValue']
 
-      # PublicAccessBlockConfiguration - set to true by default
+      # PublicAccessBlockConfiguration - always true
       PublicAccessBlockConfiguration:
-        BlockPublicAcls: !If [HasBucketName, true, !Ref 'AWS::NoValue']
-        IgnorePublicAcls: !If [HasBucketName, true, !Ref 'AWS::NoValue']
-        RestrictPublicBuckets: !If [HasBucketName, true, !Ref 'AWS::NoValue']
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
 
       # CORSConfiguration
       CorsConfiguration:
@@ -301,6 +303,7 @@ Resources:
                 AllowedMethods: !If [HasCorsAllowedMethods, !Ref CorsConfigurationAllowedMethods, !Ref 'AWS::NoValue']
                 AllowedOrigins: !If [HasCorsAllowedOrigins, !Ref CorsConfigurationAllowedOrigins, !Ref 'AWS::NoValue']
           - !Ref 'AWS::NoValue'
+
 
       # LifecycleConfiguration
       #LifecycleConfiguration:
@@ -356,7 +359,7 @@ Resources:
               - ObjectOwnership: BucketOwnerPreferred  # Valid values: BucketOwnerPreferred, ObjectWriter, BucketOwnerEnforced
           - !Ref 'AWS::NoValue'
 
-
+      # Hard to set this way because Rules is a list
       # ReplicationConfiguration
       #ReplicationConfiguration:
       #  !If 
