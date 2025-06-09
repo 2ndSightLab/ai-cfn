@@ -18,13 +18,6 @@ if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
       BucketName=$S3_BUCKET_NAME \
       DeletionPolicy=Retain \
     --no-fail-on-empty-changeset
-    
-  aws cloudformation deploy \
-    --template-file cfn/s3-bucket-policy-web.yaml \
-    --stack-name $S3_POLICY_WEBSITE_STACK \
-    --parameter-overrides \
-      BucketName=$S3_BUCKET_NAME \
-    --no-fail-on-empty-changeset
 
   stack_exists $S3_WEBSITE_STACK $REGION
   
