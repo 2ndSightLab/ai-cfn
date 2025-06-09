@@ -543,7 +543,7 @@ Resources:
       
       # AccelerateConfiguration
       AccelerateConfiguration: !If
-        - HasAcceleateConfiguration
+        - HasAccelerateConfiguration
         - AccelerationStatus: !Ref !Select [0, !Ref AccelerateConfiguration]
         - !Ref 'AWS::NoValue'
       
@@ -665,7 +665,7 @@ Resources:
       # ReplicationConfiguration
       ReplicationConfiguration: !If
         - HasReplicationConfiguration
-        - Role: !Ref !Select [0, !Ref ReplicationConfigurationRole]
+        - Role: !Ref !Select [0, !Ref ReplicationConfiguration]
         - Rules:
           - Id: !Ref !Select [0, !Ref ReplicationConfigurationRuleId]
             Status: !Ref !Select [0, !Ref ReplicationConfigurationRuleStatus]
