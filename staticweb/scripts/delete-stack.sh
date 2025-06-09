@@ -5,7 +5,7 @@ delete_stack() {
   local region="$2"
   
   if [ "$region" == "" ]; then
-     echo "Region not set checking to see if $stack_name exists in a failed state and needs to be deleted"; exit
+     echo "Region not set deleting stack $stack_name"; exit
   fi
   
   # Check if the stack exists
