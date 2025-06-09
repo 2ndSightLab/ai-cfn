@@ -41,6 +41,7 @@ source ./scripts/deploy-cloudfront-logs-bucket.sh
 source ./scripts/deploy-cloudfront-access.sh
 source ./scripts/deploy-s3-content-bucket.sh
 source ./scripts/deploy-cloudfront-distribution.sh
+source ./scripts/s3-bucket-policy-content.sh
 
 
 echo "Deployment complete!"
