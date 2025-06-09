@@ -198,7 +198,6 @@ Resources:
         QueryStringsConfig:
           QueryStringBehavior: none
 
-  # Response Headers Policy with security headers
   SecurityHeadersPolicy:
     Type: AWS::CloudFront::ResponseHeadersPolicy
     Properties:
@@ -221,25 +220,26 @@ Resources:
             IncludeSubdomains: true
             Preload: true
             Override: true
-          # X-XSS-Protection header removed as it's deprecated
         CorsConfig:
           AccessControlAllowCredentials: false
           AccessControlAllowHeaders:
-            - 'Content-Type'
-            - 'Authorization'
-            - 'X-Requested-With'
-            - 'Origin'
-            - 'Accept'
+            Items:
+              - 'Content-Type'
+              - 'Authorization'
+              - 'X-Requested-With'
+              - 'Origin'
+              - 'Accept'
           AccessControlAllowMethods:
-            - GET
-            - HEAD
-            - OPTIONS
+            Items:
+              - GET
+              - HEAD
+              - OPTIONS
           AccessControlAllowOrigins:
-            - !Sub 'https://${DomainName}'
-            - !If [IncludeWWWAlias, !Sub 'https://www.${DomainName}', !Ref 'AWS::NoValue']
+            Items:
+              - !Sub 'https://${DomainName}'
+              - !If [IncludeWWWAlias, !Sub 'https://www.${DomainName}', !Ref 'AWS::NoValue']
           AccessControlMaxAgeSec: 600
           OriginOverride: false
-        # Add Cache-Control header for static assets
         CustomHeadersConfig:
           Items:
             - Header: Cache-Control
