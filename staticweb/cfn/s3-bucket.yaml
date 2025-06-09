@@ -323,7 +323,7 @@ Resources:
           !If
             - HasQueueNotification
             - - Event: !Ref NotificationQueueEvent
-                 Queue: !Ref NotificationQueueArn
+                Queue: !Ref NotificationQueueArn
             - !Ref 'AWS::NoValue'
 
       # BucketEncryption
