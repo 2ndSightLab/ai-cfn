@@ -260,7 +260,7 @@ Conditions:
   HasWebsiteConfiguration: !Or
     - !Condition HasWebsiteIndexDocument
     - !Condition HasWebsiteRedirectAllRequestsToHostName
-
+    
 Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
@@ -279,10 +279,10 @@ Resources:
       # CORSConfiguration
       CorsConfiguration:
         !If [HasCorsConfiguration,
-          - CorsRules:
-              - AllowedHeaders: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedHeaders], !Ref 'AWS::NoValue']
-              - AllowedMethods: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedMethods], !Ref 'AWS::NoValue']
-              - AllowedOrigins: !If [HasCorsAllowedOrigins, !Join [',', !Ref CorsConfigurationAllowedOrigins], !Ref 'AWS::NoValue']
+          CorsRules:
+            - AllowedHeaders: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedHeaders], !Ref 'AWS::NoValue']
+              AllowedMethods: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedMethods], !Ref 'AWS::NoValue']
+              AllowedOrigins: !If [HasCorsAllowedOrigins, !Join [',', !Ref CorsConfigurationAllowedOrigins], !Ref 'AWS::NoValue']
         !Ref 'AWS::NoValue'
       
       # LifecycleConfiguration
@@ -309,7 +309,7 @@ Resources:
         !If [HasLambdaNotification, 
           - LambdaConfigurations:
               - Event: !If [HasLambdaNotification, !Ref NotificationLambdaEvent, !Ref 'AWS::NoValue']
-              - Function: !If [HasLambdaNotification, !Ref NotificationLambdaFunction, !Ref 'AWS::NoValue']
+                Function: !If [HasLambdaNotification, !Ref NotificationLambdaFunction, !Ref 'AWS::NoValue']
         !If [HasQueueNotification, 
           - QueueConfigurations:
               - Event: !If [HasQueueNotification, !Ref NotificationQueueEvent, !Ref 'AWS::NoValue']
@@ -319,9 +319,9 @@ Resources:
       BucketEncryption:
         !If [HasBucketEncryption, 
           - ServerSideEncryptionConfiguration:
-              - ServerSideEncryptionByDefault:
-                  Enabled: !If [HasBucketEncryption, true, !Ref 'AWS::NoValue']
-                  SSEAlgorithm: !If [HasBucketEncryption, !Ref BucketEncryptionSSEAlgorithm, !Ref 'AWS::NoValue']
+              ServerSideEncryptionByDefault:
+                Enabled: !If [HasBucketEncryption, true, !Ref 'AWS::NoValue']
+                SSEAlgorithm: !If [HasBucketEncryption, !Ref BucketEncryptionSSEAlgorithm, !Ref 'AWS::NoValue']
         !Ref 'AWS::NoValue'
       
       # OwnershipControls
@@ -345,11 +345,10 @@ Resources:
       # WebsiteConfiguration
       WebsiteConfiguration:
         !If [HasWebsiteConfiguration, 
-          !If [HasWebsiteIndexDocument, 
-            - IndexDocument: !If [HasWebsiteIndexDocument, !Ref WebsiteIndexDocument, !Ref 'AWS::NoValue']
-            - ErrorDocument: !If [HasWebsiteErrorDocument, !Ref WebsiteErrorDocument, !Ref 'AWS::NoValue']
-            - RoutingRules:
-                - !If [HasWebsiteRoutingRules, !Join [',', !Ref WebsiteRoutingRules], !Ref 'AWS::NoValue']
+          - IndexDocument: !If [HasWebsiteIndexDocument, !Ref WebsiteIndexDocument, !Ref 'AWS::NoValue']
+          - ErrorDocument: !If [HasWebsiteErrorDocument, !Ref WebsiteErrorDocument, !Ref 'AWS::NoValue']
+          - RoutingRules:
+              - !If [HasWebsiteRoutingRules, !Join [',', !Ref WebsiteRoutingRules], !Ref 'AWS::NoValue']
           !If [HasWebsiteRedirectAllRequestsToHostName, 
             - RedirectAllRequestsToHostName: !If [HasWebsiteRedirectAllRequestsToHostName, !Ref WebsiteRedirectAllRequestsToHostName, !Ref 'AWS::NoValue']
             - Protocol: !If [HasWebsiteRedirectAllRequestsToProtocol, !Ref WebsiteRedirectAllRequestsToProtocol, !Ref 'AWS::NoValue']
