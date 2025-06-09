@@ -303,15 +303,15 @@ Resources:
           - !Ref 'AWS::NoValue'
 
       # LifecycleConfiguration
-      LifecycleConfiguration:
-        !If 
-          - HasLifecycleConfiguration
-          - Rules:
-            - Id: !If 
-                - HasLifecycleConfigurationPrefix
-                - !Ref LifecycleConfigurationPrefix
-                - !Ref 'AWS::NoValue'
-          - !Ref 'AWS::NoValue'
+      #LifecycleConfiguration:
+      #  !If 
+      #    - HasLifecycleConfiguration
+      #    - Rules:
+      #      - Id: !If 
+      #          - HasLifecycleConfigurationPrefix
+      #          - !Ref LifecycleConfigurationPrefix
+      #          - !Ref 'AWS::NoValue'
+      #    - !Ref 'AWS::NoValue'
 
       # LoggingConfiguration
       LoggingConfiguration:
