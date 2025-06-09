@@ -15,7 +15,6 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
   
   read -p "Default root object (default: index.html): " DEFAULT_ROOT_OBJECT
   DEFAULT_ROOT_OBJECT=${DEFAULT_ROOT_OBJECT:-index.html}
-  
   echo "Price Class options:"
   echo "  PriceClass_100: North America and Europe Only"
   echo "  PriceClass_200: North America, Europe, Asia, Middle East, and Africa"
@@ -34,7 +33,6 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
   
   read -p "Origin Shield region (default: $REGION): " ORIGIN_SHIELD_REGION
   ORIGIN_SHIELD_REGION=${ORIGIN_SHIELD_REGION:-$REGION}
-
   delete_failed_stack_if_exists $CLOUDFRONT_STACK $REGION
   
   echo "Deploying CloudFront Distribution..."
@@ -56,13 +54,14 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
       OriginShieldRegion=$ORIGIN_SHIELD_REGION \
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
-
   stack_exists $CLOUDFRONT_STACK $REGION
-  
-  # Get the CloudFront Distribution domain name
-  CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks \
-    --stack-name $CLOUDFRONT_STACK \
-    --query "Stacks[0].Outputs[?OutputKey=='DistributionDomainName'].OutputValue" \
-    --output text)
-  
-  echo "CloudFront Distribution Domain: $CLOUDFRONT_DOMAIN"
+fi
+
+# Get the CloudFront Distribution domain name
+CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks \
+  --stack-name $CLOUDFRONT_STACK \
+  --query "Stacks[0].Outputs[?OutputKey=='DistributionDomainName'].OutputValue" \
+  --output text)
+
+echo "CloudFront Distribution Domain: $CLOUDFRONT_DOMAIN"
+
