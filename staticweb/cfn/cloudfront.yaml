@@ -438,12 +438,6 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-DistributionDomainName'
 
-  OriginAccessControlId:
-    Description: 'The ID of the Origin Access Control'
-    Value: !Ref CloudFrontOriginAccessControl
-    Export:
-      Name: !Sub '${AWS::StackName}-OriginAccessControlId'
-      
   FullDomainName:
     Description: 'The full domain name for the website'
     Value: !Ref DomainName
