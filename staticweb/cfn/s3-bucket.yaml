@@ -349,6 +349,19 @@ Resources:
       #          - !Ref 'AWS::NoValue'
       #    - !Ref 'AWS::NoValue'
 
+      #   LifecycleConfiguration:
+      #  Rules:
+      #    - Id: ExpireOldLogs
+      #      Status: Enabled
+      #      ExpirationInDays: 90
+      #      Prefix: ''
+      #   - Id: TransitionToStandardIA
+      #      Status: Enabled
+      #      Transitions:
+      #       - StorageClass: STANDARD_IA
+      #         TransitionInDays: 30
+      #      Prefix: ''
+
       # LoggingConfiguration
       LoggingConfiguration:
           !If 
