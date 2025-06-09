@@ -310,7 +310,7 @@ Conditions:
 Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
-    DeletionPolicy: !If [HasDeletionPolicy, !Ref DeletionPolicy, !Ref 'AWS::NoValue']
+    DeletionPolicy: !If [HasDeletionPolicy, !Ref 'AWS::NoValue']
     Properties:
       BucketName: !If [HasBucketName, !Ref BucketName, !Ref 'AWS::NoValue']
       #AccessControl: !If [HasAccessControl, !Ref AccessControl, !Ref 'AWS::NoValue']
