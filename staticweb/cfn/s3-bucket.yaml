@@ -26,10 +26,11 @@ Parameters:
 
   DeletionPolicy:
     Type: String
-    Default: ''
+    Default: Delete
     AllowedValues:
-      - ''
+      - Delete
       - Retain
+      - Snapshot
   
   ObjectLockEnabled:
     Type: String
@@ -258,7 +259,6 @@ Parameters:
 
 Conditions:
   HasBucketName: !Not [!Equals [!Ref BucketName, '']]
-  HasDeletionPolicy: !Not [!Equals [!Ref DeletionPolicy, '']]
   #HasAccessControl: !Not [!Equals [!Ref AccessControl, '']]
   HasObjectLockEnabled: !Not [!Equals [!Ref ObjectLockEnabled, '']]
   HasTags: !Not [!Equals [!Select [0, !Ref Tags], '']]
@@ -310,7 +310,7 @@ Conditions:
 Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
-    DeletionPolicy: !If [HasDeletionPolicy, !Ref 'AWS::NoValue']
+    DeletionPolicy: !Ref DeletionPolicy
     Properties:
       BucketName: !If [HasBucketName, !Ref BucketName, !Ref 'AWS::NoValue']
       #AccessControl: !If [HasAccessControl, !Ref AccessControl, !Ref 'AWS::NoValue']
