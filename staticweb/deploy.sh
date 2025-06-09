@@ -26,6 +26,7 @@ TLS_CERTIFICATE_STACK="${STACK_NAME_PREFIX}-tls-certificate"
 CERT_VALIDATION_STACK="${STACK_NAME_PREFIX}-cert-validation"
 DNS_RECORDS_STACK="${STACK_NAME_PREFIX}-dns-records"
 CLOUDFRONT_STACK="${STACK_NAME_PREFIX}-cloudfront"
+OAI_STACK="${STACK_NAME_PREFIX}-origin-access-identity"
 
 
 source ./scripts/stack-exists.sh
