@@ -2,9 +2,7 @@
 
 echo "deploy-cloudfront-logs-bucket.sh"
 
-
-BUCKET_NAME=${BUCKET_NAME:-"${DOMAIN_NAME}-cloudfront-logs"}
-# CloudFront Logs Bucket
+CLOUDFRONT_LOGS_BUCKET_NAME=${BUCKET_NAME:-"${DOMAIN_NAME}-cloudfront-logs"}
 
 read -p "Deploy CloudFront Logs Bucket? (y/n): " DEPLOY_CF_LOGS
 if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
@@ -15,12 +13,13 @@ if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
   
   delete_failed_stack_if_exists $CLOUDFRONT_LOGS_STACK $REGION
   echo "Deploying CloudFront Logs Bucket..."
+  
   aws cloudformation deploy \
     --template-file cfn/s3-bucket.yaml \
     --stack-name $CLOUDFRONT_LOGS_STACK \
     --region $REGION \
     --parameter-overrides \
-      BucketName=$BUCKET_NAME \
+      BucketName=$CLOUDFRONT_LOGS_BUCKET_NAME \
     --no-fail-on-empty-changeset
     
   stack_exists $CLOUDFRONT_LOGS_STACK $REGION  
