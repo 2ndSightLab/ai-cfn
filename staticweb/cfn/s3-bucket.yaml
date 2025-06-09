@@ -269,13 +269,13 @@ Resources:
       AccessControl: !If [HasAccessControl, !Ref AccessControl, !Ref 'AWS::NoValue']
       ObjectLockEnabled: !If [HasObjectLockEnabled, !Ref ObjectLockEnabled, !Ref 'AWS::NoValue']
       Tags: !If [HasTags, !Join [',', !Ref Tags], !Ref 'AWS::NoValue']
-      
+
       # PublicAccessBlockConfiguration - set to true by default
       PublicAccessBlockConfiguration:
         BlockPublicAcls: !If [HasBucketName, true, !Ref 'AWS::NoValue']
         IgnorePublicAcls: !If [HasBucketName, true, !Ref 'AWS::NoValue']
         RestrictPublicBuckets: !If [HasBucketName, true, !Ref 'AWS::NoValue']
-      
+
       # CORSConfiguration
       CorsConfiguration:
         !If [HasCorsConfiguration,
@@ -284,27 +284,27 @@ Resources:
               AllowedHeaders: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedHeaders], !Ref 'AWS::NoValue']
               AllowedMethods: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedMethods], !Ref 'AWS::NoValue']
               AllowedOrigins: !If [HasCorsAllowedOrigins, !Join [',', !Ref CorsConfigurationAllowedOrigins], !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue'
-      
+        !Ref 'AWS::NoValue']
+
       # LifecycleConfiguration
       LifecycleConfiguration:
         !If [HasLifecycleConfiguration, 
           - Rules:
               - Id: !If [HasLifecycleConfiguration, !Ref LifecycleConfigurationPrefix, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue'
-      
+        !Ref 'AWS::NoValue']
+
       # LoggingConfiguration
       LoggingConfiguration:
         !If [HasLoggingConfiguration, 
           - DestinationBucketName: !If [HasLoggingConfiguration, !Ref LoggingConfigurationDestination, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue'
-      
+        !Ref 'AWS::NoValue']
+
       # MetricsConfiguration
       MetricsConfiguration:
         !If [HasMetricsConfiguration, 
           - Id: !If [HasMetricsConfiguration, !Ref MetricsConfigurationPrefix, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue'
-      
+        !Ref 'AWS::NoValue']
+
       # NotificationConfiguration
       NotificationConfiguration:
         !If [HasLambdaNotification, 
@@ -314,8 +314,8 @@ Resources:
         !If [HasQueueNotification, 
           - QueueConfigurations:
               - Event: !If [HasQueueNotification, !Ref NotificationQueueEvent, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue'
-      
+        !Ref 'AWS::NoValue']
+
       # BucketEncryption
       BucketEncryption:
         !If [HasBucketEncryption, 
@@ -323,26 +323,26 @@ Resources:
               ServerSideEncryptionByDefault:
                 Enabled: !If [HasBucketEncryption, true, !Ref 'AWS::NoValue']
                 SSEAlgorithm: !If [HasBucketEncryption, !Ref BucketEncryptionSSEAlgorithm, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue'
-      
+        !Ref 'AWS::NoValue']
+
       # OwnershipControls
       OwnershipControls:
         !If [HasOwnershipControls, 
           - Enabled: !If [HasOwnershipControls, true, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue'
-      
+        !Ref 'AWS::NoValue']
+
       # ReplicationConfiguration
       ReplicationConfiguration:
         !If [HasReplicationConfiguration, 
           - Role: !If [HasReplicationConfiguration, !Ref ReplicationConfigurationPrefix, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue'
-      
+        !Ref 'AWS::NoValue']
+
       # VersioningConfiguration
       VersioningConfiguration:
         !If [HasVersioningConfiguration, 
           - Status: !If [HasVersioningConfiguration, !Ref VersioningConfigurationStatus, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue'
-      
+        !Ref 'AWS::NoValue']
+
       # WebsiteConfiguration
       WebsiteConfiguration:
         !If [HasWebsiteConfiguration, 
@@ -353,7 +353,7 @@ Resources:
           !If [HasWebsiteRedirectAllRequestsToHostName, 
             - RedirectAllRequestsToHostName: !If [HasWebsiteRedirectAllRequestsToHostName, !Ref WebsiteRedirectAllRequestsToHostName, !Ref 'AWS::NoValue']
             - Protocol: !If [HasWebsiteRedirectAllRequestsToProtocol, !Ref WebsiteRedirectAllRequestsToProtocol, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue'
+        !Ref 'AWS::NoValue']
 
 Outputs:
   BucketName:
