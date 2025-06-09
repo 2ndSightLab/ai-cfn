@@ -5,31 +5,23 @@ Parameters:
   BucketName:
     Type: String
     Description: 'The domain name for the static website (e.g., example.com)'
-  CloudFrontOriginAccessIdentity:
-    Type: String
-    Description: 'The CloudFront Origin Access Identity ID'
-    Default: ''
-  CreateOAIPolicy:
-    Type: String
-    Description: 'Whether to create an OAI policy (Yes/No)'
-    Default: 'Yes'
-    AllowedValues:
-      - 'Yes'
-      - 'No'
-  OAIType:
+  AccessType:
     Type: String
     Description: 'Type of Origin Access (OAI or OAC)'
-    Default: 'OAI'
+    Default: 'OAC'
     AllowedValues:
       - 'OAI'
       - 'OAC'
+  OriginAccessIdentityId:
+    Type: String
+    Description: 'The CloudFront Origin Access Identity (OAI) ID'
+    Default: ''
   OriginAccessControlId:
     Type: String
-    Description: 'The CloudFront Origin Access Control ID (if using OAC instead of OAI)'
+    Description: 'The CloudFront Origin Access Control (OAC) ID'
     Default: ''
 
 Conditions:
-  CreateOAIBucketPolicy: !Equals [!Ref CreateOAIPolicy, 'Yes']
   UseOAI: !Equals [!Ref OAIType, 'OAI']
   UseOAC: !Equals [!Ref OAIType, 'OAC']
 
@@ -37,7 +29,6 @@ Resources:
 
   BucketPolicy:
     Type: AWS::S3::BucketPolicy
-    Condition: CreateOAIBucketPolicy
     Properties:
       Bucket: !Ref BucketName
       PolicyDocument:
@@ -48,7 +39,7 @@ Resources:
             - Sid: AllowCloudFrontOAIAccess
               Effect: Allow
               Principal:
-                CanonicalUser: !Sub 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOriginAccessIdentity}'
+                CanonicalUser: !Sub 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${OriginAccessIdentityId}'
               Action: 's3:GetObject'
               Resource: !Join 
                 - ''
