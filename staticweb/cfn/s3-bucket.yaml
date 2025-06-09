@@ -217,45 +217,49 @@ Conditions:
   HasBucketName: !Not [!Equals [!Ref BucketName, '']]
   HasAccessControl: !Not [!Equals [!Ref AccessControl, '']]
   HasObjectLockEnabled: !Not [!Equals [!Ref ObjectLockEnabled, '']]
-  HasTags: !Not [!Equals [!Select [0, !Ref Tags], '']]
+  HasTags: !Not [!Equals [!Select [0, !Ref Tags], '']
   
   # CORS conditions
-  HasCorsConfiguration: !Not [!Equals [!Ref CorsConfigurationAllowedHeaders, '']]
-  HasCorsAllowedMethods: !Not [!Equals [!Ref CorsConfigurationAllowedMethods, '']]
-  HasCorsAllowedOrigins: !Not [!Equals [!Ref CorsConfigurationAllowedOrigins, '']]
-  HasCorsExposedHeaders: !Not [!Equals [!Ref CorsConfigurationExposedHeaders, '']]
-  HasCorsMaxAge: !Not [!Equals [!Ref CorsConfigurationMaxAge, '']]
+  HasCorsConfiguration: !Not [!Equals [!Select [0, !Ref CorsConfigurationAllowedHeaders], '']]
+  HasCorsAllowedMethods: !Not [!Equals [!Select [0, !Ref CorsConfigurationAllowedMethods], '']]
+  HasCorsAllowedOrigins: !Not [!Equals [!Select [0, !Ref CorsConfigurationAllowedOrigins], '']]
+  HasCorsExposedHeaders: !Not [!Equals [!Select [0, !Ref CorsConfigurationExposedHeaders], '']]
+  HasCorsMaxAge: !Not [!Equals [!Select [0, !Ref CorsConfigurationMaxAge], '']]
   
   # Lifecycle conditions
-  HasLifecycleConfiguration: !Not [!Equals [!Ref LifecycleConfigurationId, '']]
-  HasLifecyclePrefix: !Not [!Equals [!Ref LifecycleConfigurationPrefix, '']]
-  HasLifecycleTagFilters: !Not [!Equals [!Ref LifecycleConfigurationTagFilters, '']]
+  HasLifecycleConfiguration: !Not [!Equals [!Select [0, !Ref LifecycleConfigurationTagFilters], '']]
+  HasLifecyclePrefix: !Not [!Equals [!Select [0, !Ref LifecycleConfigurationPrefix], '']]
   
   # Logging conditions
-  HasLoggingConfiguration: !Not [!Equals [!Ref LoggingConfigurationDestination, '']]
-  HasLoggingLogFilePrefix: !Not [!Equals [!Ref LoggingConfigurationLogFilePrefix, '']]
+  HasLoggingConfiguration: !Not [!Equals [!Select [0, !Ref LoggingConfigurationDestination], '']]
   
   # Metrics conditions
-  HasMetricsConfiguration: !Not [!Equals [!Ref MetricsConfigurationId, '']]
-  HasMetricsPrefix: !Not [!Equals [!Ref MetricsConfigurationPrefix, '']]
+  HasMetricsConfiguration: !Not [!Equals [!Select [0, !Ref MetricsConfigurationPrefix], '']]
   
   # Notification conditions
-  HasLambdaNotification: !And
-    - !Not [!Equals [!Ref NotificationLambdaEvent, '']]
-    - !Not [!Equals [!Ref NotificationLambdaFunction, '']]
-  HasQueueNotification: !Not [!Equals [!Ref NotificationQueueEvent, '']]
+  HasLambdaNotification: !Not [!Equals [!Select [0, !Ref NotificationLambdaEvent], '']]
+  HasQueueNotification: !Not [!Equals [!Select [0, !Ref NotificationQueueEvent], '']]
   
   # BucketEncryption conditions
-  HasBucketEncryptionSSEAlgorithm: !Not [!Equals [!Ref BucketEncryptionSSEAlgorithm, '']]
-  HasBucketEncryptionKMSMasterKeyID: !Not [!Equals [!Ref BucketEncryptionKMSMasterKeyID, '']]
-  HasBucketEncryptionBucketKeyEnabled: !Not [!Equals [!Ref BucketEncryptionBucketKeyEnabled, '']]
+  HasBucketEncryptionSSEAlgorithm: !Not [!Equals [!Select [0, !Ref BucketEncryptionSSEAlgorithm], '']]
+  
+  # OwnershipControls conditions
+  HasOwnershipControls: !Not [!Equals [!Select [0, !Ref OwnershipControls], '']]
+  
+  # Replication conditions
+  HasReplicationConfiguration: !Not [!Equals [!Select [0, !Ref ReplicationConfigurationPrefix], '']]
+  
+  # Versioning conditions
+  HasVersioningConfiguration: !Not [!Equals [!Select [0, !Ref VersioningConfigurationStatus], '']]
   
   # Website conditions
-  HasWebsiteIndexDocument: !Not [!Equals [!Ref WebsiteIndexDocument, '']]
-  HasWebsiteErrorDocument: !Not [!Equals [!Ref WebsiteErrorDocument, '']]
-  HasWebsiteRedirectAllRequestsToHostName: !Not [!Equals [!Ref WebsiteRedirectAllRequestsToHostName, '']]
-  HasWebsiteRedirectProtocol: !Not [!Equals [!Ref WebsiteRedirectAllRequestsToProtocol, '']]
-  HasWebsiteRoutingRules: !Not [!Equals [!Ref WebsiteRoutingRules, '']]
+  HasWebsiteIndexDocument: !Not [!Equals [!Select [0, !Ref WebsiteIndexDocument], '']]
+  HasWebsiteErrorDocument: !Not [!Equals [!Select [0, !Ref WebsiteErrorDocument], '']]
+  HasWebsiteRedirectAllRequestsToHostName: !Not [!Equals [!Select [0, !Ref WebsiteRedirectAllRequestsToHostName], '']]
+  HasWebsiteRedirectProtocol: !Not [!Equals [!Select [0, !Ref WebsiteRedirectAllRequestsToProtocol], '']]
+  HasWebsiteRoutingRules: !Not [!Equals [!Select [0, !Ref WebsiteRoutingRules], '']]
+  
+  # Condition for website configuration
   HasWebsiteConfiguration: !Or
     - !Condition HasWebsiteIndexDocument
     - !Condition HasWebsiteRedirectAllRequestsToHostName
@@ -276,38 +280,11 @@ Resources:
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
       
-      # AccelerateConfiguration
-      AccelerateConfiguration: !If
-        - HasAccelerateConfiguration
-        - AccelerationStatus: !Ref AccelerateConfigurationAccelerationStatus
-        - !Ref 'AWS::NoValue'
-      
-      # AnalyticsConfiguration
-      AnalyticsConfiguration: !If
-        - HasAnalyticsConfiguration
-        - - Id: !Ref AnalyticsConfigurationId
-            Prefix: !If [HasAnalyticsConfigurationPrefix, !Ref AnalyticsConfigurationPrefix, !Ref 'AWS::NoValue']
-            TagFilters: !If 
-              - HasAnalyticsConfigurationTagFilters
-              - !Join [',', !Ref AnalyticsConfigurationTagFilters]
-              - !Ref 'AWS::NoValue'
-        - !Ref 'AWS::NoValue'
-      
-      # BucketEncryption
-      BucketEncryption: !If
-        - HasBucketEncryptionSSEAlgorithm
-        - ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: !If [HasBucketEncryptionKMSMasterKeyID, 'aws:kms', !Ref BucketEncryptionSSEAlgorithm]
-              KMSMasterKeyID: !If [HasBucketEncryptionBucketKeyEnabled, !Ref BucketEncryptionKMSMasterKeyID, !Ref 'AWS::NoValue']
-            BucketKeyEnabled: !If [HasBucketEncryptionBucketKeyEnabled, !Ref BucketEncryptionBucketKeyEnabled, !Ref 'AWS::NoValue']
-        - !Ref 'AWS::NoValue'
-      
-      # CorsConfiguration
+      # CORSConfiguration
       CorsConfiguration: !If
         - HasCorsConfiguration
         - CorsRules:
-          - AllowedHeaders: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedHeaders], !Ref 'AWS::NoValue']
+          - AllowedHeaders: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedMethods], !Ref 'AWS::NoValue']
           - AllowedMethods: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedMethods], !Ref 'AWS::NoValue']
           - AllowedOrigins: !If [HasCorsAllowedOrigins, !Join [',', !Ref CorsConfigurationAllowedOrigins], !Ref 'AWS::NoValue']
           - ExposedHeaders: !If [HasCorsExposedHeaders, !Join [',', !Ref CorsConfigurationExposedHeaders], !Ref 'AWS::NoValue']
@@ -318,55 +295,65 @@ Resources:
       LifecycleConfiguration: !If
         - HasLifecycleConfiguration
         - Rules:
-          - Id: !Ref LifecycleConfigurationId
-            Prefix: !If [HasLifecyclePrefix, !Ref LifecycleConfigurationPrefix, !Ref 'AWS::NoValue']
+          - Id: !If [HasLifecyclePrefix, !Ref LifecycleConfigurationPrefix, !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # LoggingConfiguration
       LoggingConfiguration: !If
         - HasLoggingConfiguration
         - LoggingRules:
-          - Destination: !Ref LoggingConfigurationDestination
-          LogFilePrefix: !If [HasLoggingLogFilePrefix, !Ref LoggingConfigurationLogFilePrefix, !Ref 'AWS::NoValue']
+          - Destination: !If [HasLoggingConfigurationDestination, !Ref LoggingConfigurationDestination, !Ref 'AWS::NoValue']
+          - LogFilePrefix: !If [HasLoggingConfigurationLogFilePrefix, !Ref LoggingConfigurationLogFilePrefix, !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # MetricsConfiguration
       MetricsConfiguration: !If
         - HasMetricsConfiguration
-        - - Id: !Ref MetricsConfigurationId
-            Prefix: !If [HasMetricsPrefix, !Ref MetricsConfigurationPrefix, !Ref 'AWS::NoValue']
+        - - Id: !If [HasMetricsConfigurationPrefix, !Ref MetricsConfigurationPrefix, !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # NotificationConfiguration
       NotificationConfiguration: !If
         - HasLambdaNotification
-        - NotificationRules:
-          - LambdaConfigurations: !If
-              - HasQueueNotification
-              - - Event: !Ref NotificationQueueEvent
-                  Function: !Ref NotificationLambdaFunction
-              - !Ref 'AWS::NoValue'
+        - LambdaConfigurations: !If
+            - HasLoggingConfiguration
+            - - Event: !If [HasLambdaNotification, !Ref NotificationLambdaEvent, !Ref 'AWS::NoValue']
+              Function: !If [HasLambdaNotification, !Ref NotificationLambdaFunction, !Ref 'AWS::NoValue']
+            - !Ref 'AWS::NoValue'
+        - !If
+            - HasQueueNotification
+            - QueueConfigurations: !If
+                - HasLoggingConfiguration
+                - - Event: !If [HasQueueNotification, !Ref NotificationQueueEvent, !Ref 'AWS::NoValue']
+                  Queue: !If [HasQueueNotification, !Ref NotificationQueue, !Ref 'AWS::NoValue']
+            - !Ref 'AWS::NoValue'
+        - !Ref 'AWS::NoValue'
+      
+      # BucketEncryption
+      BucketEncryption: !If
+        - HasBucketEncryptionSSEAlgorithm
+        - ServerSideEncryptionConfiguration:
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: !If [HasBucketEncryptionSSEAlgorithm, !Ref BucketEncryptionSSEAlgorithm, !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # OwnershipControls
       OwnershipControls: !If
         - HasOwnershipControls
-        - Rules:
-          - ObjectOwnership: !Ref OwnershipControlsRule
+        - OwnershipControlsEnabled: !Ref OwnershipControls
         - !Ref 'AWS::NoValue'
       
       # ReplicationConfiguration
       ReplicationConfiguration: !If
         - HasReplicationConfiguration
-        - Role: !Ref ReplicationConfigurationRole
         - Rules:
-          - Id: !Ref ReplicationConfigurationRole
+          - Id: !If [HasReplicationConfigurationPrefix, !Ref ReplicationConfigurationPrefix, !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # VersioningConfiguration
       VersioningConfiguration: !If
         - HasVersioningConfiguration
-        - Status: !Ref VersioningConfigurationStatus
+        - Status: !If [HasVersioningConfigurationStatus, !Ref VersioningConfigurationStatus, !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # WebsiteConfiguration
@@ -375,11 +362,11 @@ Resources:
         - !If
           - HasWebsiteRedirectAllRequestsToHostName
           - RedirectAllRequestsTo:
-              HostName: !Ref WebsiteRedirectAllRequestsToHostName
+              HostName: !If [HasWebsiteRedirectAllRequestsToHostName, !Ref WebsiteRedirectAllRequestsToHostName, !Ref 'AWS::NoValue']
               Protocol: !If [HasWebsiteRedirectProtocol, !Ref WebsiteRedirectAllRequestsToProtocol, !Ref 'AWS::NoValue']
           - !If
             - HasWebsiteIndexDocument
-            - IndexDocument: !Ref WebsiteIndexDocument
+            - IndexDocument: !If [HasWebsiteIndexDocument, !Ref WebsiteIndexDocument, !Ref 'AWS::NoValue']
               ErrorDocument: !If [HasWebsiteErrorDocument, !Ref WebsiteErrorDocument, !Ref 'AWS::NoValue']
               RoutingRules: !If [HasWebsiteRoutingRules, !Join [',', !Ref WebsiteRoutingRules], !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
