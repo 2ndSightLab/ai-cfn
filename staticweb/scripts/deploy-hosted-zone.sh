@@ -4,13 +4,6 @@ source scripts/check-name-servers.sh
 
 echo "deploy-hosted-zone.sh"
 
-# Domain name
-read -p "Domain name (e.g., example.com): " DOMAIN_NAME
-while [[ -z "$DOMAIN_NAME" ]]; do
-  echo "Domain name cannot be empty."
-  read -p "Domain name (e.g., example.com): " DOMAIN_NAME
-done
-
 # Route 53 Hosted Zone 
 read -p "Deploy Route 53 hosted zone? (y/n): " DEPLOY_HOSTED_ZONE
 if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
@@ -21,7 +14,14 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
   fi
 
   delete_failed_stack_if_exists $HOSTED_ZONE_STACK $REGION
-  
+
+  # Domain name
+  read -p "Domain name (e.g., example.com): " DOMAIN_NAME
+  while [[ -z "$DOMAIN_NAME" ]]; do
+    echo "Domain name cannot be empty."
+    read -p "Domain name (e.g., example.com): " DOMAIN_NAME
+  done
+
   echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."
   aws cloudformation deploy \
     --region $REGION
@@ -35,6 +35,13 @@ fi
 
 stack_exists $HOSTED_ZONE_STACK $REGION
 
+# Get the domain name from the stack outputs
+DOMAIN_NAME=$(aws cloudformation describe-stacks \
+    --stack-name $HOSTED_ZONE_STACK \
+    --region $REGION \
+    --query "Stacks[0].Outputs[?OutputKey=='DomainName'].OutputValue" \
+    --output text)
+    
 # Get the Hosted Zone ID from the stack outputs
 HOSTED_ZONE_ID=$(aws cloudformation describe-stacks \
     --stack-name $HOSTED_ZONE_STACK \
