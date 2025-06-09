@@ -324,6 +324,19 @@ Resources:
                 AllowedOrigins: !If [HasCorsAllowedOrigins, !Ref CorsConfigurationAllowedOrigins, !Ref 'AWS::NoValue']
           - !Ref 'AWS::NoValue'
 
+      # ObjectLockConfiguration
+      #ObjectLockConfiguration: !If
+      #  - HasObjectLockConfiguration
+      #  - ObjectLockEnabled: 'Enabled'
+      #    Rule: !If
+      #      - !Not [!Equals [!Ref ObjectLock_DefaultRetention_Mode, '']]
+      #      - DefaultRetention:
+      #          Mode: !Ref ObjectLock_DefaultRetention_Mode
+      #          Days: !If [HasObjectLockRetentionDays, !Ref ObjectLock_DefaultRetention_Days, !Ref 'AWS::NoValue']
+      #          Years: !If [HasObjectLockRetentionYears, !Ref ObjectLock_DefaultRetention_Years, !Ref 'AWS::NoValue']
+      #      - !Ref 'AWS::NoValue'
+      #  - !Ref 'AWS::NoValue'
+
 
       # LifecycleConfiguration
       #LifecycleConfiguration:
