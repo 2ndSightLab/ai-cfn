@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TEMPLATE_FILE="origin-access-identity.yaml"
+TEMPLATE_FILE="cfn/origin-access-identity.yaml"
 
 # Check if OAI_STACK is set
 if [ -z "$OAI_STACK" ]; then
