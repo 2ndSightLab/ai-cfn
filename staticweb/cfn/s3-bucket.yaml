@@ -358,16 +358,16 @@ Resources:
 
 
       # ReplicationConfiguration
-      ReplicationConfiguration:
-        !If 
-          - HasReplicationConfiguration
-          - Role: !Ref ReplicationConfigurationRole  # Should reference an IAM role ARN
-            Rules:
-              - Destination:
-                  Bucket: !Ref DestinationBucketARN
-                Status: Enabled
-                # Add other required properties like Priority, Filter, etc. as needed
-          - !Ref 'AWS::NoValue'
+      #ReplicationConfiguration:
+      #  !If 
+      #    - HasReplicationConfiguration
+      #    - Role: !Ref ReplicationConfigurationRole  # Should reference an IAM role ARN
+      #      Rules:
+      #        - Destination:
+      #            Bucket: !Ref DestinationBucketARN
+      #          Status: Enabled
+      #          # Add other required properties like Priority, Filter, etc. as needed
+      #    - !Ref 'AWS::NoValue'
 
       # VersioningConfiguration
       VersioningConfiguration:
