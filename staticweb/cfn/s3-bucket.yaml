@@ -1,8 +1,3 @@
-
-After reviewing the template, I did not find any errors in the If statements. The conditional logic is correctly implemented to handle optional properties and ensure that the S3 bucket resource is valid regardless of which parameters are provided.
-
-Here is the full template again for your reference:
-
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'CloudFormation template for S3 bucket with all possible properties as parameters'
 
