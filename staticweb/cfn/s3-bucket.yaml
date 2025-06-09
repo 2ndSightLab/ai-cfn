@@ -446,6 +446,7 @@ Parameters:
     Type: CommaDelimitedList
     Description: Routing rules for website configuration
     Default: ''
+
 Conditions:
   HasBucketName: !Not [!Equals [!Ref BucketName, '']]
   HasAccessControl: !Not [!Equals [!Ref AccessControl, '']]
@@ -453,7 +454,7 @@ Conditions:
   HasTags: !Not [!Equals [!Select [0, !Ref Tags], '']]
   
   # Child object conditions
-  HasAccelerateConfiguration: !Not [!Equals [!Select [0, !Ref AccelerateConfiguration], '']]
+  HasAcceleateConfiguration: !Not [!Equals [!Select [0, !Ref AccelerateConfiguration], '']]
   HasAnalyticsConfiguration: !Not [!Equals [!Select [0, !Ref AnalyticsConfiguration], '']]
   HasAnalyticsConfigurationPrefix: !Not [!Equals [!Select [0, !Ref AnalyticsConfigurationPrefix], '']]
   HasAnalyticsConfigurationTagFilters: !Not [!Equals [!Select [0, !Ref AnalyticsConfigurationTagFilters], '']]
@@ -542,18 +543,18 @@ Resources:
       
       # AccelerateConfiguration
       AccelerateConfiguration: !If
-        - HasAccelerateConfiguration
-        - AccelerationStatus: !Ref AccelerateConfiguration
+        - HasAcceleateConfiguration
+        - AccelerationStatus: !Ref !Select [0, !Ref AccelerateConfiguration]
         - !Ref 'AWS::NoValue'
       
       # AnalyticsConfiguration
       AnalyticsConfiguration: !If
         - HasAnalyticsConfiguration
-        - - Id: !Ref AnalyticsConfigurationId
-            Prefix: !If [HasAnalyticsConfigurationPrefix, !Ref AnalyticsConfigurationPrefix, !Ref 'AWS::NoValue']
+        - - Id: !Ref !Select [0, !Ref AnalyticsConfiguration]
+            Prefix: !If [HasAnalyticsConfigurationPrefix, !Ref !Select [0, !Ref AnalyticsConfigurationPrefix], !Ref 'AWS::NoValue']
             TagFilters: !If 
               - HasAnalyticsConfigurationTagFilters
-              - !Join [',', !Ref AnalyticsConfigurationTagFilters]
+              - !Join [',', !Ref !Select [0, !Ref AnalyticsConfigurationTagFilters]]
               - !Ref 'AWS::NoValue'
         - !Ref 'AWS::NoValue'
       
@@ -562,64 +563,64 @@ Resources:
         - HasBucketEncryptionSSEAlgorithm
         - ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
-              SSEAlgorithm: !If [HasBucketEncryptionKMS, 'aws:kms', !Ref BucketEncryptionSSEAlgorithm]
-              KMSMasterKeyID: !If [HasBucketEncryptionKMSKey, !Ref BucketEncryptionKMSMasterKeyID, !Ref 'AWS::NoValue']
-            BucketKeyEnabled: !If [HasBucketKeyEnabled, !Ref BucketEncryptionBucketKeyEnabled, !Ref 'AWS::NoValue']
+              SSEAlgorithm: !If [HasBucketEncryptionKMS, 'aws:kms', !Ref !Select [0, !Ref BucketEncryptionSSEAlgorithm]]
+              KMSMasterKeyID: !If [HasBucketEncryptionKMSKey, !Ref !Select [0, !Ref BucketEncryptionKMSMasterKeyID], !Ref 'AWS::NoValue']
+            BucketKeyEnabled: !If [HasBucketKeyEnabled, !Ref !Select [0, !Ref BucketEncryptionBucketKeyEnabled], !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # CorsConfiguration
       CorsConfiguration: !If
         - HasCorsConfiguration
         - CorsRules:
-          - AllowedHeaders: !If [HasCorsAllowedHeaders, !Join [',', !Ref CorsConfigurationAllowedHeaders], !Ref 'AWS::NoValue']
-            AllowedMethods: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedMethods], !Ref 'AWS::NoValue']
-            AllowedOrigins: !If [HasCorsAllowedOrigins, !Join [',', !Ref CorsConfigurationAllowedOrigins], !Ref 'AWS::NoValue']
-            ExposedHeaders: !If [HasCorsExposedHeaders, !Join [',', !Ref CorsConfigurationExposedHeaders], !Ref 'AWS::NoValue']
-            MaxAge: !If [HasCorsMaxAge, !Ref CorsConfigurationMaxAge, !Ref 'AWS::NoValue']
+          - AllowedHeaders: !If [HasCorsAllowedHeaders, !Join [',', !Ref !Select [0, !Ref CorsConfigurationAllowedHeaders]], !Ref 'AWS::NoValue']
+          - AllowedMethods: !If [HasCorsAllowedMethods, !Join [',', !Ref !Select [0, !Ref CorsConfigurationAllowedMethods]], !Ref 'AWS::NoValue']
+          - AllowedOrigins: !If [HasCorsAllowedOrigins, !Join [',', !Ref !Select [0, !Ref CorsConfigurationAllowedOrigins]], !Ref 'AWS::NoValue']
+          - ExposedHeaders: !If [HasCorsExposedHeaders, !Join [',', !Ref !Select [0, !Ref CorsConfigurationExposedHeaders]], !Ref 'AWS::NoValue']
+          - MaxAge: !If [HasCorsMaxAge, !Ref !Select [0, !Ref CorsConfigurationMaxAge], !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # IntelligentTieringConfiguration
       IntelligentTieringConfiguration: !If
         - HasIntelligentTieringConfiguration
-        - - Id: !Ref IntelligentTieringConfigurationId
-            Status: !Ref IntelligentTieringConfigurationStatus
-            Prefix: !If [HasIntelligentTieringPrefix, !Ref IntelligentTieringConfigurationPrefix, !Ref 'AWS::NoValue']
+        - - Id: !Ref !Select [0, !Ref IntelligentTieringConfiguration]
+            Status: !Ref !Select [0, !Ref IntelligentTieringConfiguration]
+            Prefix: !If [HasIntelligentTieringPrefix, !Ref !Select [0, !Ref IntelligentTieringConfigurationPrefix], !Ref 'AWS::NoValue']
             TagFilters: !If 
               - HasIntelligentTieringTagFilters
-              - !Join [',', !Ref IntelligentTieringConfigurationTagFilters]
+              - !Join [',', !Ref !Select [0, !Ref IntelligentTieringConfigurationTagFilters]]
               - !Ref 'AWS::NoValue'
         - !Ref 'AWS::NoValue'
       
       # InventoryConfiguration
       InventoryConfiguration: !If
         - HasInventoryConfiguration
-        - - Id: !Ref InventoryConfigurationId
-            Enabled: !Ref InventoryConfigurationEnabled
-            Prefix: !If [HasInventoryPrefix, !Ref InventoryConfigurationPrefix, !Ref 'AWS::NoValue']
+        - - Id: !Ref !Select [0, !Ref InventoryConfiguration]
+            Enabled: !Ref !Select [0, !Ref InventoryConfiguration]
+            Prefix: !If [HasInventoryPrefix, !Ref !Select [0, !Ref InventoryConfigurationPrefix], !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # LifecycleConfiguration
       LifecycleConfiguration: !If
         - HasLifecycleConfiguration
         - Rules:
-          - Id: !Ref LifecycleConfigurationId
-            Status: !Ref LifecycleConfigurationStatus
-            Prefix: !If [HasLifecyclePrefix, !Ref LifecycleConfigurationPrefix, !Ref 'AWS::NoValue']
+          - Id: !Ref !Select [0, !Ref LifecycleConfiguration]
+            Status: !Ref !Select [0, !Ref LifecycleConfiguration]
+            Prefix: !If [HasLifecyclePrefix, !Ref !Select [0, !Ref LifecycleConfigurationPrefix], !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # LoggingConfiguration
       LoggingConfiguration: !If
         - HasLoggingConfiguration
         - LoggingRules:
-          - Destination: !Ref LoggingConfigurationDestination
-          LogFilePrefix: !If [HasLoggingConfiguration, !Ref LoggingConfigurationLogFilePrefix, !Ref 'AWS::NoValue']
+          - Destination: !Ref !Select [0, !Ref LoggingConfiguration]
+          LogFilePrefix: !If [HasLoggingConfiguration, !Ref !Select [0, !Ref LoggingConfigurationLogFilePrefix], !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # MetricsConfiguration
       MetricsConfiguration: !If
         - HasMetricsConfiguration
-        - - Id: !Ref MetricsConfigurationId
-            Prefix: !If [HasMetricsConfigurationPrefix, !Ref MetricsConfigurationPrefix, !Ref 'AWS::NoValue']
+        - - Id: !Ref !Select [0, !Ref MetricsConfiguration]
+            Prefix: !If [HasMetricsConfigurationPrefix, !Ref !Select [0, !Ref MetricsConfigurationPrefix], !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # NotificationConfiguration
@@ -627,18 +628,18 @@ Resources:
         - HasNotificationConfiguration
         - LambdaConfigurations: !If
             - HasLambdaNotification
-            - - Event: !Ref NotificationLambdaEvent
-                Function: !Ref NotificationLambdaFunction
+            - - Event: !Ref !Select [0, !Ref NotificationLambdaEvent]
+                Function: !Ref !Select [0, !Ref NotificationLambdaFunction]
             - !Ref 'AWS::NoValue'
           QueueConfigurations: !If
             - HasQueueNotification
-            - - Event: !Ref NotificationQueueEvent
-                Queue: !Ref NotificationQueueQueue
+            - - Event: !Ref !Select [0, !Ref NotificationQueueEvent]
+                Queue: !Ref !Select [0, !Ref NotificationQueueQueue]
             - !Ref 'AWS::NoValue'
           TopicConfigurations: !If
             - HasTopicNotification
-            - - Event: !Ref NotificationTopicEvent
-                Topic: !Ref NotificationTopicTopic
+            - - Event: !Ref !Select [0, !Ref NotificationTopicEvent]
+                Topic: !Ref !Select [0, !Ref NotificationTopicTopic]
             - !Ref 'AWS::NoValue'
         - !Ref 'AWS::NoValue'
       
@@ -649,35 +650,35 @@ Resources:
           Rule: !If
             - HasObjectLockConfiguration
             - DefaultRetention:
-                Mode: !Ref ObjectLockConfigurationRetentionMode
-                Days: !If [HasObjectLockConfigurationRetentionDays, !Ref ObjectLockConfigurationRetentionDays, !Ref 'AWS::NoValue']
-                Years: !If [HasObjectLockConfigurationRetentionYears, !Ref ObjectLockConfigurationRetentionYears, !Ref 'AWS::NoValue']
+                Mode: !Ref !Select [0, !Ref ObjectLockConfigurationRetentionMode]
+                Days: !If [HasObjectLockConfigurationRetentionDays, !Ref !Select [0, !Ref ObjectLockConfigurationRetentionDays], !Ref 'AWS::NoValue']
+                Years: !If [HasObjectLockConfigurationRetentionYears, !Ref !Select [0, !Ref ObjectLockConfigurationRetentionYears], !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # OwnershipControls
       OwnershipControls: !If
         - HasOwnershipControls
         - Rules:
-          - ObjectOwnership: !Ref OwnershipControlsObjectOwnership
+          - ObjectOwnership: !Ref !Select [0, !Ref OwnershipControls]
         - !Ref 'AWS::NoValue'
       
       # ReplicationConfiguration
       ReplicationConfiguration: !If
         - HasReplicationConfiguration
-        - Role: !Ref ReplicationConfigurationRole
+        - Role: !Ref !Select [0, !Ref ReplicationConfigurationRole]
         - Rules:
-          - Id: !Ref ReplicationConfigurationRuleId
-            Status: !Ref ReplicationConfigurationRuleStatus
-            Prefix: !If [HasReplicationConfigurationPrefix, !Ref InventoryConfigurationPrefix, !Ref 'AWS::NoValue']
+          - Id: !Ref !Select [0, !Ref ReplicationConfigurationRuleId]
+            Status: !Ref !Select [0, !Ref ReplicationConfigurationRuleStatus]
+            Prefix: !If [HasReplicationConfigurationPrefix, !Ref !Select [0, !Ref ReplicationConfigurationPrefix], !Ref 'AWS::NoValue']
             Destination:
-              Bucket: !If [HasReplicationConfigurationDestination, !Ref ReplicationConfigurationDestination, !Ref 'AWS::NoValue']
-              StorageClass: !If [HasReplicationConfigurationStorageClass, !Ref ReplicationConfigurationStorageClass, !Ref 'AWS::NoValue']
+              Bucket: !If [HasReplicationConfigurationDestination, !Ref !Select [0, !Ref ReplicationConfigurationDestination], !Ref 'AWS::NoValue']
+              StorageClass: !If [HasReplicationConfigurationStorageClass, !Ref !Select [0, !Ref ReplicationConfigurationStorageClass], !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # VersioningConfiguration
       VersioningConfiguration: !If
         - HasVersioningConfiguration
-        - Status: !Ref VersioningConfigurationStatus
+        - Status: !Ref !Select [0, !Ref VersioningConfigurationStatus]
         - !Ref 'AWS::NoValue'
       
       # WebsiteConfiguration
@@ -686,13 +687,13 @@ Resources:
         - !If
           - HasWebsiteRedirectAllRequestsTo
           - RedirectAllRequestsTo:
-              HostName: !Ref WebsiteRedirectAllRequestsToHostName
-              Protocol: !If [HasWebsiteRedirectProtocol, !Ref WebsiteRedirectAllRequestsToProtocol, !Ref 'AWS::NoValue']
+              HostName: !Ref !Select [0, !Ref WebsiteRedirectAllRequestsToHostName]
+              Protocol: !If [HasWebsiteRedirectProtocol, !Ref !Select [0, !Ref WebsiteRedirectAllRequestsToProtocol], !Ref 'AWS::NoValue']
           - !If
             - HasWebsiteIndexDocument
-            - IndexDocument: !Ref WebsiteIndexDocument
-              ErrorDocument: !If [HasWebsiteErrorDocument, !Ref WebsiteErrorDocument, !Ref 'AWS::NoValue']
-              RoutingRules: !If [HasWebsiteRoutingRules, !Join [',', !Ref WebsiteRoutingRules], !Ref 'AWS::NoValue']
+            - IndexDocument: !Ref !Select [0, !Ref WebsiteIndexDocument]
+              ErrorDocument: !If [HasWebsiteErrorDocument, !Ref !Select [0, !Ref WebsiteErrorDocument], !Ref 'AWS::NoValue']
+              RoutingRules: !If [HasWebsiteRoutingRules, !Join [',', !Ref !Select [0, !Ref WebsiteRoutingRules]], !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
 
 Outputs:
