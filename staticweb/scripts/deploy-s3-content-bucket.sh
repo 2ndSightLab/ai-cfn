@@ -16,7 +16,6 @@ if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
     --stack-name $S3_WEBSITE_STACK \
     --parameter-overrides \
       BucketName=$S3_BUCKET_NAME \
-    --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
 
   stack_exists $S3_WEBSITE_STACK $REGION
