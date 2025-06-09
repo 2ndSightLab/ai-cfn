@@ -306,60 +306,78 @@ Resources:
           
       # MetricsConfiguration
       MetricsConfiguration:
-        !If [HasMetricsConfiguration, 
-          - Id: !If [HasMetricsConfiguration, !Ref MetricsConfigurationPrefix, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue']
+        !If 
+          - HasMetricsConfiguration
+          - Id: !Ref MetricsConfigurationPrefix
+          - !Ref 'AWS::NoValue'
 
       # NotificationConfiguration
       NotificationConfiguration:
-        !If [HasLambdaNotification, 
-          - LambdaConfigurations:
-              - Event: !If [HasLambdaNotification, !Ref NotificationLambdaEvent, !Ref 'AWS::NoValue']
-                Function: !If [HasLambdaNotification, !Ref NotificationLambdaFunction, !Ref 'AWS::NoValue']
-        !If [HasQueueNotification, 
-          - QueueConfigurations:
-              - Event: !If [HasQueueNotification, !Ref NotificationQueueEvent, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue']
+        LambdaConfigurations:
+          !If
+            - HasLambdaNotification
+            - - Event: !Ref NotificationLambdaEvent
+                Function: !Ref NotificationLambdaFunction
+            - !Ref 'AWS::NoValue'
+        QueueConfigurations:
+          !If
+            - HasQueueNotification
+            - - Event: !Ref NotificationQueueEvent
+                 Queue: !Ref NotificationQueueArn
+            - !Ref 'AWS::NoValue'
 
       # BucketEncryption
       BucketEncryption:
-        !If [HasBucketEncryption, 
+        !If 
+          - HasBucketEncryption
           - ServerSideEncryptionConfiguration:
-              ServerSideEncryptionByDefault:
-                Enabled: !If [HasBucketEncryption, true, !Ref 'AWS::NoValue']
-                SSEAlgorithm: !If [HasBucketEncryption, !Ref BucketEncryptionSSEAlgorithm, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue']
+                - ServerSideEncryptionByDefault:
+                    SSEAlgorithm: !Ref BucketEncryptionSSEAlgorithm
+          - !Ref 'AWS::NoValue'
 
       # OwnershipControls
       OwnershipControls:
-        !If [HasOwnershipControls, 
-          - Enabled: !If [HasOwnershipControls, true, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue']
+        !If 
+          - HasOwnershipControls
+          - Rules:
+              - ObjectOwnership: BucketOwnerPreferred  # Valid values: BucketOwnerPreferred, ObjectWriter, BucketOwnerEnforced
+          - !Ref 'AWS::NoValue'
+
 
       # ReplicationConfiguration
       ReplicationConfiguration:
-        !If [HasReplicationConfiguration, 
-          - Role: !If [HasReplicationConfiguration, !Ref ReplicationConfigurationPrefix, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue']
+        !If 
+          - HasReplicationConfiguration
+          - Role: !Ref ReplicationConfigurationRole  # Should reference an IAM role ARN
+            Rules:
+              - Destination:
+                  Bucket: !Ref DestinationBucketARN
+                Status: Enabled
+                # Add other required properties like Priority, Filter, etc. as needed
+          - !Ref 'AWS::NoValue'
 
       # VersioningConfiguration
       VersioningConfiguration:
-        !If [HasVersioningConfiguration, 
-          - Status: !If [HasVersioningConfiguration, !Ref VersioningConfigurationStatus, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue']
-
+        !If 
+          - HasVersioningConfiguration
+          - Status: !Ref VersioningConfigurationStatus
+          - !Ref 'AWS::NoValue'
+          
       # WebsiteConfiguration
       WebsiteConfiguration:
-        !If [HasWebsiteConfiguration, 
+        !If 
+          - HasWebsiteConfiguration
           - IndexDocument: !If [HasWebsiteIndexDocument, !Ref WebsiteIndexDocument, !Ref 'AWS::NoValue']
-          - ErrorDocument: !If [HasWebsiteErrorDocument, !Ref WebsiteErrorDocument, !Ref 'AWS::NoValue']
-          - RoutingRules:
-              - !If [HasWebsiteRoutingRules, !Join [',', !Ref WebsiteRoutingRules], !Ref 'AWS::NoValue']
-          !If [HasWebsiteRedirectAllRequestsToHostName, 
-            - RedirectAllRequestsToHostName: !If [HasWebsiteRedirectAllRequestsToHostName, !Ref WebsiteRedirectAllRequestsToHostName, !Ref 'AWS::NoValue']
-            - Protocol: !If [HasWebsiteRedirectAllRequestsToProtocol, !Ref WebsiteRedirectAllRequestsToProtocol, !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue']
-
+            ErrorDocument: !If [HasWebsiteErrorDocument, !Ref WebsiteErrorDocument, !Ref 'AWS::NoValue']
+            RoutingRules: !If [HasWebsiteRoutingRules, !Ref WebsiteRoutingRules, !Ref 'AWS::NoValue']
+            RedirectAllRequestsTo:
+              !If 
+                - HasWebsiteRedirectAllRequestsToHostName
+                - HostName: !Ref WebsiteRedirectAllRequestsToHostName
+                  Protocol: !If [HasWebsiteRedirectAllRequestsToProtocol, !Ref WebsiteRedirectAllRequestsToProtocol, !Ref 'AWS::NoValue']
+                - !Ref 'AWS::NoValue'
+          - !Ref 'AWS::NoValue'
+          
 Outputs:
   BucketName:
     Description: Name of the created S3 bucket
