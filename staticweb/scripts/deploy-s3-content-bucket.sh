@@ -36,9 +36,11 @@ if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
   
 fi
 
-  # Get the S3 bucket name from the stack outputs
-  S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
-    --stack-name $S3_WEBSITE_STACK \
-    --query "Stacks[0].Outputs[?OutputKey=='WebsiteBucketName'].OutputValue" \
-    --output text)
+# Get the S3 bucket name from the stack outputs
+S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
+  --stack-name $S3_WEBSITE_STACK \
+  --query "Stacks[0].Outputs[?OutputKey=='BucketName'].OutputValue" \
+  --output text)
+
+
   
