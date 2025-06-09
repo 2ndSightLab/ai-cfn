@@ -33,7 +33,12 @@ if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
     --parameter-overrides OACName=$STACK_PREFIX OriginType=s3
 
   stack_exists $OAC_STACK $REGION
-     
+
+  OAC_ID=$(aws cloudformation describe-stacks \
+    --stack-name $OAC_STACK \
+    --query "Stacks[0].Outputs[?OutputKey=='OriginAccessControlId'].OutputValue" \
+    --output text)
+    
   echo "CloudFront Origin Access Control created successfully."
   echo "OAC ID: $OAC_ID"
   
@@ -61,3 +66,13 @@ else
   echo "OAI ID: $OAI_ID"
 fi
 
+  delete_failed_stack_if_exists $S3_POLICY_WEBSITE_STACK
+  
+  aws cloudformation deploy \
+    --template-file cfn/s3-bucket-policy-web.yaml \
+    --stack-name $S3_POLICY_WEBSITE_STACK \
+    --parameter-overrides \
+      BucketName=$S3_BUCKET_NAME \
+    --no-fail-on-empty-changeset
+    
+  stack_exists $S3_POLICY_WEBSITE_STACK $REGION
