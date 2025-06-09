@@ -217,12 +217,12 @@ Conditions:
   HasBucketName: !Not [!Equals [!Ref BucketName, '']]
   HasAccessControl: !Not [!Equals [!Ref AccessControl, '']]
   HasObjectLockEnabled: !Not [!Equals [!Ref ObjectLockEnabled, '']]
-  HasTags: !Not [!Equals [!Select [0], !Ref Tags, '']]
+  HasTags: !Not [!Equals [!Select [0, !Ref Tags], '']]
   
   # CORS conditions
-  HasCorsConfiguration: !Not [!Equals [!Select [0], !Ref CorsConfigurationAllowedHeaders, '']]
-  HasCorsAllowedMethods: !Not [!Equals [!Select [0], !Ref CorsConfigurationAllowedMethods, '']]
-  HasCorsAllowedOrigins: !Not [!Equals [!Select [0], !Ref CorsConfigurationAllowedOrigins, '']]
+  HasCorsConfiguration: !Not [!Equals [!Select [0, !Ref CorsConfigurationAllowedHeaders], '']]
+  HasCorsAllowedMethods: !Not [!Equals [!Select [0, !Ref CorsConfigurationAllowedMethods], '']]
+  HasCorsAllowedOrigins: !Not [!Equals [!Select [0, !Ref CorsConfigurationAllowedOrigins], '']]
   
   # Lifecycle conditions
   HasLifecycleConfiguration: !Not [!Equals [!Ref LifecycleConfigurationPrefix, '']]
@@ -232,17 +232,17 @@ Conditions:
   
   # Metrics conditions
   HasMetricsConfiguration: !Not [!Equals [!Ref MetricsConfigurationPrefix, '']]
-  
+
   # Notification conditions
   HasLambdaNotification: !Not [!Equals [!Ref NotificationLambdaEvent, '']]
   HasQueueNotification: !Not [!Equals [!Ref NotificationQueueEvent, '']]
-  
+
   # BucketEncryption conditions
   HasBucketEncryption: !Not [!Equals [!Ref BucketEncryptionSSEAlgorithm, '']]
-  
+
   # OwnershipControls conditions
   HasOwnershipControls: !Not [!Equals [!Ref OwnershipControlsEnabled, '']]
-  
+
   # Replication conditions
   HasReplicationConfiguration: !Not [!Equals [!Ref ReplicationConfigurationPrefix, '']]
   
@@ -254,8 +254,8 @@ Conditions:
   HasWebsiteErrorDocument: !Not [!Equals [!Ref WebsiteErrorDocument, '']]
   HasWebsiteRedirectAllRequestsToHostName: !Not [!Equals [!Ref WebsiteRedirectAllRequestsToHostName, '']]
   HasWebsiteRedirectAllRequestsToProtocol: !Not [!Equals [!Ref WebsiteRedirectAllRequestsToProtocol, '']]
-  HasWebsiteRoutingRules: !Not [!Equals [!Select [0], !Ref WebsiteRoutingRules, '']]
-  
+  HasWebsiteRoutingRules: !Not [!Equals [!Select [0, !Ref WebsiteRoutingRules], '']]
+
   # Condition for website configuration
   HasWebsiteConfiguration: !Or
     - !Condition HasWebsiteIndexDocument
