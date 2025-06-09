@@ -23,7 +23,14 @@ Parameters:
   #    - BucketOwnerRead
   #    - BucketOwnerFullControl
   #    - AwsExecRead
-      
+
+  DeletionPolicy:
+    Type: String
+    Default: ''
+    AllowedValues:
+      - ''
+      - Retain
+  
   ObjectLockEnabled:
     Type: String
     Description: Enable object lock
