@@ -31,7 +31,9 @@ if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
     --stack-name $OAC_STACK \
     --template-file $TEMPLATE_FILE \
     --parameter-overrides OACName=$STACK_PREFIX OriginType=s3
-    
+
+  stack_exists $OAC_STACK $REGION
+     
   echo "CloudFront Origin Access Control created successfully."
   echo "OAC ID: $OAC_ID"
   
@@ -48,7 +50,7 @@ else
     --stack-name $OAI_STACK \
     --template-file $TEMPLATE_FILE
 
-  stack_exists $OAI_STACK
+  stack_exists $OAI_STACK $REGION
   
   OAI_ID=$(aws cloudformation describe-stacks \
     --stack-name $OAI_STACK \
