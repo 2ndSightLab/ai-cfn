@@ -14,6 +14,15 @@ Parameters:
     Type: String
     Description: 'The AWS region where the S3 bucket is located'
     Default: 'us-east-1'
+  
+  OriginAccessIdentityID:
+    Type: String
+    Description: "ID of an existing CloudFront Origin Access Identity (leave empty if using OAC)"
+    Default: ""
+  OriginAccessControlID:
+    Type: String
+    Description: "ID of an existing CloudFront Origin Access Control (leave empty if using OAI)"
+    Default: ""
     
   AcmCertificateArn:
     Type: String
@@ -99,18 +108,18 @@ Parameters:
   # Origin Shield is a regional caching layer that costs approximately $0.012 per GB in the US (as of 2025)
   # https://aws.amazon.com/cloudfront/pricing/
   # This is different than Amazon shield which costs $3,000 per year as of 06/04/2025
-  # EnableOriginShield:
-  #   Type: String
-  #   Description: 'Enable CloudFront Origin Shield for improved caching'
-  #   Default: 'true'
-  #   AllowedValues:
-  #     - 'true'
-  #     - 'false'
-      
-  # OriginShieldRegion:
-  #   Type: String
-  #   Description: 'Region for Origin Shield (should be closest to S3 bucket region)'
-  #   Default: 'us-east-1'
+  EnableOriginShield:
+     Type: String
+     Description: 'Enable CloudFront Origin Shield for improved caching'
+     Default: 'true'
+     AllowedValues:
+       - 'true'
+       - 'false'
+       
+  OriginShieldRegion:
+     Type: String
+     Description: 'Region for Origin Shield (should be closest to S3 bucket region)'
+     Default: 'us-east-1'
     
   CSPDirectives:
     Type: String
@@ -125,9 +134,11 @@ Conditions:
   HasGeoRestrictionLocations: !Not [!Equals [!Join [',', !Ref GeoRestrictionLocations], '']]
   UseOriginShield: !Equals [!Ref EnableOriginShield, 'true']
   HasLoggingBucket: !Not [!Equals [!Ref LoggingBucket, '']]
-
+  UseOAI: !Not [!Equals [!Ref OriginAccessIdentityID, ""]]
+  UseOAC: !Not [!Equals [!Ref OriginAccessControlID, ""]]
+  
 Resources:
-  # Cache Policy for HTML content (shorter TTL)
+
   HtmlCachePolicy:
     Type: AWS::CloudFront::CachePolicy
     Properties:
@@ -235,16 +246,6 @@ Resources:
               Value: "public, max-age=31536000, immutable"
               Override: false
 
-  CloudFrontOriginAccessControl:
-    Type: 'AWS::CloudFront::OriginAccessControl'
-    Properties:
-      OriginAccessControlConfig:
-        Description: !Sub 'OAC for ${S3BucketName}'
-        Name: !Sub '${AWS::StackName}-OAC'
-        OriginAccessControlOriginType: s3
-        SigningBehavior: always
-        SigningProtocol: sigv4
-
   CloudFrontDistribution:
     Type: 'AWS::CloudFront::Distribution'
     Properties:
@@ -263,7 +264,15 @@ Resources:
         Origins:
           - DomainName: !Sub '${S3BucketName}.s3.${S3BucketRegion}.amazonaws.com'
             Id: S3Origin
-            OriginAccessControlId: !Ref CloudFrontOriginAccessControl
+            S3OriginConfig:
+              OriginAccessIdentity: !If 
+                - UseOAI
+                - !Sub "origin-access-identity/cloudfront/${OriginAccessIdentityID}"
+                - ""
+            OriginAccessControlId: !If
+              - UseOAC
+              - !Ref OriginAccessControlID
+              - !Ref AWS::NoValue
             S3OriginConfig: {}
             OriginShield: !If
               - UseOriginShield
