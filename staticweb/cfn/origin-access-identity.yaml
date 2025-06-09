@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create a CloudFront Origin Access Identity'
+
+Resources:
+  MyCloudFrontOAI:
+    Type: 'AWS::CloudFront::CloudFrontOriginAccessIdentity'
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: 'OAI for secure S3 bucket access'
+
+Outputs:
+  OriginAccessIdentityId:
+    Description: 'ID of the created Origin Access Identity'
+    Value: !Ref MyCloudFrontOAI
+  S3CanonicalUserId:
+    Description: 'Canonical User ID for the Origin Access Identity'
+    Value: !GetAtt MyCloudFrontOAI.S3CanonicalUserId
