@@ -278,13 +278,13 @@ Resources:
 
       # CORSConfiguration
       CorsConfiguration:
-        !If [HasCorsConfiguration,
-          CorsRules:
-            - 
-              AllowedHeaders: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedHeaders], !Ref 'AWS::NoValue']
-              AllowedMethods: !If [HasCorsAllowedMethods, !Join [',', !Ref CorsConfigurationAllowedMethods], !Ref 'AWS::NoValue']
-              AllowedOrigins: !If [HasCorsAllowedOrigins, !Join [',', !Ref CorsConfigurationAllowedOrigins], !Ref 'AWS::NoValue']
-        !Ref 'AWS::NoValue']
+        !If 
+          - HasCorsConfiguration
+          - CorsRules:
+              - AllowedHeaders: !If [HasCorsAllowedHeaders, !Ref CorsConfigurationAllowedHeaders, !Ref 'AWS::NoValue']
+                AllowedMethods: !If [HasCorsAllowedMethods, !Ref CorsConfigurationAllowedMethods, !Ref 'AWS::NoValue']
+                AllowedOrigins: !If [HasCorsAllowedOrigins, !Ref CorsConfigurationAllowedOrigins, !Ref 'AWS::NoValue']
+          - !Ref 'AWS::NoValue'
 
       # LifecycleConfiguration
       LifecycleConfiguration:
