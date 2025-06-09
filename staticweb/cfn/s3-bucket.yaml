@@ -151,6 +151,10 @@ Parameters:
     Default: ''
     
   # NotificationConfiguration parameters
+
+  #EventBridgeConfigurationEventBridgeEnabled
+  #https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-s3-bucket-eventbridgeconfiguration.html
+  
   NotificationLambdaEvent:
     Type: String
     Description: Event for Lambda notification
@@ -161,6 +165,16 @@ Parameters:
     Description: ARN of Lambda function for notification
     Default: ''
     
+  #QueueConfigurationQueue
+  #QueueConfigurationEvent
+  #QueueConfigurationFilter
+  #https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-s3-bucket-notificationconfiguration.html#cfn-s3-bucket-notificationconfiguration-queueconfigurations
+
+  #TopicConfigurationEvent
+  #TopicConfigurationFilter
+  #TopicConfigurationTopic
+  #https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-s3-bucket-topicconfiguration.html
+  
   # OwnershipControls parameters
   OwnershipControlsRule:
     Type: String
@@ -234,17 +248,19 @@ Conditions:
   HasMetricsConfiguration: !Not [!Equals [!Ref MetricsConfigurationPrefix, '']]
 
   # Notification conditions
-  HasLambdaNotification: !Not [!Equals [!Ref NotificationLambdaEvent, '']]
-  HasQueueNotification: !Not [!Equals [!Ref NotificationQueueEvent, '']]
-
+  HasNotificationLambdaConfiguration: !Not [!Equals [!Ref NotificationLambdaEvent, '']]
+  #Queue
+  #Topic
+  #EventBridge
+  
   # BucketEncryption conditions
   HasBucketEncryption: !Not [!Equals [!Ref BucketEncryptionSSEAlgorithm, '']]
 
   # OwnershipControls conditions
-  HasOwnershipControls: !Not [!Equals [!Ref OwnershipControlsEnabled, '']]
+  HasOwnershipControls: !Not [!Equals [!Ref OwnershipControlsRule, '']]
 
   # Replication conditions
-  HasReplicationConfiguration: !Not [!Equals [!Ref ReplicationConfigurationPrefix, '']]
+  HasReplicationConfiguration: !Not [!Equals [!Ref ReplicationConfigurationRole, '']]
   
   # Versioning conditions
   HasVersioningConfiguration: !Not [!Equals [!Ref VersioningConfigurationStatus, '']]
@@ -315,16 +331,13 @@ Resources:
       NotificationConfiguration:
         LambdaConfigurations:
           !If
-            - HasLambdaNotification
+            - HasNotificationLambdaConfiguration
             - - Event: !Ref NotificationLambdaEvent
                 Function: !Ref NotificationLambdaFunction
             - !Ref 'AWS::NoValue'
-        QueueConfigurations:
-          !If
-            - HasQueueNotification
-            - - Event: !Ref NotificationQueueEvent
-                Queue: !Ref NotificationQueueArn
-            - !Ref 'AWS::NoValue'
+          #Queue
+          #Topic
+          #EventBridge
 
       # BucketEncryption
       BucketEncryption:
