@@ -2,7 +2,7 @@
 
 echo "deploy-cloudfront-logs-bucket.sh"
 
-CLOUDFRONT_LOGS_BUCKET_NAME=${BUCKET_NAME:-"${DOMAIN_NAME}-cloudfront-logs"}
+CLOUDFRONT_LOGS_BUCKET_NAME="$STACK_NAME_PREFIX-cloudfront-logs-$BUCKET_NAME_SUFFIX"
 
 read -p "Deploy CloudFront Logs Bucket? (y/n): " DEPLOY_CF_LOGS
 if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
