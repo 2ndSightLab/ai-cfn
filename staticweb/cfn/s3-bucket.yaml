@@ -1,3 +1,4 @@
+
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'CloudFormation template for S3 bucket with all possible properties as parameters'
 
@@ -228,7 +229,7 @@ Resources:
               BucketArn: !If [HasInventoryDestinationBucketArn, !Ref InventoryDestinationBucketArn, '']
               Format: !If [HasInventoryDestinationFormat, !Ref InventoryDestinationFormat, 'CSV']
               Prefix: !If [HasInventoryPrefix, !Ref InventoryDestinationPrefix, '']
-            OptionalFields: !If [HasInventoryOptionalFields, !Ref InventoryOptionalFields, '']
+              OptionalFields: !If [HasInventoryOptionalFields, !Ref InventoryOptionalFields, '']
         - !Ref 'AWS::NoValue'
       
       # LifecycleConfiguration
@@ -410,6 +411,6 @@ Outputs:
   BucketWebsiteURL:
     Description: Website URL of the created S3 bucket (if website configuration is enabled)
     Value: !GetAtt S3Bucket.WebsiteURL
-    Condition: HasWebsiteConfiguration
+    Condition: !Condition HasWebsiteConfiguration
     Export:
       Name: !Sub "\${AWS::StackName}-S3AccessLogsBucketWebsiteURL"
