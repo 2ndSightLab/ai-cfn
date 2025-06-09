@@ -42,7 +42,7 @@ Conditions:
   HasBucketName: !Not [!Equals [!Ref BucketName, '']]
   HasAccessControl: !Not [!Equals [!Ref AccessControl, '']]
   HasObjectLockEnabled: !Not [!Equals [!Ref ObjectLockEnabled, '']]
-  HasTags: !Not [!Equals [!Select [0, !Ref Tags], '']
+  HasTags: !Not [!Equals [!Select [0, !Ref Tags], '']]
   
   # Child object conditions
   HasAccelerateConfiguration: !Not [!Equals [!Select [0, !Ref AccelerateConfiguration], '']]
@@ -135,7 +135,7 @@ Resources:
       # AccelerateConfiguration
       AccelerateConfiguration: !If
         - HasAccelerateConfiguration
-        - AccelerationStatus: !Ref AccelerateConfigurationAccelerationStatus
+        - AccelerationStatus: !Ref AccelerateConfiguration
         - !Ref 'AWS::NoValue'
       
       # AnalyticsConfiguration
@@ -211,7 +211,7 @@ Resources:
       MetricsConfiguration: !If
         - HasMetricsConfiguration
         - - Id: !Ref MetricsConfigurationId
-            Prefix: !If [HasMetricsConfigurationPrefix, !Ref InventoryConfigurationPrefix, !Ref 'AWS::NoValue']
+            Prefix: !If [HasMetricsConfigurationPrefix, !Ref MetricsConfigurationPrefix, !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # NotificationConfiguration
