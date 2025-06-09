@@ -596,7 +596,7 @@ Resources:
         - HasInventoryConfiguration
         - - Id: !Ref !Select [0, !Ref InventoryConfiguration]
             Enabled: !Ref !Select [0, !Ref InventoryConfiguration]
-            Prefix: !If [HasInventoryPrefix, !Ref !Select [0, !Ref InventoryConfigurationPrefix], !Ref 'AWS::NoValue']
+            Prefix: !If [HasIntelligentTieringPrefix, !Ref !Select [0, !Ref InventoryConfigurationPrefix], !Ref 'AWS::NoValue']
         - !Ref 'AWS::NoValue'
       
       # LifecycleConfiguration
@@ -665,7 +665,7 @@ Resources:
       # ReplicationConfiguration
       ReplicationConfiguration: !If
         - HasReplicationConfiguration
-        - Role: !Ref !Select [0, !Ref ReplicationConfiguration]
+        - Role: !Ref !Select [0, !Ref ReplicationConfigurationRole]
         - Rules:
           - Id: !Ref !Select [0, !Ref ReplicationConfigurationRuleId]
             Status: !Ref !Select [0, !Ref ReplicationConfigurationRuleStatus]
