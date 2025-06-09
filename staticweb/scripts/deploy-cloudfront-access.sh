@@ -46,7 +46,7 @@ else
   # Deploy the CloudFormation stack
   aws cloudformation deploy \
     --stack-name $OAI_STACK \
-    --template-body file://$TEMPLATE_FILE
+    --template-file $TEMPLATE_FILE
 
   stack_exists $OAI_STACK
   
