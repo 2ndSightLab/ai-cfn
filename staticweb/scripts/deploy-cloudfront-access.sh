@@ -44,7 +44,7 @@ else
   delete_failed_stack_if_exists $OAI_STACK $REGION
   
   # Deploy the CloudFormation stack
-  aws cloudformation create-stack \
+  aws cloudformation deploy \
     --stack-name $OAI_STACK \
     --template-body file://$TEMPLATE_FILE
 
