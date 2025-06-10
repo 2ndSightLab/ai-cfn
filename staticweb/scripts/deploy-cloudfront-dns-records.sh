@@ -9,7 +9,7 @@ aws cloudformation deploy \
     --parameter-overrides \
       DomainName=$DOMAIN_NAME \
       HostedZoneId=$HOSTED_ZONE_ID \
-      CloudFrontDomainName=$CLOUDFRONT_DOMAIN_NAME \
+      CloudFrontDomainName=$CLOUDFRONT_DOMAIN \
       IncludeWWW=$INCLUDE_WWW \
     --no-fail-on-empty-changeset
     
