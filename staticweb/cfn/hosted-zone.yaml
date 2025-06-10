@@ -26,9 +26,26 @@ Parameters:
     AllowedValues:
       - 'true'
       - 'false'
-
+      
+  IncludeWWW:
+    Type: String
+    Default: 'true'
+    Description: 'Whether to include www record (www.example.com)'
+    AllowedValues:
+      - 'true'
+      - 'false' 
+      
+  Wildcard:
+    Type: String
+    Default: 'false'
+    Description: 'Whether to create wildcard domain (*.example.com)'
+    AllowedValues:
+      - 'true'
+      - 'false'     
+      
 Conditions:
   HasCloudFrontDomain: !Not [!Equals [!Ref CloudFrontDomainName, '']]
+  IncludeWWWAlias: !Equals [!Ref IncludeWWW, 'true']
   CreateS3WebsiteRecords: !Equals [!Ref CreateS3Records, 'true']
   CreateCloudFrontDNSRecords: !And
     - !Equals [!Ref CreateCloudFrontRecords, 'true']
@@ -82,7 +99,7 @@ Resources:
 
   WWWCloudFrontRecord:
     Type: AWS::Route53::RecordSet
-    Condition: CreateCloudFrontDNSRecords
+    Condition: IncludeWWW
     Properties:
       HostedZoneId: !Ref HostedZone
       Name: !Sub 'www.${DomainName}'
@@ -127,6 +144,18 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-DomainName'
 
+  IncludeWWW:
+    Description: 'WWW included'
+    Value: !Ref IncludeWWW
+    Export:
+      Name: !Sub '${AWS::StackName}-IncludeWWW'
+      
+  Wildcard:
+    Description: 'wildcard domain'
+    Value: !Ref Wildcard
+    Export:
+      Name: !Sub '${AWS::StackName}-Wildcard'
+      
   NameServers:
     Description: 'Name Servers (update these in your domain registrar)'
     Value: !Join [', ', !GetAtt HostedZone.NameServers]
