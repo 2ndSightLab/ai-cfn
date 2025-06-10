@@ -27,7 +27,7 @@ fi
 
 CLOUDFRONT_LOGS_BUCKET_NAME=$(aws cloudformation describe-stacks \
     --stack-name $CLOUDFRONT_LOGS_STACK \
-    --query "Stacks[0].Outputs[?ExportName=='${CLOUDFRONT_LOGS_STACK}-CloudFrontLogsBucketName'].OutputValue" \
+    --query "Stacks[0].Outputs[?ExportName=='BucketName'].OutputValue" \
     --output text \
     --region $REGION)
 
