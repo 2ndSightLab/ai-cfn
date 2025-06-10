@@ -29,6 +29,7 @@ CLOUDFRONT_STACK="${STACK_NAME_PREFIX}-cloudfront"
 OAI_STACK="${STACK_NAME_PREFIX}-origin-access-identity"
 OAC_STACK="${STACK_NAME_PREFIX}-origin-access-control"
 CLOUDFRONT_DNS_STACK="${STACK_NAME_PREFIX}-cloudfront-dns"
+CLOUDFRONT_CACHE_POLICY_STACK="${STACK_NAME_PREFIX}-cloudfront-cachepolicy"
 
 source ./scripts/stack-exists.sh
 source ./scripts/delete-stack.sh
@@ -40,6 +41,7 @@ source ./scripts/deploy-s3-access-log-bucket.sh
 source ./scripts/deploy-cloudfront-logs-bucket.sh
 source ./scripts/deploy-cloudfront-access.sh
 source ./scripts/deploy-s3-content-bucket.sh
+source ./scripts/deploy-cloudfront-cachepolicy.sh
 source ./scripts/deploy-cloudfront-distribution.sh
 source ./scripts/deploy-cloudfront-dns-records.sh
 source ./scripts/deploy-s3-bucket-policy-content.sh
