@@ -22,8 +22,34 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
     read -p "Domain name (e.g., example.com): " DOMAIN_NAME
   done
 
-  read -p "Include www subdomain? (true/false, default: true): " INCLUDE_WWW
-  INCLUDE_WWW=${INCLUDE_WWW:-true}
+  # Ask for domain type type
+  echo "Select domain type:"
+  echo "1) Basic (domain only)"
+  echo "2) WWW (domain + www subdomain)"
+  echo "3) Wildcard (domain + *.domain)"
+  echo "4) Custom subdomains"
+  read -p "Enter your choice (1-4) [2]: " CERT_TYPE_CHOICE
+  DOMAIN_TYPE_CHOICE=${DOMAIN_TYPE_CHOICE:-2}
+  
+  case $DOMAIN_TYPE_CHOICE in
+      1) DOMAIN_TYPE="Basic" ;;
+      2) DOMAIN_TYPE="WWW" ;;
+      3) DOMAIN_TYPE="Wildcard" ;;
+      4) 
+          DOMAIN_TYPE="CustomSubdomains"
+          echo ""
+          echo "Enter fully qualified subdomains, separated by commas"
+          echo "Example: api.${DOMAIN_NAME},blog.${DOMAIN_NAME},shop.${DOMAIN_NAME}"
+          read -p "Subdomains: " CUSTOM_SUBDOMAINS
+          ;;
+      *) 
+          echo "Invalid choice. Defaulting to WWW certificate."
+          DOMAIN_TYPE="WWW"
+          ;;
+  esac
+
+  CERT_TYPE_CHOICE=$DOMAIN_TYPE_CHOICE
+  CERT_TYPE=$DOMAIN_TYPE
 
   echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."
   aws cloudformation deploy \
@@ -32,7 +58,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
     --stack-name $HOSTED_ZONE_STACK \
     --parameter-overrides \
       DomainName=$DOMAIN_NAME \
-      IncludeWWW=$INCLUDE_WWW
+      DomainType=$DOMAIN_TYPE
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
 fi
@@ -46,10 +72,10 @@ DOMAIN_NAME=$(aws cloudformation describe-stacks \
     --query "Stacks[0].Outputs[?OutputKey=='DomainName'].OutputValue" \
     --output text)
 
-INCLUDE_WWW=$(aws cloudformation describe-stacks \
+DOMAIN_TYPE=$(aws cloudformation describe-stacks \
     --stack-name $HOSTED_ZONE_STACK \
     --region $REGION \
-    --query "Stacks[0].Outputs[?OutputKey=='IncludeWWW'].OutputValue" \
+    --query "Stacks[0].Outputs[?OutputKey=='DomainType'].OutputValue" \
     --output text)
     
 # Get the Hosted Zone ID from the stack outputs
