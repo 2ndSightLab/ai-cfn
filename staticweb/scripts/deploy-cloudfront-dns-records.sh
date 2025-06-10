@@ -13,7 +13,7 @@ if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; the
       DomainName=$DOMAIN_NAME \
       HostedZoneId=$HOSTED_ZONE_ID \
       CloudFrontDomainName=$CLOUDFRONT_DOMAIN \
-      IncludeWWW=$INCLUDE_WWW \
+      DomainType=$DOMAIN_TYPE \
     --no-fail-on-empty-changeset
     
   stack_exists $CLOUDFRONT_DNS_STACK $REGION $REGION
