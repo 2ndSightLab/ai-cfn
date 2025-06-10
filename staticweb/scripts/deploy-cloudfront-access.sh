@@ -23,9 +23,9 @@ read -p "Do you want to use Origin Access Control (OAC) to permit CloudFront to 
 if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
 
   echo "Creating Origin Access Control Stack"
-  delete_stack $OAI_STACK $REGION
+  delete_stack $OAI_STACK $REGION || "Stack is in a failed state but cannot delete it.""
   TEMPLATE_FILE="cfn/origin-access-control.yaml"
-  delete_failed_stack_if_exists $OAC_STACK $REGION
+  delete_failed_stack_if_exists $OAC_STACK $REGION || "Stack is in a failed state but cannot delete it.""
   
   aws cloudformation deploy \
     --stack-name $OAC_STACK \
@@ -48,7 +48,7 @@ else
   delete_stack $OAC_STACK $REGION
   TEMPLATE_FILE="cfn/origin-access-identity.yaml"
   # Delete failed stack if it exists
-  delete_failed_stack_if_exists $OAI_STACK $REGION
+  delete_failed_stack_if_exists $OAI_STACK $REGION || "Stack is in a failed state but cannot delete it.""
   
   # Deploy the CloudFormation stack
   aws cloudformation deploy \
