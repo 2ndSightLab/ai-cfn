@@ -7,11 +7,6 @@ echo "deploy-hosted-zone.sh"
 # Route 53 Hosted Zone 
 read -p "Deploy Route 53 hosted zone? (y/n): " DEPLOY_HOSTED_ZONE
 if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
-  if stack_exists $HOSTED_ZONE_STACK; then
-    echo "Hosted zone stack already exists. Updating..."
-  else
-    echo "Creating new hosted zone stack..."
-  fi
 
   delete_failed_stack_if_exists $HOSTED_ZONE_STACK $REGION
 
