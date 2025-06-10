@@ -23,14 +23,12 @@ if [[ "$DEPLOY_CF_LOGS" == "y" || "$DEPLOY_CF_LOGS" == "Y" ]]; then
     --no-fail-on-empty-changeset
     
   stack_exists $CLOUDFRONT_LOGS_STACK $REGION  
-  
-  CLOUDFRONT_LOGS_BUCKET_NAME=$(aws cloudformation describe-stacks \
+fi
+
+CLOUDFRONT_LOGS_BUCKET_NAME=$(aws cloudformation describe-stacks \
     --stack-name $CLOUDFRONT_LOGS_STACK \
     --query "Stacks[0].Outputs[?ExportName=='${CLOUDFRONT_LOGS_STACK}-CloudFrontLogsBucketName'].OutputValue" \
     --output text \
     --region $REGION)
-  
-  echo "CloudFront Logs Bucket: $CLOUDFRONT_LOGS_BUCKET_NAME"
-else
-  CLOUDFRONT_LOGS_BUCKET_NAME=""
-fi
+
+echo "CloudFront Logs Bucket: $CLOUDFRONT_LOGS_BUCKET_NAME"
