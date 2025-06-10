@@ -38,10 +38,10 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
     --stack-name $CLOUDFRONT_STACK \
     --parameter-overrides \
       DomainName=$DOMAIN_NAME \
+      DomainType=$DOMAIN_TYPE \
       S3BucketName=$S3_BUCKET_NAME \
       S3BucketRegion=$REGION \
       AcmCertificateArn=${ACM_CERTIFICATE_ARN:-""} \
-      IncludeWWW=$INCLUDE_WWW \
       DefaultRootObject=$DEFAULT_ROOT_OBJECT \
       PriceClass=$PRICE_CLASS \
       EnableLogging=$ENABLE_LOGGING \
@@ -56,13 +56,6 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
   stack_exists $CLOUDFRONT_STACK $REGION
 fi
 
-# Get the CloudFront Distribution domain name
-INCLUDE_WWW=$(aws cloudformation describe-stacks \
-  --stack-name $CLOUDFRONT_STACK \
-  --query "Stacks[0].Outputs[?OutputKey=='WWWDomainEnabled'].OutputValue" \
-  --output text)
-
-echo "Include WWW: $INCLUDE_WWW"
 
 # Get the CloudFront Distribution domain name
 CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks \
