@@ -9,6 +9,7 @@ Parameters:
   OACDescription:
     Type: String
     Description: Description for the Origin Access Control
+    Default: "OAC for CloudFront"
   
   OriginType:
     Type: String
