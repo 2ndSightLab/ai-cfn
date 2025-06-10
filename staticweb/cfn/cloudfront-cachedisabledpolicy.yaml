@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template that creates a CloudFront cache policy with caching disabled'
+
+Resources:
+  CloudFrontCacheDisabledPolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        # Policy name
+        Name: CloudFrontCacheDisabledPolicy
+        # Optional description of the policy's purpose
+        Comment: 'Cache policy that disables caching by setting all TTLs to 0'
+        # Set all TTL values to 0 to disable caching
+        DefaultTTL: 0
+        MaxTTL: 0
+        MinTTL: 0
+        # Configure cache key parameters
+        ParametersInCacheKeyAndForwardedToOrigin:
+          # Disable compression options
+          EnableAcceptEncodingGzip: false
+          EnableAcceptEncodingBrotli: false
+          # Don't include cookies in cache key
+          CookiesConfig:
+            CookieBehavior: none
+          # Don't include headers in cache key
+          HeadersConfig:
+            HeaderBehavior: none
+          # Don't include query strings in cache key
+          QueryStringsConfig:
+            QueryStringBehavior: none
+
+Outputs:
+  CachePolicyId:
+    Description: 'ID of the CloudFront cache policy with caching disabled'
+    Value: !Ref CloudFrontCacheDisabledPolicy
+    Export:
+      Name: !Sub '${AWS::StackName}-CachePolicyId'
