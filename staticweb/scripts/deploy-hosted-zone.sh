@@ -48,9 +48,6 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
           ;;
   esac
 
-  CERT_TYPE_CHOICE=$DOMAIN_TYPE_CHOICE
-  CERT_TYPE=$DOMAIN_TYPE
-
   echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."
   aws cloudformation deploy \
     --region $REGION
