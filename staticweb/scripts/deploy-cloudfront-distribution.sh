@@ -57,6 +57,14 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
 fi
 
 # Get the CloudFront Distribution domain name
+INCLUDE_WWW=$(aws cloudformation describe-stacks \
+  --stack-name $CLOUDFRONT_STACK \
+  --query "Stacks[0].Outputs[?OutputKey=='IncludeWWW'].OutputValue" \
+  --output text)
+
+echo "CloudFront Distribution Domain: $CLOUDFRONT_DOMAIN"
+
+# Get the CloudFront Distribution domain name
 CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks \
   --stack-name $CLOUDFRONT_STACK \
   --query "Stacks[0].Outputs[?OutputKey=='DistributionDomainName'].OutputValue" \
