@@ -133,10 +133,6 @@ Parameters:
      Description: 'Region for Origin Shield (should be closest to S3 bucket region)'
      Default: 'us-east-1'
     
-  CSPDirectives:
-    Type: String
-    Description: 'Content Security Policy directives'
-    Default: "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self'"
 
 Conditions:
   IncludeWWWAlias: !Equals [!Ref IncludeWWW, 'true']
