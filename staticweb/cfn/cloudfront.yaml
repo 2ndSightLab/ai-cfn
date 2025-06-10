@@ -28,13 +28,14 @@ Parameters:
     Type: String
     Description: 'The ARN of the ACM certificate for HTTPS'
     
-  IncludeWWW:
+  DomainType:
     Type: String
-    Description: 'Include www subdomain as an alias'
-    Default: 'true'
+    Description: 'Domain Type'
+    Default: 'WWW'
     AllowedValues:
-      - 'true'
-      - 'false'
+      - 'Basic'
+      - 'WWW'
+      - 'Wildcard'
       
   DefaultRootObject:
     Type: String
@@ -135,7 +136,8 @@ Parameters:
     
 
 Conditions:
-  IncludeWWWAlias: !Equals [!Ref IncludeWWW, 'true']
+  IncludeWWWAlias: !Equals [!Ref DomainType, 'WWW']
+  IsWildcard: !Equals [!Ref DomainType, 'Wildcard']
   EnableCloudFrontLogging: !Equals [!Ref EnableLogging, 'true']
   UseWebACL: !Not [!Equals [!Ref WebACLId, '']]
   UseGeoRestriction: !Equals [!Ref EnableGeoRestriction, 'true']
@@ -150,12 +152,16 @@ Resources:
   CloudFrontDistribution:
     Type: 'AWS::CloudFront::Distribution'
     Properties:
-      DistributionConfig:
-        Aliases: !If 
-          - IncludeWWWAlias
-          - - !Ref DomainName
-            - !Sub 'www.${DomainName}'
-          - - !Ref DomainName
+        DistributionConfig:
+          Aliases: !If 
+            - IsWildcard
+            - - !Ref DomainName
+              - !Sub '*.${DomainName}'
+            - !If
+              - IncludeWWWAlias
+              - - !Ref DomainName
+                - !Sub 'www.${DomainName}'
+              - - !Ref DomainName
         DefaultRootObject: !Ref DefaultRootObject
         Enabled: true
         HttpVersion: http2and3  # Support for HTTP/3 for better performance
@@ -249,15 +255,28 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-WebsiteURL'
       
-  WWWDomainEnabled:
-    Description: 'Whether the www subdomain is enabled'
-    Value: !Ref IncludeWWW
-    Export:
-      Name: !Sub '${AWS::StackName}-WWWDomainEnabled'
-      
-  WWWDomainName:
-    Description: 'The www subdomain name (if enabled)'
-    Value: !If [IncludeWWWAlias, !Sub 'www.${DomainName}', 'Not Enabled']
-    Export:
-      Name: !Sub '${AWS::StackName}-WWWDomainName'
+WWWDomainEnabled:
+  Description: 'Whether the www subdomain is enabled'
+  Value: !If [IsWWWDomain, 'true', 'false']
+  Export:
+    Name: !Sub '${AWS::StackName}-WWWDomainEnabled'
+    
+WWWDomainName:
+  Description: 'The www subdomain name (if enabled)'
+  Value: !If [IsWWWDomain, !Sub 'www.${DomainName}', 'Not Enabled']
+  Export:
+    Name: !Sub '${AWS::StackName}-WWWDomainName'
+
+WildcardDomainEnabled:
+  Description: 'Whether the wildcard subdomain is enabled'
+  Value: !If [IsWildcardDomain, 'true', 'false']
+  Export:
+    Name: !Sub '${AWS::StackName}-WildcardDomainEnabled'
+    
+WildcardDomainName:
+  Description: 'The wildcard subdomain pattern (if enabled)'
+  Value: !If [IsWildcardDomain, !Sub '*.${DomainName}', 'Not Enabled']
+  Export:
+    Name: !Sub '${AWS::StackName}-WildcardDomainName'
+
 
