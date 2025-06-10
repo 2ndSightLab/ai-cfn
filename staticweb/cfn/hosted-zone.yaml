@@ -186,30 +186,18 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-DomainName'
 
-WWWDomainEnabled:
-  Description: 'Whether the www subdomain is enabled'
-  Value: !If [IsWWWDomain, 'true', 'false']
-  Export:
-    Name: !Sub '${AWS::StackName}-WWWDomainEnabled'
-    
-WWWDomainName:
-  Description: 'The www subdomain name (if enabled)'
-  Value: !If [IsWWWDomain, !Sub 'www.${DomainName}', 'Not Enabled']
-  Export:
-    Name: !Sub '${AWS::StackName}-WWWDomainName'
-
-WildcardDomainEnabled:
-  Description: 'Whether the wildcard subdomain is enabled'
-  Value: !If [IsWildcardDomain, 'true', 'false']
-  Export:
-    Name: !Sub '${AWS::StackName}-WildcardDomainEnabled'
-    
-WildcardDomainName:
-  Description: 'The wildcard subdomain pattern (if enabled)'
-  Value: !If [IsWildcardDomain, !Sub '*.${DomainName}', 'Not Enabled']
-  Export:
-    Name: !Sub '${AWS::StackName}-WildcardDomainName'
-
+  WildcardDomainName:
+    Condition: IsWildcardDomain
+    Description: 'Wildcard Domain Name'
+    Value: !If [IsWildcardDomain, !Sub '*.${DomainName}', 'Not Enabled']
+    Export:
+      Name: !Sub '${AWS::StackName}-WildcardDomainName'
+      
+  WWWDomainName:
+    Description: 'WWW Domain Name'
+    Value: !If [IsWWWDomain, !Sub '*.${DomainName}', 'Not Enabled']
+    Export:
+      Name: !Sub '${AWS::StackName}-WildcardDomainName'
       
   NameServers:
     Description: 'Name Servers (update these in your domain registrar)'
