@@ -49,8 +49,8 @@ Resources:
                 - Header: Cache-Control
                   Value: "public, max-age=31536000, immutable"
                   Override: false
-        Outputs:
-          SecurityHeadersPolicyId:
+    Outputs:
+        SecurityHeadersPolicyId:
             Description: 'ID of the CloudFront security headers policy'
             Value: !Ref SecurityHeadersPolicy
             Export:
