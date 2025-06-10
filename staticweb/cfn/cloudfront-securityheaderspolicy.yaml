@@ -1,56 +1,57 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'CloudFront security headers policy'
 
-SecurityHeadersPolicy:
-    Type: AWS::CloudFront::ResponseHeadersPolicy
-    Properties:
-      ResponseHeadersPolicyConfig:
-        Name: !Sub '${AWS::StackName}-SecurityHeadersPolicy'
-        SecurityHeadersConfig:
-          ContentSecurityPolicy:
-            ContentSecurityPolicy: !Ref CSPDirectives
-            Override: true
-          ContentTypeOptions:
-            Override: true
-          FrameOptions:
-            FrameOption: DENY
-            Override: true
-          ReferrerPolicy:
-            ReferrerPolicy: strict-origin-when-cross-origin
-            Override: true
-          StrictTransportSecurity:
-            AccessControlMaxAgeSec: 63072000
-            IncludeSubdomains: true
-            Preload: true
-            Override: true
-        CorsConfig:
-          AccessControlAllowCredentials: false
-          AccessControlAllowHeaders:
-            Items:
-              - 'Content-Type'
-              - 'Authorization'
-              - 'X-Requested-With'
-              - 'Origin'
-              - 'Accept'
-          AccessControlAllowMethods:
-            Items:
-              - GET
-              - HEAD
-              - OPTIONS
-          AccessControlAllowOrigins:
-            Items:
-              - !Sub 'https://${DomainName}'
-              - !If [IncludeWWWAlias, !Sub 'https://www.${DomainName}', !Ref 'AWS::NoValue']
-          AccessControlMaxAgeSec: 600
-          OriginOverride: false
-        CustomHeadersConfig:
-          Items:
-            - Header: Cache-Control
-              Value: "public, max-age=31536000, immutable"
-              Override: false
-    Outputs:
-      SecurityHeadersPolicyId:
-        Description: 'ID of the CloudFront security headers policy'
-        Value: !Ref SecurityHeadersPolicy
-        Export:
-          Name: !Sub '${AWS::StackName}-SecurityHeadersPolicyId'
+Resources:
+    SecurityHeadersPolicy:
+        Type: AWS::CloudFront::ResponseHeadersPolicy
+        Properties:
+          ResponseHeadersPolicyConfig:
+            Name: !Sub '${AWS::StackName}-SecurityHeadersPolicy'
+            SecurityHeadersConfig:
+              ContentSecurityPolicy:
+                ContentSecurityPolicy: !Ref CSPDirectives
+                Override: true
+              ContentTypeOptions:
+                Override: true
+              FrameOptions:
+                FrameOption: DENY
+                Override: true
+              ReferrerPolicy:
+                ReferrerPolicy: strict-origin-when-cross-origin
+                Override: true
+              StrictTransportSecurity:
+                AccessControlMaxAgeSec: 63072000
+                IncludeSubdomains: true
+                Preload: true
+                Override: true
+            CorsConfig:
+              AccessControlAllowCredentials: false
+              AccessControlAllowHeaders:
+                Items:
+                  - 'Content-Type'
+                  - 'Authorization'
+                  - 'X-Requested-With'
+                  - 'Origin'
+                  - 'Accept'
+              AccessControlAllowMethods:
+                Items:
+                  - GET
+                  - HEAD
+                  - OPTIONS
+              AccessControlAllowOrigins:
+                Items:
+                  - !Sub 'https://${DomainName}'
+                  - !If [IncludeWWWAlias, !Sub 'https://www.${DomainName}', !Ref 'AWS::NoValue']
+              AccessControlMaxAgeSec: 600
+              OriginOverride: false
+            CustomHeadersConfig:
+              Items:
+                - Header: Cache-Control
+                  Value: "public, max-age=31536000, immutable"
+                  Override: false
+        Outputs:
+          SecurityHeadersPolicyId:
+            Description: 'ID of the CloudFront security headers policy'
+            Value: !Ref SecurityHeadersPolicy
+            Export:
+              Name: !Sub '${AWS::StackName}-SecurityHeadersPolicyId'
