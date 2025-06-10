@@ -12,7 +12,7 @@ if [[ "$DEPLOY_POLICY" == "y" || "$DEPLOY_POLICY" == "Y" ]]; then
     --stack-name $S3_POLICY_WEBSITE_STACK \
     --parameter-overrides \
       BucketName=$S3_BUCKET_NAME \
-      OriginAccessIdentityId=$OAI_ID \
+      OriginAccessIdentityId=$S3_CANONICAL_USER_ID \
       CloudFrontDistributionID=$CLOUDFRONT_DISTRIBUTION_ID \
       AccessType=$ACCESS_TYPE \
     --no-fail-on-empty-changeset
