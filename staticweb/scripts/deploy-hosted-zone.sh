@@ -50,7 +50,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
     --stack-name $HOSTED_ZONE_STACK \
     --parameter-overrides \
       DomainName=$DOMAIN_NAME \
-      DomainType=$DOMAIN_TYPE
+      DomainType=$DOMAIN_TYPE \
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
 fi
