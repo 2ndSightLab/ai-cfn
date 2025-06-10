@@ -151,24 +151,6 @@ Conditions:
   
 Resources:
 
-  # Origin Request Policy - Only forward essential headers
-  S3OriginRequestPolicy:
-    Type: AWS::CloudFront::OriginRequestPolicy
-    Properties:
-      OriginRequestPolicyConfig:
-        Name: !Sub '${AWS::StackName}-S3OriginRequestPolicy'
-        CookiesConfig:
-          CookieBehavior: none
-        HeadersConfig:
-          HeaderBehavior: whitelist
-          Headers:
-            - Host
-            - Origin
-            - Access-Control-Request-Headers
-            - Access-Control-Request-Method
-        QueryStringsConfig:
-          QueryStringBehavior: none
-
   CloudFrontDistribution:
     Type: 'AWS::CloudFront::Distribution'
     Properties:
