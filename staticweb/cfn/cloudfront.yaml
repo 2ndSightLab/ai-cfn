@@ -430,7 +430,13 @@ Outputs:
     Value: !GetAtt CloudFrontDistribution.DomainName
     Export:
       Name: !Sub '${AWS::StackName}-DistributionDomainName'
-
+      
+  IncludeWWW:
+    Description: 'Include WWW'
+    Value: !Ref IncludeWWW
+    Export:
+      Name: !Sub '${AWS::StackName}-IncludeWWW
+      
   FullDomainName:
     Description: 'The full domain name for the website'
     Value: !Ref DomainName
