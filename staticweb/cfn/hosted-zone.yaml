@@ -6,6 +6,15 @@ Parameters:
     Type: String
     Description: 'The domain name for the hosted zone (e.g., example.com)'
   
+  DomainType:
+    Type: String
+    Default: 'WWW'
+    Description: 'Type of domain setup (Basic: example.com only, WWW: example.com and www.example.com, Wildcard: example.com and *.example.com)'
+    AllowedValues:
+      - 'Basic'
+      - 'WWW'
+      - 'Wildcard'
+  
   CreateS3Records:
     Type: String
     Description: 'Create DNS records for direct S3 website endpoint (not needed if using CloudFront)'
@@ -23,22 +32,6 @@ Parameters:
     Type: String
     Description: 'Create DNS records for CloudFront distribution'
     Default: 'true'
-    AllowedValues:
-      - 'true'
-      - 'false'
-      
-  IncludeWWW:
-    Type: String
-    Default: 'false'
-    Description: 'Whether to include www record (www.example.com)'
-    AllowedValues:
-      - 'true'
-      - 'false' 
-      
-  Wildcard:
-    Type: String
-    Default: 'false'
-    Description: 'Whether to create wildcard domain (*.example.com)'
     AllowedValues:
       - 'true'
       - 'false'
@@ -80,23 +73,23 @@ Mappings:
 
 Conditions:
   HasCloudFrontDomain: !Not [!Equals [!Ref CloudFrontDomainName, '']]
-  IncludeWWWAlias: !Equals [!Ref IncludeWWW, 'true']
-  IsWildcard: !Equals [!Ref Wildcard, 'true']
   CreateS3WebsiteRecords: !Equals [!Ref CreateS3Records, 'true']
   CreateCloudFrontDNSRecords: !And
     - !Equals [!Ref CreateCloudFrontRecords, 'true']
     - !Condition HasCloudFrontDomain
+  IsWWWDomain: !Equals [!Ref DomainType, 'WWW']
+  IsWildcardDomain: !Equals [!Ref DomainType, 'Wildcard']
   CreateWWWS3Record: !And
-    - !Condition IncludeWWWAlias
+    - !Condition IsWWWDomain
     - !Condition CreateS3WebsiteRecords
   CreateWildcardS3Record: !And
-    - !Condition IsWildcard
+    - !Condition IsWildcardDomain
     - !Condition CreateS3WebsiteRecords
   CreateWWWCloudFrontRecord: !And
-    - !Condition IncludeWWWAlias
+    - !Condition IsWWWDomain
     - !Condition CreateCloudFrontDNSRecords
   CreateWildcardCloudFrontRecord: !And
-    - !Condition IsWildcard
+    - !Condition IsWildcardDomain
     - !Condition CreateCloudFrontDNSRecords
 
 Resources:
@@ -178,6 +171,7 @@ Resources:
         DNSName: !Ref CloudFrontDomainName
         HostedZoneId: Z2FDTNDATAQYW2
         EvaluateTargetHealth: false
+
 
 Outputs:
   HostedZoneId:
