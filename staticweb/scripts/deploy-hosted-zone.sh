@@ -94,4 +94,3 @@ read ok
 #this doesn't work in cloudshell because dig is not installed.
 #I wonder why ? ;^)
 #check_name_servers $NAME_SERVERS
-
