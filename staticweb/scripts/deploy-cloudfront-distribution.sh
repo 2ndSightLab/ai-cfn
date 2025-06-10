@@ -59,10 +59,10 @@ fi
 # Get the CloudFront Distribution domain name
 INCLUDE_WWW=$(aws cloudformation describe-stacks \
   --stack-name $CLOUDFRONT_STACK \
-  --query "Stacks[0].Outputs[?OutputKey=='IncludeWWW'].OutputValue" \
+  --query "Stacks[0].Outputs[?OutputKey=='WWWDomainEnabled'].OutputValue" \
   --output text)
 
-echo "CloudFront Distribution Domain: $CLOUDFRONT_DOMAIN"
+echo "Include WWW: $INCLUDE_WWW"
 
 # Get the CloudFront Distribution domain name
 CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks \
