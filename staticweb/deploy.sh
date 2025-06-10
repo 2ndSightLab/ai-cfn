@@ -33,8 +33,8 @@ source ./scripts/stack-exists.sh
 source ./scripts/delete-stack.sh
 source ./scripts/delete-failed-stack-if-exists.sh
 source ./scripts/deploy-hosted-zone.sh
-source ./scripts/deploy-tls-cert.sh
 source ./scripts/check-certificate-exists.sh
+source ./scripts/deploy-tls-cert.sh
 source ./scripts/deploy-s3-access-log-bucket.sh
 source ./scripts/deploy-cloudfront-logs-bucket.sh
 source ./scripts/deploy-cloudfront-access.sh
