@@ -24,7 +24,7 @@ if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
 
   echo "Creating Origin Access Control (OAC) Stack"
   TEMPLATE_FILE="cfn/origin-access-control.yaml"
-  #delete_failed_stack_if_exists $OAC_STACK $REGION
+  delete_failed_stack_if_exists $OAC_STACK $REGION
   
   aws cloudformation deploy \
     --stack-name $OAC_STACK \
