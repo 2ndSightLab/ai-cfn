@@ -9,10 +9,7 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
     echo "Error: S3 bucket name is required for CloudFront distribution."
     exit 1
   fi
-  
-  read -p "Include www subdomain? (true/false, default: true): " INCLUDE_WWW
-  INCLUDE_WWW=${INCLUDE_WWW:-true}
-  
+    
   read -p "Default root object (default: index.html): " DEFAULT_ROOT_OBJECT
   DEFAULT_ROOT_OBJECT=${DEFAULT_ROOT_OBJECT:-index.html}
   echo "Price Class options:"
