@@ -11,14 +11,15 @@ Parameters:
   CloudFrontDomainName:
     Type: String
     Description: The CloudFront distribution domain name
-  IncludeWWW:
+  DomainType:
     Type: String
-    Default: 'true'
-    AllowedValues: ['true', 'false']
-    Description: Whether to include www subdomain
+    Default: 'WWW'
+    AllowedValues: ['Basic', 'WWW', 'Wildcard']
+    Description: Domain type
 
 Conditions:
-  IncludeWWWDomain: !Equals [!Ref IncludeWWW, 'true']
+  IncludeWWWDomain: !Equals [!Ref DomainType, 'WWW']
+  IsWildcard: !Equals [!Ref DomainType, 'WWW']
 
 Resources:
   ApexDomainRecord:
@@ -43,6 +44,18 @@ Resources:
         DNSName: !Ref CloudFrontDomainName
         HostedZoneId: Z2FDTNDATAQYW2  # This is the fixed hosted zone ID for CloudFront
         EvaluateTargetHealth: false
+  
+  WildcardDomainRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: IsWildcard
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub '*.${DomainName}'
+      Type: A
+      AliasTarget:
+        DNSName: !Ref CloudFrontDomainName
+        HostedZoneId: Z2FDTNDATAQYW2  # This is the fixed hosted zone ID for CloudFront
+        EvaluateTargetHealth: false
 
 Outputs:
   ApexDomainName:
@@ -51,4 +64,8 @@ Outputs:
   WWWDomainName:
     Description: The www domain name
     Value: !Sub 'www.${DomainName}'
+    Condition: IncludeWWWDomain
+  WildcardDomainName:
+    Description: The wildcard domain name
+    Value: !Sub '*.${DomainName}'
     Condition: IncludeWWWDomain
