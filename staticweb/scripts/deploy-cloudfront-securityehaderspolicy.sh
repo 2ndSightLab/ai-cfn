@@ -7,6 +7,8 @@ if [[ "$DEPLOY_POLICY" == "y" || "$DEPLOY_POLICY" == "Y" ]]; then
 
   aws cloudformation deploy \
     --template-file cfn/cloudfront-securityheaderspolicy.yaml \
+    --parameter-overrides \
+        DomainName=$DOMAIN_NAME \
     --stack-name $CLOUDFRONT_SECURITYHEADERS_POLICY_STACK \
     --no-fail-on-empty-changeset
     
