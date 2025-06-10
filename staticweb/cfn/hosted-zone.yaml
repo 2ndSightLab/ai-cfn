@@ -185,7 +185,13 @@ Outputs:
     Value: !Ref DomainName
     Export:
       Name: !Sub '${AWS::StackName}-DomainName'
-
+      
+  DomainType:
+    Description: 'Domain Type'
+    Value: !Ref DomainType
+    Export:
+      Name: !Sub '${AWS::StackName}-DomainType'
+      
   WildcardDomainName:
     Condition: IsWildcardDomain
     Description: 'Wildcard Domain Name'
