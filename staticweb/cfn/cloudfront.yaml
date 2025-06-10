@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'CloudFront distribution for S3 static website with comprehensive security best practices'
+Description: 'CloudFront distribution for S3 static website'
 
 Parameters:
   DomainName:
@@ -40,6 +40,10 @@ Parameters:
     Type: String
     Description: 'The default root object (e.g., index.html)'
     Default: 'index.html'
+
+  CachePolicyId:
+    Type: String
+    Description: 'Cache Policy ID'
 
   # PriceClass_100: North America and Europe Only
   # PriceClass_200: North America, Europe, Asia, Middle East, and Africa
@@ -288,7 +292,7 @@ Resources:
             - HEAD
             - OPTIONS
           Compress: true
-          CachePolicyId: !Ref HtmlCachePolicy
+          CachePolicyId: !Ref CachePolicyId
           OriginRequestPolicyId: !Ref S3OriginRequestPolicy
           ResponseHeadersPolicyId: !Ref SecurityHeadersPolicy
           TargetOriginId: S3Origin
