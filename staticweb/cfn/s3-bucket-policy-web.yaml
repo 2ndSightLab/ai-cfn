@@ -39,7 +39,7 @@ Resources:
             - Sid: AllowCloudFrontOAIAccess
               Effect: Allow
               Principal:
-                CanonicalUser: !Sub 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${OriginAccessIdentityId}'
+                 "AWS": !Sub 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${OriginAccessIdentityId}'
               Action: 's3:GetObject'
               Resource: !Join 
                 - ''
