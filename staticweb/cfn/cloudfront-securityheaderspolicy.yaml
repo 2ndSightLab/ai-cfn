@@ -10,7 +10,17 @@ Parameters:
     Type: String
     Description: 'Content Security Policy directives'
     Default: "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self'"
-    
+
+  IncludeWWW:
+    Type: String
+    Description: 'Include www subdomain as an alias'
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+Conditions:
+  IncludeWWWAlias: !Equals [!Ref IncludeWWW, 'true']
+  
 Resources:
     SecurityHeadersPolicy:
         Type: AWS::CloudFront::ResponseHeadersPolicy
