@@ -22,6 +22,9 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
     read -p "Domain name (e.g., example.com): " DOMAIN_NAME
   done
 
+  read -p "Include www subdomain? (true/false, default: true): " INCLUDE_WWW
+  INCLUDE_WWW=${INCLUDE_WWW:-true}
+
   echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."
   aws cloudformation deploy \
     --region $REGION
@@ -29,6 +32,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
     --stack-name $HOSTED_ZONE_STACK \
     --parameter-overrides \
       DomainName=$DOMAIN_NAME \
+      IncludeWWW=$INCLUDE_WWW
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
 fi
@@ -40,6 +44,12 @@ DOMAIN_NAME=$(aws cloudformation describe-stacks \
     --stack-name $HOSTED_ZONE_STACK \
     --region $REGION \
     --query "Stacks[0].Outputs[?OutputKey=='DomainName'].OutputValue" \
+    --output text)
+
+INCLUDE_WWW=$(aws cloudformation describe-stacks \
+    --stack-name $HOSTED_ZONE_STACK \
+    --region $REGION \
+    --query "Stacks[0].Outputs[?OutputKey=='IncludeWWW'].OutputValue" \
     --output text)
     
 # Get the Hosted Zone ID from the stack outputs
