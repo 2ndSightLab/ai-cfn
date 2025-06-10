@@ -22,8 +22,8 @@ Parameters:
     Default: ''
 
 Conditions:
-  UseOAI: !Equals [!Ref OAIType, 'OAI']
-  UseOAC: !Equals [!Ref OAIType, 'OAC']
+  UseOAI: !Equals [!Ref AccessType, 'OAI']
+  UseOAC: !Equals [!Ref AccessType, 'OAC']
 
 Resources:
 
