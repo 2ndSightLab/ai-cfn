@@ -1,8 +1,11 @@
 #!/bin/bash
 
-delete_failed_stack_if_exists $S3_POLICY_WEBSITE_STACK $REGION
+read -p "Deploy S3 bucket policy? (y/n): " DEPLOY_POLICY
+if [[ "$DEPLOY_POLICY" == "y" || "$DEPLOY_POLICY" == "Y" ]]; then
+
+  delete_failed_stack_if_exists $S3_POLICY_WEBSITE_STACK $REGION
   
-aws cloudformation deploy \
+  aws cloudformation deploy \
     --template-file cfn/s3-bucket-policy-web.yaml \
     --stack-name $S3_POLICY_WEBSITE_STACK \
     --parameter-overrides \
@@ -10,6 +13,8 @@ aws cloudformation deploy \
       OriginAccessIdentityId=$OAI_ID \
       CloudFrontDistributionID=$CLOUDFRONT_DISTRIBUTION_ID \
     --no-fail-on-empty-changeset
-    
+  
+fi
+
 stack_exists $S3_POLICY_WEBSITE_STACK $REGION $REGION
   
