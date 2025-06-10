@@ -48,10 +48,8 @@ else
 
   echo "Creating Origin Access Identity (OAI) Stack"
   TEMPLATE_FILE="cfn/origin-access-identity.yaml"
-  # Delete failed stack if it exists
-  #delete_failed_stack_if_exists $OAI_STACK $REGION 
+  delete_failed_stack_if_exists $OAI_STACK $REGION 
   
-  # Deploy the CloudFormation stack
   aws cloudformation deploy \
     --stack-name $OAI_STACK \
     --template-file $TEMPLATE_FILE \
