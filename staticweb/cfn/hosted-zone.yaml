@@ -85,7 +85,7 @@ Resources:
         HostedZoneId: !FindInMap [RegionMap, !Ref 'AWS::Region', S3HostedZoneId]
         EvaluateTargetHealth: false
 
-    WildcardS3Record:
+  WildcardS3Record:
     Type: AWS::Route53::RecordSet
     Condition: IsWildcard
     Properties:
