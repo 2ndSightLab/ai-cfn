@@ -71,11 +71,12 @@ if [[ "$DEPLOY_S3_ACCESS_LOGS" == "y" || "$DEPLOY_S3_ACCESS_LOGS" == "Y" ]]; the
 
   stack_exists $S3_ACCESS_LOGS_STACK $REGION
   
-  S3_ACCESS_LOGS_BUCKET_NAME=$(aws cloudformation describe-stacks \
+fi
+
+S3_ACCESS_LOGS_BUCKET_NAME=$(aws cloudformation describe-stacks \
     --stack-name $S3_ACCESS_LOGS_STACK \
     --region $REGION \
-    --query "Stacks[0].Outputs[?ExportName=='${S3_ACCESS_LOGS_STACK}-S3AccessLogsBucketName'].OutputValue" \
+    --query "Stacks[0].Outputs[?ExportName=='BucketName'].OutputValue" \
     --output text)
   
-  echo "S3 Access Logs Bucket: $S3_ACCESS_LOGS_BUCKET_NAME"
-fi
+echo "S3 Access Logs Bucket: $S3_ACCESS_LOGS_BUCKET_NAME"
