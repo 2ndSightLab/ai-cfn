@@ -23,9 +23,8 @@ read -p "Use Origin Access Control (OAC) (Recommended)? Otherwise will use OAI (
 if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
 
   echo "Creating Origin Access Control Stack"
-  delete_stack $OAI_STACK $REGION || echo "Stack is in a failed state but cannot delete it."
   TEMPLATE_FILE="cfn/origin-access-control.yaml"
-  delete_failed_stack_if_exists $OAC_STACK $REGION || echo "Stack is in a failed state but cannot delete it."
+  #delete_failed_stack_if_exists $OAC_STACK $REGION
   
   aws cloudformation deploy \
     --stack-name $OAC_STACK \
@@ -45,10 +44,9 @@ if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
 else
 
   echo "Creating Origin Access Identity Stack"
-  delete_stack $OAC_STACK $REGION || echo "Stack is in a failed state but cannot delete it."
   TEMPLATE_FILE="cfn/origin-access-identity.yaml"
   # Delete failed stack if it exists
-  delete_failed_stack_if_exists $OAI_STACK $REGION || echo "Stack is in a failed state but cannot delete it."
+  #delete_failed_stack_if_exists $OAI_STACK $REGION 
   
   # Deploy the CloudFormation stack
   aws cloudformation deploy \
