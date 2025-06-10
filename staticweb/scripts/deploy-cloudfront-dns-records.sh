@@ -1,0 +1,16 @@
+
+#!/bin/bash
+
+delete_failed_stack_if_exists $CLOUDFRONT_DNS_STACK $REGION
+  
+aws cloudformation deploy \
+    --template-file cfn/cloudfront-dns-records.yaml \
+    --stack-name $CLOUDFRONT_DNS_STACK \
+    --parameter-overrides \
+      DomainName=$DOMAIN_NAME \
+      HostedZoneId=$HOSTED_ZONE_ID \
+      CloudFrontDomainName=$CLOUDFRONT_DOMAIN_NAME \
+      IncludeWWW=$INCLUDE_WWW \
+    --no-fail-on-empty-changeset
+    
+stack_exists $CLOUDFRONT_DNS_STACK $REGION $REGION
