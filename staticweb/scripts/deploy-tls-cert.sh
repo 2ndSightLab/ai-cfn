@@ -7,7 +7,7 @@ REGION=us-east-1
 # TLS Certificate 
 ACM_CERTIFICATE_ARN=""
 
-read -p "Deploy Route 53 hosted zone? (y/n): " DEPLOY_HOSTED_ZONE
+read -p "Deploy TLS certificate? (y/n): " DEPLOY_HOSTED_ZONE
 if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
 
     # Ask for validation method
