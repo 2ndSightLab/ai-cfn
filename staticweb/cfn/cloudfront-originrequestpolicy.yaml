@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFront Origin Request Policy for S3 origins'
+
+Resources:
+  S3OriginRequestPolicy:
+    Type: AWS::CloudFront::OriginRequestPolicy
+    Properties:
+      OriginRequestPolicyConfig:
+        Name: S3OriginRequestPolicy
+        Comment: 'Origin request policy for S3 origins with CORS support'
+        CookiesConfig:
+          CookieBehavior: none
+        HeadersConfig:
+          HeaderBehavior: whitelist
+          Headers:
+            - Host
+            - Origin
+            - Access-Control-Request-Headers
+            - Access-Control-Request-Method
+        QueryStringsConfig:
+          QueryStringBehavior: none
+
+Outputs:
+  S3OriginRequestPolicyId:
+    Description: 'ID of the S3 Origin Request Policy'
+    Value: !Ref S3OriginRequestPolicy
+    Export:
+      Name: !Sub '${AWS::StackName}-S3OriginRequestPolicyId'
