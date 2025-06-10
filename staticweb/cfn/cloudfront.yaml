@@ -278,12 +278,6 @@ Resources:
               - Enabled: true
                 OriginShieldRegion: !Ref OriginShieldRegion
               - !Ref 'AWS::NoValue'
-            # Ensure origin connection uses HTTPS
-            CustomOriginConfig:
-              OriginProtocolPolicy: https-only
-              OriginSSLProtocols:
-                - TLSv1.2
-                - TLSv1.3
         DefaultCacheBehavior:
           AllowedMethods:
             - GET
