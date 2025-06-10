@@ -52,6 +52,9 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
       LoggingPrefix=$LOGGING_PREFIX \
       EnableOriginShield=$ENABLE_ORIGIN_SHIELD \
       OriginShieldRegion=$ORIGIN_SHIELD_REGION \
+      SecurityPolicyID=$CLOUDFRONT_SECURITYPOLICY_ID \
+      OriginPolicyID=$CLOUDFRONT_ORIGIN_POLICY_ID \
+      CachePolicyID=$CLOUDFRONT_CACHE_POLICY_ID \
     --no-fail-on-empty-changeset
   stack_exists $CLOUDFRONT_STACK $REGION
 fi
