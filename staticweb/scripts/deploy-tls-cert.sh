@@ -7,14 +7,9 @@ REGION=us-east-1
 # TLS Certificate 
 ACM_CERTIFICATE_ARN=""
 
-# Check if any valid certificates exist
-if check_certificate_exists "$DOMAIN_NAME" "us-east-1"; then
-  echo "Existing certificate ARN: $ACM_CERTIFICATE_ARN"
-else
-  echo "No valid certificates found for $DOMAIN_NAME"
-  ACM_CERTIFICATE_ARN=""
-fi
-    
+read -p "Deploy Route 53 hosted zone? (y/n): " DEPLOY_HOSTED_ZONE
+if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
+
     # Ask for validation method
     echo "Select validation method:"
     echo "1) DNS validation (recommended)"
@@ -52,7 +47,7 @@ fi
     echo "Stack name: $TLS_CERTIFICATE_STACK"
     echo "Waiting for certificate ARN to become available..."
 
-      # Loop until the ARN is available
+    # Loop until the ARN is available
     MAX_ATTEMPTS=30
     ATTEMPT=0
     while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
@@ -80,6 +75,7 @@ fi
       echo "Timed out waiting for certificate ARN. You can check the CloudFormation console for status."
       echo "Stack name: $TLS_CERTIFICATE_STACK"
     fi
+    
 else
     ACM_CERTIFICATE_ARN=$(aws cloudformation list-stack-resources \
       --stack-name $TLS_CERTIFICATE_STACK \
