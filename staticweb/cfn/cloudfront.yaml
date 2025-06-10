@@ -45,6 +45,10 @@ Parameters:
     Type: String
     Description: 'Cache Policy ID'
 
+  SecurityHeadersPolicyID:
+    Type: String
+    Description: 'Security Headers Policy ID'
+
   # PriceClass_100: North America and Europe Only
   # PriceClass_200: North America, Europe, Asia, Middle East, and Africa
   # PriceClass_All: All CloudFront edge locations worldwide
@@ -143,26 +147,6 @@ Conditions:
   
 Resources:
 
-  HtmlCachePolicy:
-    Type: AWS::CloudFront::CachePolicy
-    Properties:
-      CachePolicyConfig:
-        Name: !Sub '${AWS::StackName}-HtmlCachePolicy'
-        DefaultTTL: 3600  # 1 hour
-        MaxTTL: 86400     # 1 day
-        MinTTL: 0
-        ParametersInCacheKeyAndForwardedToOrigin:
-          EnableAcceptEncodingGzip: true
-          EnableAcceptEncodingBrotli: true
-          CookiesConfig:
-            CookieBehavior: none
-          HeadersConfig:
-            HeaderBehavior: whitelist
-            Headers:
-              - Host  # Include only the Host header in cache key
-          QueryStringsConfig:
-            QueryStringBehavior: none  # Don't include any query strings in cache key
-
   # Cache Policy for static assets (longer TTL)
   StaticAssetsCachePolicy:
     Type: AWS::CloudFront::CachePolicy
@@ -201,54 +185,6 @@ Resources:
             - Access-Control-Request-Method
         QueryStringsConfig:
           QueryStringBehavior: none
-
-  SecurityHeadersPolicy:
-    Type: AWS::CloudFront::ResponseHeadersPolicy
-    Properties:
-      ResponseHeadersPolicyConfig:
-        Name: !Sub '${AWS::StackName}-SecurityHeadersPolicy'
-        SecurityHeadersConfig:
-          ContentSecurityPolicy:
-            ContentSecurityPolicy: !Ref CSPDirectives
-            Override: true
-          ContentTypeOptions:
-            Override: true
-          FrameOptions:
-            FrameOption: DENY
-            Override: true
-          ReferrerPolicy:
-            ReferrerPolicy: strict-origin-when-cross-origin
-            Override: true
-          StrictTransportSecurity:
-            AccessControlMaxAgeSec: 63072000
-            IncludeSubdomains: true
-            Preload: true
-            Override: true
-        CorsConfig:
-          AccessControlAllowCredentials: false
-          AccessControlAllowHeaders:
-            Items:
-              - 'Content-Type'
-              - 'Authorization'
-              - 'X-Requested-With'
-              - 'Origin'
-              - 'Accept'
-          AccessControlAllowMethods:
-            Items:
-              - GET
-              - HEAD
-              - OPTIONS
-          AccessControlAllowOrigins:
-            Items:
-              - !Sub 'https://${DomainName}'
-              - !If [IncludeWWWAlias, !Sub 'https://www.${DomainName}', !Ref 'AWS::NoValue']
-          AccessControlMaxAgeSec: 600
-          OriginOverride: false
-        CustomHeadersConfig:
-          Items:
-            - Header: Cache-Control
-              Value: "public, max-age=31536000, immutable"
-              Override: false
 
   CloudFrontDistribution:
     Type: 'AWS::CloudFront::Distribution'
@@ -294,7 +230,7 @@ Resources:
           Compress: true
           CachePolicyId: !Ref CachePolicyId
           OriginRequestPolicyId: !Ref S3OriginRequestPolicy
-          ResponseHeadersPolicyId: !Ref SecurityHeadersPolicy
+          ResponseHeadersPolicyId: !Ref SecurityHeadersPolicyID
           TargetOriginId: S3Origin
           ViewerProtocolPolicy: redirect-to-https
           # Enable automatic object compression
