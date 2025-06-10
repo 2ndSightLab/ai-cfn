@@ -18,24 +18,25 @@ if [ -z "$OAC_STACK" ]; then
   exit 1
 fi
 
-read -p "Use Origin Access Control (OAC) (Recommended)? (y/n): " DEPLOY_OAC
+read -p "Use Origin Access Control (OAC) (Recommended)? (y/n): " USE_OAC
+if [[ "$USE_OAC" == "y" || "$USE_OAC" == "Y" ]]; then
+  if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
 
-if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
-
-  echo "Creating Origin Access Control (OAC) Stack"
-  TEMPLATE_FILE="cfn/origin-access-control.yaml"
-  delete_failed_stack_if_exists $OAC_STACK $REGION
+    echo "Creating Origin Access Control (OAC) Stack"
+    TEMPLATE_FILE="cfn/origin-access-control.yaml"
+    delete_failed_stack_if_exists $OAC_STACK $REGION
   
-  aws cloudformation deploy \
-    --stack-name $OAC_STACK \
-    --template-file $TEMPLATE_FILE \
-    --parameter-overrides \
-       OACName=$OAC_STACK \
-       OriginType="s3" \
-    --no-fail-on-empty-changeset
+    aws cloudformation deploy \
+      --stack-name $OAC_STACK \
+      --template-file $TEMPLATE_FILE \
+      --parameter-overrides \
+         OACName=$OAC_STACK \
+         OriginType="s3" \
+      --no-fail-on-empty-changeset
 
-  stack_exists $OAC_STACK $REGION
-
+    stack_exists $OAC_STACK $REGION
+  fi
+  
   OAC_ID=$(aws cloudformation describe-stacks \
     --stack-name $OAC_STACK \
     --query "Stacks[0].Outputs[?OutputKey=='OriginAccessControlId'].OutputValue" \
@@ -46,7 +47,9 @@ if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
   
 else
 
-  read -p "Use Origin Access Identity (OAI)? (y/n): " DEPLOY_OAI
+  echo "Using OAI for CloudFront access to S3"
+  
+  read -p "Deploy Origin Access Identity (OAI)? (y/n): " DEPLOY_OAI
   if [[ "$DEPLOY_OAI" == "y" || "$DEPLOY_OAI" == "Y" ]]; then
 
     echo "Creating Origin Access Identity (OAI) Stack"
@@ -58,6 +61,8 @@ else
       --template-file $TEMPLATE_FILE \
       --no-fail-on-empty-changeset
 
+  fi
+  
     stack_exists $OAI_STACK $REGION
   
     OAI_ID=$(aws cloudformation describe-stacks \
@@ -72,6 +77,6 @@ else
       --query "Stacks[0].Outputs[?OutputKey=='S3CanonicalUserId'].OutputValue" \
       --output text)
     echo "S3 CANONICAL USER ID: $S3_CANONICAL_USER_ID"
-  fi
+  
 fi
 
