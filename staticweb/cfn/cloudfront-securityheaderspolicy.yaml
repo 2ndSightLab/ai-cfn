@@ -1,6 +1,16 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'CloudFront security headers policy'
 
+Parameters:
+  DomainName:
+    Type: String
+    Description: 'The primary domain name for the CloudFront distribution (e.g., example.com)'
+
+  CSPDirectives:
+    Type: String
+    Description: 'Content Security Policy directives'
+    Default: "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self'"
+    
 Resources:
     SecurityHeadersPolicy:
         Type: AWS::CloudFront::ResponseHeadersPolicy
