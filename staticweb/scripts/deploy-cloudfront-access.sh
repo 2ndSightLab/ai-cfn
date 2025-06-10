@@ -20,6 +20,8 @@ fi
 
 read -p "Use Origin Access Control (OAC) (Recommended)? (y/n): " USE_OAC
 if [[ "$USE_OAC" == "y" || "$USE_OAC" == "Y" ]]; then
+
+  read -p "Deploy OAC? (y/n): " DEPLOY_OAC
   if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
 
     echo "Creating Origin Access Control (OAC) Stack"
