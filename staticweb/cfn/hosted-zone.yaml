@@ -18,7 +18,7 @@ Parameters:
     Type: String
     Description: 'The CloudFront distribution domain name (e.g., d1234abcdef.cloudfront.net)'
     Default: ''
-  
+    
   CreateCloudFrontRecords:
     Type: String
     Description: 'Create DNS records for CloudFront distribution'
@@ -41,98 +41,7 @@ Parameters:
     Description: 'Whether to create wildcard domain (*.example.com)'
     AllowedValues:
       - 'true'
-      - 'false'     
-      
-Conditions:
-  HasCloudFrontDomain: !Not [!Equals [!Ref CloudFrontDomainName, '']]
-  IncludeWWWAlias: !Equals [!Ref IncludeWWW, 'true']
-  IsWildcard: !Equals [!Ref Wildcard, 'true']
-  CreateS3WebsiteRecords: !Equals [!Ref CreateS3Records, 'true']
-  CreateCloudFrontDNSRecords: !And
-    - !Equals [!Ref CreateCloudFrontRecords, 'true']
-    - !Condition HasCloudFrontDomain
-
-Resources:
-  HostedZone:
-    Type: AWS::Route53::HostedZone
-    Properties:
-      Name: !Ref DomainName
-      HostedZoneConfig:
-        Comment: !Sub 'Hosted zone for ${DomainName}'
-
-  # S3 Website Records (Optional)
-  S3WebsiteRecord:
-    Type: AWS::Route53::RecordSet
-    Condition: IncludeWWWAlias
-    Properties:
-      HostedZoneId: !Ref HostedZone
-      Name: !Ref DomainName
-      Type: A
-      AliasTarget:
-        DNSName: !Sub 's3-website-${AWS::Region}.amazonaws.com'
-        HostedZoneId: !FindInMap [RegionMap, !Ref 'AWS::Region', S3HostedZoneId]
-        EvaluateTargetHealth: false
-
-  WWWS3Record:
-    Type: AWS::Route53::RecordSet
-    Condition: CreateS3WebsiteRecords
-    Properties:
-      HostedZoneId: !Ref HostedZone
-      Name: !Sub 'www.${DomainName}'
-      Type: A
-      AliasTarget:
-        DNSName: !Sub 's3-website-${AWS::Region}.amazonaws.com'
-        HostedZoneId: !FindInMap [RegionMap, !Ref 'AWS::Region', S3HostedZoneId]
-        EvaluateTargetHealth: false
-
-  WildcardS3Record:
-    Type: AWS::Route53::RecordSet
-    Condition: IsWildcard
-    Properties:
-      HostedZoneId: !Ref HostedZone
-      Name: !Sub 'www.${DomainName}'
-      Type: A
-      AliasTarget:
-        DNSName: !Sub 's3-website-${AWS::Region}.amazonaws.com'
-        HostedZoneId: !FindInMap [RegionMap, !Ref 'AWS::Region', S3HostedZoneId]
-        EvaluateTargetHealth: false
-
-  # CloudFront Records
-  CloudFrontRecord:
-    Type: AWS::Route53::RecordSet
-    Condition: CreateCloudFrontDNSRecords
-    Properties:
-      HostedZoneId: !Ref HostedZone
-      Name: !Ref DomainName
-      Type: A
-      AliasTarget:
-        DNSName: !Ref CloudFrontDomainName
-        HostedZoneId: Z2FDTNDATAQYW2 # CloudFront's global Hosted Zone ID
-        EvaluateTargetHealth: false
-
-  WWWCloudFrontRecord:
-    Type: AWS::Route53::RecordSet
-    Condition: IncludeWWWAlias
-    Properties:
-      HostedZoneId: !Ref HostedZone
-      Name: !Sub 'www.${DomainName}'
-      Type: A
-      AliasTarget:
-        DNSName: !Ref CloudFrontDomainName
-        HostedZoneId: Z2FDTNDATAQYW2 # CloudFront's global Hosted Zone ID
-        EvaluateTargetHealth: false
-
-  WildcardCloudFrontRecord:
-    Type: AWS::Route53::RecordSet
-    Condition: IsWildcard
-    Properties:
-      HostedZoneId: !Ref HostedZone
-      Name: !Sub '*.${DomainName}'
-      Type: A
-      AliasTarget:
-        DNSName: !Ref CloudFrontDomainName
-        HostedZoneId: Z2FDTNDATAQYW2 # CloudFront's global Hosted Zone ID
-        EvaluateTargetHealth: false
+      - 'false'
 
 Mappings:
   RegionMap:
@@ -144,17 +53,131 @@ Mappings:
       S3HostedZoneId: Z2F56UZL2M1ACD
     us-west-2:
       S3HostedZoneId: Z3BJ6K6RIION7M
+    ca-central-1:
+      S3HostedZoneId: Z1QDHH18159H29
     eu-west-1:
       S3HostedZoneId: Z1BKCTXD74EZPE
+    eu-west-2:
+      S3HostedZoneId: Z3GKZC51ZF0DB4
+    eu-west-3:
+      S3HostedZoneId: Z3R1K369G5AVDG
+    eu-central-1:
+      S3HostedZoneId: Z21DNDUVLTQW6Q
+    ap-south-1:
+      S3HostedZoneId: Z11RGJOFQNVJUP
+    ap-northeast-1:
+      S3HostedZoneId: Z2M4EHUR26P7ZW
+    ap-northeast-2:
+      S3HostedZoneId: Z3W03O7B5YMIYP
+    ap-northeast-3:
+      S3HostedZoneId: Z2YQB5RD63NC85
     ap-southeast-1:
       S3HostedZoneId: Z3O0J2DXBE1FTB
     ap-southeast-2:
       S3HostedZoneId: Z1WCIGYICN2BYD
-    ap-northeast-1:
-      S3HostedZoneId: Z2M4EHUR26P7ZW
     sa-east-1:
-      S3HostedZoneId: Z31GFT0UA1I2HV
-    # Add other regions as needed
+      S3HostedZoneId: Z7KQH4QJS55SO
+
+Conditions:
+  HasCloudFrontDomain: !Not [!Equals [!Ref CloudFrontDomainName, '']]
+  IncludeWWWAlias: !Equals [!Ref IncludeWWW, 'true']
+  IsWildcard: !Equals [!Ref Wildcard, 'true']
+  CreateS3WebsiteRecords: !Equals [!Ref CreateS3Records, 'true']
+  CreateCloudFrontDNSRecords: !And
+    - !Equals [!Ref CreateCloudFrontRecords, 'true']
+    - !Condition HasCloudFrontDomain
+  CreateWWWS3Record: !And
+    - !Condition IncludeWWWAlias
+    - !Condition CreateS3WebsiteRecords
+  CreateWildcardS3Record: !And
+    - !Condition IsWildcard
+    - !Condition CreateS3WebsiteRecords
+  CreateWWWCloudFrontRecord: !And
+    - !Condition IncludeWWWAlias
+    - !Condition CreateCloudFrontDNSRecords
+  CreateWildcardCloudFrontRecord: !And
+    - !Condition IsWildcard
+    - !Condition CreateCloudFrontDNSRecords
+
+Resources:
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Ref DomainName
+      HostedZoneConfig:
+        Comment: !Sub 'Hosted zone for ${DomainName}'
+        
+  S3WebsiteRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: CreateS3WebsiteRecords
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !Sub 's3-website-${AWS::Region}.amazonaws.com'
+        HostedZoneId: !FindInMap [RegionMap, !Ref 'AWS::Region', S3HostedZoneId]
+        EvaluateTargetHealth: false
+
+  WWWS3Record:
+    Type: AWS::Route53::RecordSet
+    Condition: CreateWWWS3Record
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Sub 'www.${DomainName}'
+      Type: A
+      AliasTarget:
+        DNSName: !Sub 's3-website-${AWS::Region}.amazonaws.com'
+        HostedZoneId: !FindInMap [RegionMap, !Ref 'AWS::Region', S3HostedZoneId]
+        EvaluateTargetHealth: false
+        
+  WildcardS3Record:
+    Type: AWS::Route53::RecordSet
+    Condition: CreateWildcardS3Record
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Sub '*.${DomainName}'
+      Type: A
+      AliasTarget:
+        DNSName: !Sub 's3-website-${AWS::Region}.amazonaws.com'
+        HostedZoneId: !FindInMap [RegionMap, !Ref 'AWS::Region', S3HostedZoneId]
+        EvaluateTargetHealth: false
+
+  CloudFrontRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: CreateCloudFrontDNSRecords
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !Ref CloudFrontDomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+        EvaluateTargetHealth: false
+        
+  WWWCloudFrontRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: CreateWWWCloudFrontRecord
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Sub 'www.${DomainName}'
+      Type: A
+      AliasTarget:
+        DNSName: !Ref CloudFrontDomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+        EvaluateTargetHealth: false
+
+  WildcardCloudFrontRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: CreateWildcardCloudFrontRecord
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Sub '*.${DomainName}'
+      Type: A
+      AliasTarget:
+        DNSName: !Ref CloudFrontDomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+        EvaluateTargetHealth: false
 
 Outputs:
   HostedZoneId:
