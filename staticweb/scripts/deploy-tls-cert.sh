@@ -117,6 +117,11 @@ if [[ "$DEPLOY_CERTIFICATE" == "y" || "$DEPLOY_CERTIFICATE" == "Y" ]]; then
       echo "Timed out waiting for certificate ARN. You can check the CloudFormation console for status."
       echo "Stack name: $TLS_CERTIFICATE_STACK"
     fi
+else
+    ACM_CERTIFICATE_ARN=$(aws cloudformation list-stack-resources \
+      --stack-name $TLS_CERTIFICATE_STACK \
+      --query "StackResourceSummaries[?ResourceType=='AWS::CertificateManager::Certificate'].PhysicalResourceId" \
+      --output text 2>/dev/null)
 fi
 
 echo "ACM_CERTIFICATE_ARN: $ACM_CERTIFICATE_ARN"
