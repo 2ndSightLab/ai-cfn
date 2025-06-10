@@ -28,6 +28,7 @@ DNS_RECORDS_STACK="${STACK_NAME_PREFIX}-dns-records"
 CLOUDFRONT_STACK="${STACK_NAME_PREFIX}-cloudfront"
 OAI_STACK="${STACK_NAME_PREFIX}-origin-access-identity"
 OAC_STACK="${STACK_NAME_PREFIX}-origin-access-control"
+CLOUDFRONT_DNS_STACK="${STACK_NAME_PREFIX}-cloudfront-dns"
 
 source ./scripts/stack-exists.sh
 source ./scripts/delete-stack.sh
@@ -41,6 +42,7 @@ source ./scripts/deploy-cloudfront-access.sh
 source ./scripts/deploy-s3-content-bucket.sh
 source ./scripts/deploy-cloudfront-distribution.sh
 source ./scripts/deploy-s3-bucket-policy-content.sh
+source ./scripts/deploy-cloudfront-dns.sh
 
 
 echo "Deployment complete!"
