@@ -45,6 +45,10 @@ Parameters:
     Type: String
     Description: 'Cache Policy ID'
 
+  OriginRequestPolicyId:
+    Type: String
+    Description: 'Origin Request Policy ID'
+    
   SecurityHeadersPolicyID:
     Type: String
     Description: 'Security Headers Policy ID'
@@ -147,27 +151,6 @@ Conditions:
   
 Resources:
 
-  # Cache Policy for static assets (longer TTL)
-  StaticAssetsCachePolicy:
-    Type: AWS::CloudFront::CachePolicy
-    Properties:
-      CachePolicyConfig:
-        Name: !Sub '${AWS::StackName}-StaticAssetsCachePolicy'
-        DefaultTTL: 2592000  # 30 days
-        MaxTTL: 31536000     # 1 year
-        MinTTL: 86400        # 1 day
-        ParametersInCacheKeyAndForwardedToOrigin:
-          EnableAcceptEncodingGzip: true
-          EnableAcceptEncodingBrotli: true
-          CookiesConfig:
-            CookieBehavior: none
-          HeadersConfig:
-            HeaderBehavior: whitelist
-            Headers:
-              - Host  # Include only the Host header in cache key
-          QueryStringsConfig:
-            QueryStringBehavior: none  # Don't include any query strings in cache key
-
   # Origin Request Policy - Only forward essential headers
   S3OriginRequestPolicy:
     Type: AWS::CloudFront::OriginRequestPolicy
@@ -229,7 +212,7 @@ Resources:
             - OPTIONS
           Compress: true
           CachePolicyId: !Ref CachePolicyId
-          OriginRequestPolicyId: !Ref S3OriginRequestPolicy
+          OriginRequestPolicyId: !Ref OriginRequestPolicyID
           ResponseHeadersPolicyId: !Ref SecurityHeadersPolicyID
           TargetOriginId: S3Origin
           ViewerProtocolPolicy: redirect-to-https
