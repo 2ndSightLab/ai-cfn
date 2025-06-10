@@ -4,6 +4,8 @@ source scripts/check-name-servers.sh
 
 echo "deploy-hosted-zone.sh"
 
+if [ "$DOMAIN_TYPE" == "" ]; then echo "DOMAIN_TYPE is not set"; fi
+
 # Route 53 Hosted Zone 
 read -p "Deploy Route 53 hosted zone? (y/n): " DEPLOY_HOSTED_ZONE
 if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
