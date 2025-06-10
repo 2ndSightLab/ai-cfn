@@ -61,8 +61,14 @@ else
     --stack-name $OAI_STACK \
     --query "Stacks[0].Outputs[?OutputKey=='OriginAccessIdentityId'].OutputValue" \
     --output text)
-
-  echo "CloudFront Origin Access Identity created successfully."
+    
   echo "OAI ID: $OAI_ID"
+
+  S3_CANONICAL_USER_ID=$(aws cloudformation describe-stacks \
+    --stack-name $OAI_STACK \
+    --query "Stacks[0].Outputs[?OutputKey=='S3CanonicalUserId'].OutputValue" \
+    --output text)
+  echo "S3 CANONICAL USER ID: $S3_CANONICAL_USER_ID"
+
 fi
 
