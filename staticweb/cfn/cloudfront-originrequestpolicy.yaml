@@ -6,7 +6,7 @@ Resources:
     Type: AWS::CloudFront::OriginRequestPolicy
     Properties:
       OriginRequestPolicyConfig:
-        Name: S3OriginRequestPolicy
+        Name: !Sub '${AWS::StackName}-S3OriginRequestPolicy'
         Comment: 'Origin request policy for S3 origins with CORS support'
         CookiesConfig:
           CookieBehavior: none
@@ -26,3 +26,4 @@ Outputs:
     Value: !Ref S3OriginRequestPolicy
     Export:
       Name: !Sub '${AWS::StackName}-S3OriginRequestPolicyId'
+
