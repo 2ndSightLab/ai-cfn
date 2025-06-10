@@ -32,6 +32,15 @@ if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
       --metadata-directive REPLACE
     
     echo "Sample index.html uploaded."
+
+    echo "Creating a sample index.html file..."
+    echo "<html><head><title>Not Found. Sorry :-(</title></head><body><h1>Not Found. Sorry :-(</h1><p>That page wasn't found.</p></body></html>" > /tmp/index.html
+    
+    aws s3 cp /tmp/404.html s3://$S3_BUCKET_NAME/404.html \
+      --content-type "text/html" \
+      --metadata-directive REPLACE
+    
+    echo "Sample index.html uploaded."
   fi
   
 fi
