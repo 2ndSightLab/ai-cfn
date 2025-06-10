@@ -18,14 +18,14 @@ if [ -z "$OAC_STACK" ]; then
   exit 1
 fi
 
-read -p "Do you want to use Origin Access Control (OAC) to permit CloudFront to access the S3 bucket (Recommended)? If you do not respond y then Origin Access Identity will be used (OAI) (y/n): " DEPLOY_OAC
+read -p "Use Origin Access Control (OAC) (Recommended)? Otherwise will use OAI (y/n): " DEPLOY_OAC
 
 if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
 
   echo "Creating Origin Access Control Stack"
-  delete_stack $OAI_STACK $REGION || "Stack is in a failed state but cannot delete it.""
+  delete_stack $OAI_STACK $REGION || echo "Stack is in a failed state but cannot delete it."
   TEMPLATE_FILE="cfn/origin-access-control.yaml"
-  delete_failed_stack_if_exists $OAC_STACK $REGION || "Stack is in a failed state but cannot delete it.""
+  delete_failed_stack_if_exists $OAC_STACK $REGION || echo "Stack is in a failed state but cannot delete it."
   
   aws cloudformation deploy \
     --stack-name $OAC_STACK \
@@ -45,10 +45,10 @@ if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
 else
 
   echo "Creating Origin Access Identity Stack"
-  delete_stack $OAC_STACK $REGION
+  delete_stack $OAC_STACK $REGION || echo "Stack is in a failed state but cannot delete it."
   TEMPLATE_FILE="cfn/origin-access-identity.yaml"
   # Delete failed stack if it exists
-  delete_failed_stack_if_exists $OAI_STACK $REGION || "Stack is in a failed state but cannot delete it.""
+  delete_failed_stack_if_exists $OAI_STACK $REGION || echo "Stack is in a failed state but cannot delete it."
   
   # Deploy the CloudFormation stack
   aws cloudformation deploy \
