@@ -29,7 +29,7 @@ Parameters:
       
   IncludeWWW:
     Type: String
-    Default: 'true'
+    Default: 'false'
     Description: 'Whether to include www record (www.example.com)'
     AllowedValues:
       - 'true'
@@ -46,6 +46,7 @@ Parameters:
 Conditions:
   HasCloudFrontDomain: !Not [!Equals [!Ref CloudFrontDomainName, '']]
   IncludeWWWAlias: !Equals [!Ref IncludeWWW, 'true']
+  IsWildcard: !Equals [!Ref Wildcard, 'true']
   CreateS3WebsiteRecords: !Equals [!Ref CreateS3Records, 'true']
   CreateCloudFrontDNSRecords: !And
     - !Equals [!Ref CreateCloudFrontRecords, 'true']
@@ -62,7 +63,7 @@ Resources:
   # S3 Website Records (Optional)
   S3WebsiteRecord:
     Type: AWS::Route53::RecordSet
-    Condition: CreateS3WebsiteRecords
+    Condition: IncludeWWWAlias
     Properties:
       HostedZoneId: !Ref HostedZone
       Name: !Ref DomainName
@@ -75,6 +76,18 @@ Resources:
   WWWS3Record:
     Type: AWS::Route53::RecordSet
     Condition: CreateS3WebsiteRecords
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Sub 'www.${DomainName}'
+      Type: A
+      AliasTarget:
+        DNSName: !Sub 's3-website-${AWS::Region}.amazonaws.com'
+        HostedZoneId: !FindInMap [RegionMap, !Ref 'AWS::Region', S3HostedZoneId]
+        EvaluateTargetHealth: false
+
+    WildcardS3Record:
+    Type: AWS::Route53::RecordSet
+    Condition: IsWildcard
     Properties:
       HostedZoneId: !Ref HostedZone
       Name: !Sub 'www.${DomainName}'
@@ -99,10 +112,22 @@ Resources:
 
   WWWCloudFrontRecord:
     Type: AWS::Route53::RecordSet
-    Condition: IncludeWWW
+    Condition: IncludeWWWAlias
     Properties:
       HostedZoneId: !Ref HostedZone
       Name: !Sub 'www.${DomainName}'
+      Type: A
+      AliasTarget:
+        DNSName: !Ref CloudFrontDomainName
+        HostedZoneId: Z2FDTNDATAQYW2 # CloudFront's global Hosted Zone ID
+        EvaluateTargetHealth: false
+
+  WildcardCloudFrontRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: IsWildcard
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Sub '*.${DomainName}'
       Type: A
       AliasTarget:
         DNSName: !Ref CloudFrontDomainName
