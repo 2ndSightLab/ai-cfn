@@ -7,8 +7,8 @@ REGION=us-east-1
 # TLS Certificate 
 ACM_CERTIFICATE_ARN=""
 
-read -p "Deploy TLS certificate? (y/n): " DEPLOY_HOSTED_ZONE
-if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
+read -p "Deploy TLS certificate? (y/n): " DEPLOY_TLS_CERTIFICATE
+if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; then
 
     # Ask for validation method
     echo "Select validation method:"
