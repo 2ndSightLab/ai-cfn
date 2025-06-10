@@ -47,6 +47,7 @@ Resources:
         OriginAccessControlOriginType: !Ref OriginType
         SigningBehavior: !Ref SigningBehavior
         SigningProtocol: !Ref SigningProtocol
+        
 
 Outputs:
   OriginAccessControlId:
