@@ -30,7 +30,7 @@ if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
     --stack-name $OAC_STACK \
     --template-file $TEMPLATE_FILE \
     --parameter-overrides \
-       OACName=$STACK_PREFIX \
+       OACName=$OAC_STACK \
        OriginType="s3" \
     --no-fail-on-empty-changeset
 
