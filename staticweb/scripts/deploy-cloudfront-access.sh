@@ -18,18 +18,21 @@ if [ -z "$OAC_STACK" ]; then
   exit 1
 fi
 
-read -p "Use Origin Access Control (OAC) (Recommended)? Otherwise will use OAI (y/n): " DEPLOY_OAC
+read -p "Use Origin Access Control (OAC) (Recommended)? (y/n): " DEPLOY_OAC
 
 if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
 
-  echo "Creating Origin Access Control Stack"
+  echo "Creating Origin Access Control (OAC) Stack"
   TEMPLATE_FILE="cfn/origin-access-control.yaml"
   #delete_failed_stack_if_exists $OAC_STACK $REGION
   
   aws cloudformation deploy \
     --stack-name $OAC_STACK \
     --template-file $TEMPLATE_FILE \
-    --parameter-overrides OACName=$STACK_PREFIX OriginType=s3
+    --parameter-overrides \
+       OACName=$STACK_PREFIX \
+       OriginType="s3" \
+    --no-fail-on-empty-changeset
 
   stack_exists $OAC_STACK $REGION
 
@@ -43,7 +46,7 @@ if [[ "$DEPLOY_OAC" == "y" || "$DEPLOY_OAC" == "Y" ]]; then
   
 else
 
-  echo "Creating Origin Access Identity Stack"
+  echo "Creating Origin Access Identity (OAI) Stack"
   TEMPLATE_FILE="cfn/origin-access-identity.yaml"
   # Delete failed stack if it exists
   #delete_failed_stack_if_exists $OAI_STACK $REGION 
@@ -51,7 +54,8 @@ else
   # Deploy the CloudFormation stack
   aws cloudformation deploy \
     --stack-name $OAI_STACK \
-    --template-file $TEMPLATE_FILE
+    --template-file $TEMPLATE_FILE \
+    --no-fail-on-empty-changeset
 
   stack_exists $OAI_STACK $REGION
   
