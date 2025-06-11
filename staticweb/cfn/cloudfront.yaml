@@ -42,11 +42,11 @@ Parameters:
     Description: 'The default root object (e.g., index.html)'
     Default: 'index.html'
 
-  CachePolicyId:
+  CachePolicyID:
     Type: String
     Description: 'Cache Policy ID'
 
-  OriginRequestPolicyId:
+  OriginRequestPolicyID:
     Type: String
     Description: 'Origin Request Policy ID'
     
