@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "deploy-cloudfront-logs-bucket.sh"
+echo "scripts/deploy/cloudfront-logs-bucket.sh"
 
 CLOUDFRONT_LOGS_BUCKET_NAME="$STACK_NAME_PREFIX-cloudfront-logs-$BUCKET_NAME_SUFFIX"
 
