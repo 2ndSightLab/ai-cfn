@@ -49,10 +49,9 @@ while [ $VALIDATION_ATTEMPTS -lt $MAX_VALIDATION_ATTEMPTS ]; do
   if [ -n "$VALIDATION_INFO" ]; then
     echo "Found validation records!"
     # Extract validation records using grep instead of jq for the pattern matching
-    VALIDATION_RECORDS=$(echo "$STACK_EVENTS" | jq -r '.StackEvents[].ResourceStatusReason' | grep -F "Content of DNS Record is:")
+    RECORD=$(echo "$STACK_EVENTS" | jq -r '.StackEvents[].ResourceStatusReason' | grep -F "Content of DNS Record is:")
     
-    echo "VALIDATION_RECORDS: $VALIDATION_RECORDS"
-    
+    echo "VALIDATION_RECORDS: $RECORD"
     break
   else
     echo "Attempt $((VALIDATION_ATTEMPTS+1)): No validation records found yet. Waiting..."
@@ -67,13 +66,7 @@ while [ $VALIDATION_ATTEMPTS -lt $MAX_VALIDATION_ATTEMPTS ]; do
   fi
 done
 
-# Store validation records in an array to avoid subshell issues
-mapfile -t VALIDATION_RECORD_ARRAY <<< "$VALIDATION_RECORDS"
-
-# Loop through each validation record and create a separate stack for each
-for RECORD in "${VALIDATION_RECORD_ARRAY[@]}"; do
-  # Extract record name, type, and value using regex
-  if [[ $RECORD =~ Name:\ ([^,]+),Type:\ ([^,]+),Value:\ ([^}]+) ]]; then
+if [[ $RECORD =~ Name:\ ([^,]+),Type:\ ([^,]+),Value:\ ([^}]+) ]]; then
     RECORD_NAME="${BASH_REMATCH[1]}"
     RECORD_TYPE="${BASH_REMATCH[2]}"
     RECORD_VALUE="${BASH_REMATCH[3]}"
@@ -86,7 +79,7 @@ for RECORD in "${VALIDATION_RECORD_ARRAY[@]}"; do
     echo "  Value: $RECORD_VALUE"
     
     # Create a unique stack name for this validation record
-    CURRENT_VALIDATION_STACK="${CERT_VALIDATION_STACK_PREFIX}-${RECORD_COUNT}"
+    CURRENT_VALIDATION_STACK="${CERT_VALIDATION_STACK_PREFIX}"
     
     # Delete the stack if it exists and is in a failed state
     delete_failed_stack_if_exists $CURRENT_VALIDATION_STACK $REGION
@@ -109,12 +102,9 @@ for RECORD in "${VALIDATION_RECORD_ARRAY[@]}"; do
     # Check if the stack was created successfully
     stack_exists $CURRENT_VALIDATION_STACK $REGION
     
-    echo "TLS Certificate Validation DNS record created successfully for $DOMAIN_NAME:wq."
-  fi
-done
-
-if [ $RECORD_COUNT -eq 0 ]; then
-  echo "Error: Failed to parse any validation records." && exit 1
+    echo "TLS Certificate Validation DNS record created successfully for $DOMAIN_NAME"
+else
+    echo "Validation record details not found in CloudFormation stack: $TLS_CERTIFICATE_STACK" 
 fi
 
 SUBDOMAIN=""
