@@ -16,7 +16,7 @@ REGION="$5"
 echo "deploy-validation-dns-records.sh"
 
 # Initialize loop variables
-MAX_ATTEMPTS=5
+MAX_ATTEMPTS=20
 ATTEMPT=0
 RECORD_COUNT=0
 
