@@ -40,6 +40,7 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
       DomainName=$DOMAIN_NAME \
       DomainType=$DOMAIN_TYPE \
       S3BucketName=$S3_BUCKET_NAME \
+      OriginAccessControlID=$OAC_ID \
       S3BucketRegion=$REGION \
       AcmCertificateArn=${ACM_CERTIFICATE_ARN:-""} \
       DefaultRootObject=$DEFAULT_ROOT_OBJECT \
