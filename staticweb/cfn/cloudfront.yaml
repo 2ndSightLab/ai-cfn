@@ -152,16 +152,16 @@ Resources:
   CloudFrontDistribution:
     Type: 'AWS::CloudFront::Distribution'
     Properties:
-        DistributionConfig:
-          Aliases: !If 
-            - IsWildcard
+      DistributionConfig:
+        Aliases: !If 
+          - IsWildcard
+          - - !Ref DomainName
+            - !Sub '*.${DomainName}'
+          - !If
+            - IncludeWWWAlias
             - - !Ref DomainName
-              - !Sub '*.${DomainName}'
-            - !If
-              - IncludeWWWAlias
-              - - !Ref DomainName
-                - !Sub 'www.${DomainName}'
-              - - !Ref DomainName
+              - !Sub 'www.${DomainName}'
+            - - !Ref DomainName
         DefaultRootObject: !Ref DefaultRootObject
         Enabled: true
         HttpVersion: http2and3  # Support for HTTP/3 for better performance
