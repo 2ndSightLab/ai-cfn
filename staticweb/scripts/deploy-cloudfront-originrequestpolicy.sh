@@ -1,6 +1,6 @@
 #!/bin/bash
 
-read -p "Deploy CloudFront security headers policy? (y/n): " DEPLOY_POLICY
+read -p "Deploy CloudFront origin request policy? (y/n): " DEPLOY_POLICY
 if [[ "$DEPLOY_POLICY" == "y" || "$DEPLOY_POLICY" == "Y" ]]; then
 
   delete_failed_stack_if_exists $CLOUDFRONT_ORIGINREQUEST_POLICY_STACK $REGION
