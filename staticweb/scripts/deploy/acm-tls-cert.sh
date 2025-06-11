@@ -11,7 +11,7 @@ read -p "Deploy TLS certificate? (y/n): " DEPLOY_TLS_CERTIFICATE
 if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; then
 
    read -p "Delete existing TLS certificates? (y/n): " DELETE_TLS_CERTIFICATE
-   if [[ "$DELETE_CERTIFICATE" == "y" || "$DELETE_CERTIFICATE" == "Y" ]]; then
+   if [[ "$DELETE_TLS_CERTIFICATE" == "y" || "$DELETE_TLS_CERTIFICATE" == "Y" ]]; then
      delete_existing_certificates $DOMAIN_NAME $$TLS_CERTIFICATE_STACK $REGION
    fi
    
