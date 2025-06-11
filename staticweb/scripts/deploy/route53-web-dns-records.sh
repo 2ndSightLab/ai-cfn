@@ -6,7 +6,7 @@ echo "scripts/deploy/route53-web-dns-records.sh"
 read -p "Deploy Route 53 static web dns records? (y/n): " DEPLOY_WEB_DNS_RECORDS
 if [[ "$DEPLOY_WEB_DNS_RECORDS" == "y" || "$DEPLOY_WEB_DNS_RECORDS" == "Y" ]]; then
 
-  delete_failed_stack_if_exists $STATIC_WEB_DNS_RECORDS_STACK $REGION
+  delete_failed_stack_if_exists $WEB_DNS_RECORDS_STACK $REGION
 
   # Domain name
   read -p "Domain name (e.g., example.com): " DOMAIN_NAME
@@ -45,7 +45,7 @@ if [[ "$DEPLOY_WEB_DNS_RECORDS" == "y" || "$DEPLOY_WEB_DNS_RECORDS" == "Y" ]]; t
   aws cloudformation deploy \
     --region $REGION \
     --template-file cfn/route53-web-dns-records.yaml \
-    --stack-name $STATIC_WEB_DNS_RECORDS_STACK \
+    --stack-name $WEB_DNS_RECORDS_STACK \
     --parameter-overrides \
       DomainName=$DOMAIN_NAME \
       DomainType=$DOMAIN_TYPE \
@@ -53,17 +53,17 @@ if [[ "$DEPLOY_WEB_DNS_RECORDS" == "y" || "$DEPLOY_WEB_DNS_RECORDS" == "Y" ]]; t
     --no-fail-on-empty-changeset
 fi
 
-stack_exists $STATIC_WEB_DNS_RECORDS_STACK $REGION
+stack_exists $WEB_DNS_RECORDS_STACK $REGION
 
 # Get the domain name from the stack outputs
 DOMAIN_NAME=$(aws cloudformation describe-stacks \
-    --stack-name $STATIC_WEB_DNS_RECORDS_STACK \
+    --stack-name $WEB_DNS_RECORDS_STACK \
     --region $REGION \
     --query "Stacks[0].Outputs[?OutputKey=='DomainName'].OutputValue" \
     --output text)
 
 DOMAIN_TYPE=$(aws cloudformation describe-stacks \
-    --stack-name $STATIC_WEB_DNS_RECORDS_STACK \
+    --stack-name $WEB_DNS_RECORDS_STACK \
     --region $REGION \
     --query "Stacks[0].Outputs[?OutputKey=='DomainType'].OutputValue" \
     --output text)
