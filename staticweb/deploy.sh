@@ -33,22 +33,25 @@ CLOUDFRONT_CACHE_POLICY_STACK="${STACK_NAME_PREFIX}-cloudfront-cachepolicy"
 CLOUDFRONT_SECURITYHEADERS_POLICY_STACK="${STACK_NAME_PREFIX}-cloudfront-securityheaders"
 CLOUDFRONT_ORIGINREQUEST_POLICY_STACK="${STACK_NAME_PREFIX}-cloudfront-originrequstpolicy"
 
+#include functions
 source ./scripts/functions/stack-exists.sh
 source ./scripts/functions/delete-stack.sh
 source ./scripts/functions/delete-failed-stack-if-exists.sh
 source ./scripts/functions/deploy-hosted-zone.sh
 source ./scripts/functions/check-certificate-exists.sh
-source ./scripts/deploy-tls-cert.sh
-source ./scripts/deploy-s3-access-log-bucket.sh
-source ./scripts/deploy-cloudfront-logs-bucket.sh
-source ./scripts/deploy-cloudfront-access.sh
-source ./scripts/deploy-s3-content-bucket.sh
-source ./scripts/deploy-cloudfront-securityehaderspolicy.sh
-source ./scripts/deploy-cloudfront-originrequestpolicy.sh
-source ./scripts/deploy-cloudfront-cachepolicy.sh
-source ./scripts/deploy-cloudfront-distribution.sh
-source ./scripts/deploy-cloudfront-dns-records.sh
-source ./scripts/deploy-s3-bucket-policy-content.sh
+source ./scripts/deploy/tls-cert.sh
+
+#deploy resources in this order
+source ./scripts/deploy/s3-access-log-bucket.sh
+source ./scripts/deploy/cloudfront-logs-bucket.sh
+source ./scripts/deploy/cloudfront-access.sh
+source ./scripts/deploy/s3-content-bucket.sh
+source ./scripts/deploy/cloudfront-securityehaderspolicy.sh
+source ./scripts/deploy/cloudfront-originrequestpolicy.sh
+source ./scripts/deploy/cloudfront-cachepolicy.sh
+source ./scripts/deploy/cloudfront-distribution.sh
+source ./scripts/deploy/cloudfront-dns-records.sh
+source ./scripts/deploy/s3-bucket-policy-content.sh
 
 echo "Deployment complete!"
 echo "Website URL: https://$DOMAIN_NAME"
