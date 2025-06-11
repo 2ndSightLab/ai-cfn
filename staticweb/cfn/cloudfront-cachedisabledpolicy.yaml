@@ -1,18 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'CloudFormation template that creates a CloudFront cache policy with caching disabled'
 
-Parameters:
-  Name: PolicyName
-  Type: String
-  Default: CloudFrontNoCachePolicy
-  
 Resources:
   CloudFrontCacheDisabledPolicy:
     Type: AWS::CloudFront::CachePolicy
     Properties:
       CachePolicyConfig:
         # Policy name
-        Name: !Ref PolicyName
+        Name: !Sub '${AWS::StackName}-NoCachePolicy'
         # Optional description of the policy's purpose
         Comment: 'Cache policy that disables caching by setting all TTLs to 0'
         # Set all TTL values to 0 to disable caching
