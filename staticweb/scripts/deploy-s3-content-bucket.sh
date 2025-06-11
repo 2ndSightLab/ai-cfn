@@ -21,8 +21,16 @@ if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
 
   stack_exists $S3_WEBSITE_STACK $REGION
   
-  # Create a sample index.html file
-  read -p "Upload a sample index.html file? (y/n): " UPLOAD_SAMPLE
+fi
+
+# Get the S3 bucket name from the stack outputs
+S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
+  --stack-name $S3_WEBSITE_STACK \
+  --query "Stacks[0].Outputs[?OutputKey=='BucketName'].OutputValue" \
+  --output text)
+
+# Create a sample index.html file
+read -p "Upload a sample index.html and 404.html file? (y/n): " UPLOAD_SAMPLE
   if [[ "$UPLOAD_SAMPLE" == "y" || "$UPLOAD_SAMPLE" == "Y" ]]; then
     echo "Creating a sample index.html file..."
     echo "<html><head><title>Welcome to $DOMAIN_NAME</title></head><body><h1>Welcome to $DOMAIN_NAME</h1><p>Your CloudFront distribution is working!</p></body></html>" > /tmp/index.html
@@ -42,14 +50,4 @@ if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
     
     echo "Sample index.html uploaded."
   fi
-  
-fi
-
-# Get the S3 bucket name from the stack outputs
-S3_BUCKET_NAME=$(aws cloudformation describe-stacks \
-  --stack-name $S3_WEBSITE_STACK \
-  --query "Stacks[0].Outputs[?OutputKey=='BucketName'].OutputValue" \
-  --output text)
-
-
   
