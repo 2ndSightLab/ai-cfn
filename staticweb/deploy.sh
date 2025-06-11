@@ -41,6 +41,7 @@ source ./scripts/functions/check-certificate-exists.sh
 
 #deploy resources in this order
 source ./scripts/deploy/hosted-zone.sh
+source ./scripts/deploy/static-web-dns-records.sh
 source ./scripts/deploy/tls-cert.sh
 source ./scripts/deploy/s3-access-log-bucket.sh
 source ./scripts/deploy/cloudfront-logs-bucket.sh
