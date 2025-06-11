@@ -1,10 +1,12 @@
 #!/bin/bash
-echo "check-certificate-exists.sh"
+
 
 # Function to check if a certificate exists and is valid
 check_certificate_exists() {
   local domain=$1
   local region=${2:-us-east-1}
+
+  echo "check-certificate-exists.sh $domain $region"
   
   echo "Thoroughly checking for existing certificates for $domain..."
   
