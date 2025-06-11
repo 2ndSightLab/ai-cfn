@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "scripts/deploy/cloudfront-access.sh"
+
 TEMPLATE_FILE=""
 OAI_ID=""
 OAC_ID=""
