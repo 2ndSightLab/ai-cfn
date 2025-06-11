@@ -12,7 +12,6 @@ HOSTED_ZONE_ID="$3"
 DOMAIN_NAME="$4"
 DOMAIN_TYPE="$5"
 REGION="$6"
-ACM_CERTIFICATE_ARN="$7"
 
 echo "scripts/deploy/route53-validation-dns-records.sh"
 echo "CERT_VALIDATION_STACK_PREFIX=$CERT_VALIDATION_STACK_PREFIX"
@@ -125,6 +124,11 @@ echo "SUBDOMAIN: $SUBDOMAIN"
 
 if [ "$SUBDOMAIN" != "" ]; then
 
+  ACM_CERTIFICATE_ARN=$(aws cloudformation list-stack-resources \
+        --stack-name $TLS_CERTIFICATE_STACK \
+        --query "StackResourceSummaries[?ResourceType=='AWS::CertificateManager::Certificate'].PhysicalResourceId" \
+        --output text 2>/dev/null)
+        
   echo "Adding validation record for subdomain: $SUBDOMAIN"
 
   CURRENT_VALIDATION_STACK="${CERT_VALIDATION_STACK_PREFIX}-${DOMAIN_TYPE}"
