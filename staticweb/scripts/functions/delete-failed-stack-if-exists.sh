@@ -5,7 +5,7 @@ delete_failed_stack_if_exists() {
   local stack_name="$1"
   local region="$2"
 
-  echo "delete-failed-stack-if-exists.sh $stack_name $region"
+  echo "scripts/functions/delete-failed-stack-if-exists.sh $stack_name $region"
   
   if [ "$region" == "" ]; then
      echo "Region not set checking to see if $stack_name exists in a failed state and needs to be deleted"; exit
