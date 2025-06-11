@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "deploy-tls-cert.sh"
+echo "scripts/deploy/tls-cert.sh"
 
 # Override Region 
 REGION=us-east-1
