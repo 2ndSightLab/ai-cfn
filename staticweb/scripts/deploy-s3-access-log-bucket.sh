@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "deploy-s3-access-log-bucket.sh"
+echo "scripts/deploy/s3-access-log-bucket.sh"
 
 # Check for required variables
 if [ -z "$DOMAIN_NAME" ]; then
