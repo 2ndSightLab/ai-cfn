@@ -5,9 +5,22 @@
 read -p "Force delete any existing certificates for $DOMAIN_NAME? (y/n): " FORCE_DELETE_CERT
 if [[ "$FORCE_DELETE_CERT" == "y" || "$FORCE_DELETE_CERT" == "Y" ]]; then
 
-  echo "delete-existing-certificates.sh"
-  echo "Searching for certificates to delete..."
+  echo "scripts/functions/delete-existing-certificates.sh"
+
+  stack_name=$TLS_CERTIFICATE_STACK
+
+  if aws cloudformation describe-stacks --stack-name $stack_name --region $region &>/dev/null; then
   
+    echo "Delete certificate stack with retain-resources"  
+    aws cloudformation delete-stack --stack-name $stack_name --region $region --retain-resources
+        
+    echo "Waiting for stack deletion to complete..."
+    aws cloudformation wait stack-delete-complete --stack-name $stack_name --region $region
+    echo "Stack deletion complete."
+  
+  fi 
+  
+  echo "Searching for certificates to delete..."  
   # List all certificates for the domain
   # Note: We're not using --include-expired as it's not supported
   CERT_ARNS=$(aws acm list-certificates \
