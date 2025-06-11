@@ -195,7 +195,7 @@ Resources:
             - HEAD
             - OPTIONS
           Compress: true
-          CachePolicyId: !Ref CachePolicyId
+          CachePolicyId: !Ref CachePolicyID
           OriginRequestPolicyId: !Ref OriginRequestPolicyID
           ResponseHeadersPolicyId: !Ref SecurityHeadersPolicyID
           TargetOriginId: S3Origin
