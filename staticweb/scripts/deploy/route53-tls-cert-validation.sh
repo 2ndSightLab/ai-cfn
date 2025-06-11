@@ -40,7 +40,7 @@ done
 
 # Now check for validation records in a separate loop
 VALIDATION_ATTEMPTS=0
-MAX_VALIDATION_ATTEMPTS=5
+MAX_VALIDATION_ATTEMPTS=10
 
 while [ $VALIDATION_ATTEMPTS -lt $MAX_VALIDATION_ATTEMPTS ]; do
   # Get stack events and check for validation records
