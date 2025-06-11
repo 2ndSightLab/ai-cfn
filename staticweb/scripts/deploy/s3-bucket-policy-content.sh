@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "scripts/deploy/s3-bucket-policy-content.sh"
+
 read -p "Deploy S3 bucket policy? (y/n): " DEPLOY_POLICY
 if [[ "$DEPLOY_POLICY" == "y" || "$DEPLOY_POLICY" == "Y" ]]; then
 
