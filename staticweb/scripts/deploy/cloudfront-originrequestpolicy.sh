@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "scripts/deploy/cloudfront-originrequestpolicy.sh"
+
 read -p "Deploy CloudFront origin request policy? (y/n): " DEPLOY_POLICY
 if [[ "$DEPLOY_POLICY" == "y" || "$DEPLOY_POLICY" == "Y" ]]; then
 
