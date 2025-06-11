@@ -10,7 +10,7 @@ if [[ "$DEPLOY_S3_BUCKET" == "y" || "$DEPLOY_S3_BUCKET" == "Y" ]]; then
 
   delete_failed_stack_if_exists $S3_WEBSITE_STACK $REGION
   
-  echo "Deploying S3 bucket for website content..."
+  echo "Deploying S3 bucket: $S3_BUCKET_NAME for website content..."
   aws cloudformation deploy \
     --template-file cfn/s3-bucket.yaml \
     --stack-name $S3_WEBSITE_STACK \
