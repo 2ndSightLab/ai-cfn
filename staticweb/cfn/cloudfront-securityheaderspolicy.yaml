@@ -2,6 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'CloudFront security headers policy'
 
 Parameters:
+
   DomainName:
     Type: String
     Description: 'The primary domain name for the CloudFront distribution (e.g., example.com)'
@@ -18,6 +19,8 @@ Parameters:
     AllowedValues:
       - 'true'
       - 'false'
+
+  
 Conditions:
   IncludeWWWAlias: !Equals [!Ref IncludeWWW, 'true']
   
