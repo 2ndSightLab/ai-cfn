@@ -35,7 +35,7 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
   
   echo "Deploying CloudFront Distribution..."
   aws cloudformation deploy \
-    --template-file cfn/cloudfront.yaml \
+    --template-file cfn/cloudfront-distribution.yaml \
     --stack-name $CLOUDFRONT_STACK \
     --parameter-overrides \
       DomainName=$DOMAIN_NAME \
