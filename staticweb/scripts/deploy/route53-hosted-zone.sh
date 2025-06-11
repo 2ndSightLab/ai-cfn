@@ -59,13 +59,18 @@ NAME_SERVERS=$(aws cloudformation describe-stacks \
     --region $REGION)
   
 echo "Hosted Zone ID: $HOSTED_ZONE_ID"
-echo "IMPORTANT: Update your domain's name servers with your registrar to point to:"
+
+echo "Name Servers:"
 echo "$NAME_SERVERS"
-echo "DNS propagation may take up to 48 hours."
 
-echo -e "\nEnter to continue after you have upated the records."
-read ok
-
+if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
+  echo -e "\nIMPORTANT:"
+  echo "Update your domain's name servers with your registrar to point to the above name servers before proceeding."
+  echo "Refer to the instructions in the github repository and related blogs for more information."
+  echo "DNS propagation may take up to 48 hours."
+  echo -e "\nEnter to continue after you have upated the records."
+  read ok
+fi
 #this doesn't work in cloudshell because dig is not installed.
 #I wonder why ? ;^)
 #check_name_servers $NAME_SERVERS
