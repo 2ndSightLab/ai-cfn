@@ -4,7 +4,7 @@ delete_stack() {
   local stack_name=$1
   local region="$2"
 
-  echo "delete_stack $stack_name $region"
+  echo "scripts/functions/delete-stack.sh $stack_name $region"
   
   if [ "$region" == "" ]; then
      echo "Region not set deleting stack $stack_name"; exit
