@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-echo "scripts/deploy/static-web-dns-records.sh"
+echo "scripts/deploy/route53-web-dns-records.sh"
 
 # Route 53 Hosted Zone 
 read -p "Deploy Route 53 static web dns records? (y/n): " DEPLOY_WEB_DNS_RECORDS
