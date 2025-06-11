@@ -269,13 +269,13 @@ Outputs:
   
   WildcardDomainEnabled:
     Description: 'Whether the wildcard subdomain is enabled'
-    Value: !If [IsWildcardDomain, 'true', 'false']
+    Value: !If [IsWildcard, 'true', 'false']
     Export:
       Name: !Sub '${AWS::StackName}-WildcardDomainEnabled'
       
   WildcardDomainName:
     Description: 'The wildcard subdomain pattern (if enabled)'
-    Value: !If [IsWildcardDomain, !Sub '*.${DomainName}', 'Not Enabled']
+    Value: !If [IsWildcard, !Sub '*.${DomainName}', 'Not Enabled']
     Export:
       Name: !Sub '${AWS::StackName}-WildcardDomainName'
 
