@@ -11,7 +11,7 @@ TLS_CERTIFICATE_STACK="$2"
 HOSTED_ZONE_ID="$3"
 DOMAIN_NAME="$4"
 DOMAIN_TYPE="$5"
-REGION="$5"
+REGION="$6"
 
 echo "scripts/deploy/route53-validation-dns-records.sh"
 echo "CERT_VALIDATION_STACK_PREFIX=$CERT_VALIDATION_STACK_PREFIX"
