@@ -47,7 +47,7 @@ if [[ "$DEPLOY_WEB_DNS_RECORDS" == "y" || "$DEPLOY_WEB_DNS_RECORDS" == "Y" ]]; t
     --template-file cfn/route53-web-dns-records.yaml \
     --stack-name $WEB_DNS_RECORDS_STACK \
     --parameter-overrides \
-      HostedZoneId=$HOSTED_ZONE_ID \
+      HostedZone=$HOSTED_ZONE_ID \
       DomainName=$DOMAIN_NAME \
       DomainType=$DOMAIN_TYPE \
       CreateS3Records=true \
