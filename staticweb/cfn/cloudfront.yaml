@@ -257,13 +257,13 @@ Outputs:
       
   WWWDomainEnabled:
     Description: 'Whether the www subdomain is enabled'
-    Value: !If [IsWWWDomain, 'true', 'false']
+    Value: !If [IncludeWWWAlias, 'true', 'false']
     Export:
       Name: !Sub '${AWS::StackName}-WWWDomainEnabled'
     
   WWWDomainName:
     Description: 'The www subdomain name (if enabled)'
-    Value: !If [IsWWWDomain, !Sub 'www.${DomainName}', 'Not Enabled']
+    Value: !If [IncludeWWWAlias, !Sub 'www.${DomainName}', 'Not Enabled']
     Export:
       Name: !Sub '${AWS::StackName}-WWWDomainName'
   
