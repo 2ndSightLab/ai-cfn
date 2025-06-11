@@ -27,4 +27,7 @@ Outputs:
     Value: !Ref DomainName
     Export:
       Name: !Sub '${AWS::StackName}-DomainName'
-      
+
+  NameServers:
+    Description: 'Name Servers (update these in your domain registrar)'
+    Value: !Join [', ', !GetAtt HostedZone.NameServers]
