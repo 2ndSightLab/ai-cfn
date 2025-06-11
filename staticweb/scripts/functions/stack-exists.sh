@@ -1,5 +1,4 @@
 #!/bin/bash
-echo "stack_exists.sh"
 
 stack_exists() {
   local stack_name="$1"
@@ -8,6 +7,8 @@ stack_exists() {
   if [ "$region" == "" ]; then
      echo "Region not set checking to see if $stack_name exists"; exit
   fi
+
+  echo "Check stack_exists: $stack_name"
   
   if aws cloudformation describe-stacks --stack-name $stack_name --region $region &>/dev/null; then
   
