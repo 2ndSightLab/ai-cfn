@@ -37,11 +37,11 @@ CLOUDFRONT_ORIGINREQUEST_POLICY_STACK="${STACK_NAME_PREFIX}-cloudfront-originreq
 source ./scripts/functions/stack-exists.sh
 source ./scripts/functions/delete-stack.sh
 source ./scripts/functions/delete-failed-stack-if-exists.sh
-source ./scripts/functions/deploy-hosted-zone.sh
 source ./scripts/functions/check-certificate-exists.sh
 source ./scripts/deploy/tls-cert.sh
 
 #deploy resources in this order
+source ./scripts/deploy/deploy-hosted-zone.sh
 source ./scripts/deploy/s3-access-log-bucket.sh
 source ./scripts/deploy/cloudfront-logs-bucket.sh
 source ./scripts/deploy/cloudfront-access.sh
