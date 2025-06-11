@@ -4,7 +4,7 @@ stack_exists() {
   local stack_name="$1"
   local region="$2"
 
-  echo "scripts/functions/stack-exists.sh $stack_name $region
+  echo "scripts/functions/stack-exists.sh $stack_name $region"
   
   if [ "$region" == "" ]; then
      echo "Region not set checking to see if $stack_name exists"; exit
