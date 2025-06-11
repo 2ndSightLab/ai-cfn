@@ -41,7 +41,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
           ;;
       *) 
           echo "Invalid choice. Defaulting to WWW certificate."
-          DOMAIN_TYPE="WWW"
+          exit
           ;;
   esac
 
