@@ -109,18 +109,73 @@ for RECORD in "${VALIDATION_RECORD_ARRAY[@]}"; do
     # Check if the stack was created successfully
     stack_exists $CURRENT_VALIDATION_STACK $REGION
     
-    echo "TLS Certificate Validation DNS record $RECORD_COUNT created successfully."
+    echo "TLS Certificate Validation DNS record created successfully for $DOMAIN_NAME:wq."
   fi
 done
 
 if [ $RECORD_COUNT -eq 0 ]; then
   echo "Error: Failed to parse any validation records." && exit 1
-else
-  echo "Total TLS Certificate Validation DNS records created: $RECORD_COUNT"
 fi
 
+SUBDOMAIN=""
+if [ "$DOMAIN_TYPE" == "WWW" ]; then SUBDOMAIN="www.$DOMAIN_NAME"; fi
+if [ "$DOMAIN_TYPE" == "*" ]; then SUBDOMAIN="*.$DOMAIN_NAME"; fi
 
+if [ "$SUBDOMAIN" != "" ]; then
 
+  echo "Adding validation record for subdomain: $SUBDOMAIN"
+
+  CURRENT_VALIDATION_STACK="${CERT_VALIDATION_STACK_PREFIX}-${DOMAIN_TYPE}"
+  
+  # Use the cert ARN set in the tls deployment script. If it's not set error out
+  if [ -z "$$ACM_CERTIFICATE_ARN" ]; then
+      echo "No certificate found for $DOMAIN_NAME"
+      exit 1
+  fi
+
+  echo "Searching cert for validation record: $ACM_CERTIFICATE_ARN"
+
+  VALIDATION_RECORD=$(aws acm describe-certificate --region $REGION --certificate-arn "$ACM_CERTIFICATE_ARN" | \
+       jq -r --arg SUBDOMAIN "$SUBDOMAIN" '.Certificate.DomainValidationOptions[] | select(.DomainName == $SUBDOMAIN)')
+
+  if [ -z "$VALIDATION_RECORD" ] || [ "$VALIDATION_RECORD" == "null" ]; then
+    echo "No validation record found for $SUBDOMAIN"
+    exit 1
+  fi
+
+  RECORD_NAME=$(echo "$VALIDATION_RECORD" | jq -r '.ResourceRecord.Name')
+  RECORD_TYPE=$(echo "$VALIDATION_RECORD" | jq -r '.ResourceRecord.Type')
+  RECORD_VALUE=$(echo "$VALIDATION_RECORD" | jq -r '.ResourceRecord.Value')
+
+  echo "Found validation record for $SUBDOMAIN:"
+  echo "Record Name: $RECORD_NAME"
+  echo "Record Type: $RECORD_TYPE"
+  echo "Record Value: $RECORD_VALUE"
+    
+  # Delete the stack if it exists and is in a failed state
+  delete_failed_stack_if_exists $CURRENT_VALIDATION_STACK $REGION
+    
+  # Create parameters for this validation record
+  PARAMS="HostedZoneId=$HOSTED_ZONE_ID DomainName=$SUBDOMAIN RecordName=\"$RECORD_NAME\" RecordValue=\"$RECORD_VALUE\""
+    
+  # Deploy the validation stack for this record
+  echo "Deploying validation stack: $CURRENT_VALIDATION_STACK"
+  echo "Parameters: $PARAMS"
+
+  echo "Creating validation stack..."
+  eval "aws cloudformation deploy \
+      --template-file cfn/route53-tls-certificate-validation.yaml \
+      --stack-name $CURRENT_VALIDATION_STACK \
+      --parameter-overrides $PARAMS \
+      --region $REGION \
+      --no-fail-on-empty-changeset"
+    
+  # Check if the stack was created successfully
+  stack_exists $CURRENT_VALIDATION_STACK $REGION
+    
+  echo "TLS Certificate Validation DNS record created successfully for $SUBDOMAIN."
+     
+fi
 
 
 
