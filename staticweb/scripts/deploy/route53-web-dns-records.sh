@@ -44,7 +44,7 @@ if [[ "$DEPLOY_WEB_DNS_RECORDS" == "y" || "$DEPLOY_WEB_DNS_RECORDS" == "Y" ]]; t
   echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."
   aws cloudformation deploy \
     --region $REGION \
-    --template-file cfn/hosted-zone.yaml \
+    --template-file cfn/route53-web-dns-records.yaml \
     --stack-name $STATIC_WEB_DNS_RECORDS_STACK \
     --parameter-overrides \
       DomainName=$DOMAIN_NAME \
