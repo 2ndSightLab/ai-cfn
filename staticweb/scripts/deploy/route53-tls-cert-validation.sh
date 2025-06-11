@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "scripts/deploy/tls-cert-validation.sh"
+echo "scripts/deploy/route53-tls-cert-validation.sh"
 
 source ./scripts/functions/delete-failed-stack-if-exists.sh
 source ./scripts/functions/stack-exists.sh
@@ -100,7 +100,7 @@ for RECORD in "${VALIDATION_RECORD_ARRAY[@]}"; do
 
     echo "Creating validation stack..."
     eval "aws cloudformation deploy \
-      --template-file cfn/tls-certificate-validation.yaml \
+      --template-file cfn/route53-tls-certificate-validation.yaml \
       --stack-name $CURRENT_VALIDATION_STACK \
       --parameter-overrides $PARAMS \
       --region $REGION \
