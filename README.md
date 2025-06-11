@@ -9,7 +9,7 @@ Related posts:
 AI
 https://medium.com/cloud-security/artificial-intelligence-2e97415216c0
 
-Using Q To Deploy CloudFront and a TLS Certificate — First Attempt
+Using Q To Deploy CloudFront and a TLS Certificate — First Attempt:
 https://medium.com/cloud-security/using-q-to-deploy-cloudfront-and-a-tls-certificate-first-attempt-55acfb5601e3
 
 Using Q To Deploy CloudFront and a TLS Certificate — Second Attempt
