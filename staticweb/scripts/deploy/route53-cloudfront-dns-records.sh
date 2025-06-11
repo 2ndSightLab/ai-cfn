@@ -9,7 +9,7 @@ if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; the
   delete_failed_stack_if_exists $CLOUDFRONT_DNS_STACK $REGION
   
   aws cloudformation deploy \
-    --template-file cfn/cloudfront-dns-records.yaml \
+    --template-file cfn/route53-cloudfront-dns-records.yaml \
     --stack-name $CLOUDFRONT_DNS_STACK \
     --parameter-overrides \
       DomainName=$DOMAIN_NAME \
