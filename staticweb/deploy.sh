@@ -39,7 +39,7 @@ source ./scripts/functions/stack-exists.sh
 source ./scripts/functions/delete-stack.sh
 source ./scripts/functions/delete-failed-stack-if-exists.sh
 source ./scripts/functions/check-certificate-exists.sh
-source ./scripts/functions/delete_existing_certificates.sh
+source ./scripts/functions/delete-existing-certificates.sh
 
 #deploy resources in this order
 source ./scripts/deploy/route53-hosted-zone.sh
