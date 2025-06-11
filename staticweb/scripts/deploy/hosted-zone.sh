@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
-source scripts/check-name-servers.sh
+source scripts/functions/check-name-servers.sh
 
-echo "deploy-hosted-zone.sh"
+echo "scripts/deploy/hosted-zone.sh"
 
 # Route 53 Hosted Zone 
 read -p "Deploy Route 53 hosted zone? (y/n): " DEPLOY_HOSTED_ZONE
