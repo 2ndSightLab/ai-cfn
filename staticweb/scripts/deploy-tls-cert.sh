@@ -10,6 +10,11 @@ ACM_CERTIFICATE_ARN=""
 read -p "Deploy TLS certificate? (y/n): " DEPLOY_TLS_CERTIFICATE
 if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; then
 
+   read -p "Delete existing TLS certificates? (y/n): " DELETE_TLS_CERTIFICATE
+   if [[ "$DELETE_CERTIFICATE" == "y" || "$DELETE_CERTIFICATE" == "Y" ]]; then
+     delete_existing_certificates
+   fi
+   
     # Ask for validation method
     echo "Select validation method:"
     echo "1) DNS validation (recommended)"
