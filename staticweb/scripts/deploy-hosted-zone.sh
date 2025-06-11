@@ -25,7 +25,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
   echo "2) WWW (domain + www subdomain)"
   echo "3) Wildcard (domain + *.domain)"
   echo "4) Custom subdomains"
-  read -p "Enter your choice (1-4) [2]: " CERT_TYPE_CHOICE
+  read -p "Enter your choice (1-4) [2]: " DOMAIN_TYPE_CHOICE
   DOMAIN_TYPE_CHOICE=${DOMAIN_TYPE_CHOICE:-2}
   
   case $DOMAIN_TYPE_CHOICE in
