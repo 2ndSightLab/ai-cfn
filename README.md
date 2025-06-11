@@ -5,6 +5,24 @@ CloudFormation templates and scripts created with Amazon Q Developer and a bit o
 
 https://medium.com/cloud-security/code-to-deploy-a-website-hosted-in-an-s3-bucket-a-tls-certificate-and-cloudfront-distribution-9cdaf34d6a12
 
+```
+#use these commands to run the scripts in the AWS account where the website exists
+cd ~
+rm -rf ai-cfn
+git clone https://github.com/2ndSightLab/ai-cfn.git
+cd ai-cfn/staticweb
+chmod 700 deploy.sh
+chmod 700 scripts/deploy-tls-cert-validation.sh
+./deploy.sh
+
+#use these commands to run the script to update the name servers where the primary domain exists
+cd ~
+rm -rf ai-cfn
+git clone https://github.com/2ndSightLab/ai-cfn.git
+cd ai-cfn/staticweb
+chmod 700 update-nameservers.sh
+./update-nameservers.sh
+```
 
 # Related posts
 
