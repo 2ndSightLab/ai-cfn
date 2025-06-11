@@ -1,10 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'CloudFront Origin Request Policy for S3 origins'
 
-Parameters:
-  Name: PolicyName
-  Type: String
-  Default: CloudFrontOriginRequestPolicy
   
 Resources:
   S3OriginRequestPolicy:
