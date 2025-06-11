@@ -1,11 +1,13 @@
 #!/bin/bash -e
 
-echo "check-name_servers.sh"
+
 
 check_name_servers() {
   # Parameters
   local domain="$1"
   local expected_nameservers="$2"
+
+  echo "check-name_servers.sh"
   
   # Validate parameters
   if [ -z "$domain" ] || [ -z "$expected_nameservers" ]; then
