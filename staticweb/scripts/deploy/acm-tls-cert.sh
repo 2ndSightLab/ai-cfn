@@ -32,7 +32,7 @@ if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; t
     delete_failed_stack_if_exists $TLS_CERTIFICATE_STACK $REGION
 
    # Starting validation script to wait for certificate stack
-   ./scripts/deploy/route53-tls-cert-validation.sh $CERT_VALIDATION_STACK $TLS_CERTIFICATE_STACK $HOSTED_ZONE_ID $DOMAIN_NAME $REGION &
+   ./scripts/deploy/route53-tls-cert-validation.sh $CERT_VALIDATION_STACK $TLS_CERTIFICATE_STACK $HOSTED_ZONE_ID $DOMAIN_NAME $DOMAIN_TYPE $REGION &
 
     # Deploy certificate
     aws cloudformation deploy \
