@@ -13,14 +13,20 @@ DOMAIN_NAME="$4"
 DOMAIN_TYPE="$5"
 REGION="$5"
 
-echo "deploy-validation-dns-records.sh"
+echo "scripts/deploy/route53-validation-dns-records.sh"
+echo "CERT_VALIDATION_STACK_PREFIX=$CERT_VALIDATION_STACK_PREFIX"
+echo "TLS_CERTIFICATE_STACK=$TLS_CERTIFICATE_STACK"
+echo "HOSTED_ZONE_ID=$HOSTED_ZONE_ID"
+echo "DOMAIN_NAME=$DOMAIN_NAME"
+echo "DOMAIN_TYPE=$DOMAIN_TYPE"
+echo "REGION=$REGION"
 
 # Initialize loop variables
 MAX_ATTEMPTS=10
 ATTEMPT=0
 RECORD_COUNT=0
 
-# Check if the TLS_CERTIFICATE_STACK exists, with up to 5 attempts
+echo "Waiting for stack $TLS_CERTIFICATE_STACK to become available"
 while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
   if aws cloudformation describe-stacks --stack-name "$TLS_CERTIFICATE_STACK" --region $REGION >/dev/null 2>&1; then
     echo "TLS Certificate stack '$TLS_CERTIFICATE_STACK' exists. Checking for validation records..."
@@ -38,7 +44,7 @@ while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
   fi
 done
 
-# Now check for validation records in a separate loop
+echo "Checking for validation records"
 VALIDATION_ATTEMPTS=0
 MAX_VALIDATION_ATTEMPTS=10
 
@@ -67,6 +73,7 @@ while [ $VALIDATION_ATTEMPTS -lt $MAX_VALIDATION_ATTEMPTS ]; do
   fi
 done
 
+echo "Validation records exist. Parsing validation records from $RECORD"
 if [[ $RECORD =~ Name:\ ([^,]+),Type:\ ([^,]+),Value:\ ([^}]+) ]]; then
     RECORD_NAME="${BASH_REMATCH[1]}"
     RECORD_TYPE="${BASH_REMATCH[2]}"
@@ -108,6 +115,7 @@ else
     echo "Validation record details not found in CloudFormation stack: $TLS_CERTIFICATE_STACK" 
 fi
 
+echo "Checking for subdomain records"
 SUBDOMAIN=""
 if [ "$DOMAIN_TYPE" == "WWW" ]; then SUBDOMAIN="www.$DOMAIN_NAME"; fi
 if [ "$DOMAIN_TYPE" == "*" ]; then SUBDOMAIN="*.$DOMAIN_NAME"; fi
