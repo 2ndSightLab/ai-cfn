@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "scripts/deploy/tls-cert.sh"
+echo "scripts/deploy/acm-tls-cert.sh"
 
 # Override Region 
 REGION=us-east-1
@@ -36,7 +36,7 @@ if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; t
 
     # Deploy certificate
     aws cloudformation deploy \
-        --template-file cfn/tls-certificate.yaml \
+        --template-file cfn/acm-tls-certificate.yaml \
         --stack-name $TLS_CERTIFICATE_STACK \
         --parameter-overrides \
           DomainName=$DOMAIN_NAME \
