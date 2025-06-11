@@ -1,7 +1,9 @@
 #!/bin/bash
 
-source ./scripts/delete-failed-stack-if-exists.sh
-source ./scripts/stack-exists.sh
+echo "scripts/deploy/tls-cert-validation.sh"
+
+source ./scripts/functions/delete-failed-stack-if-exists.sh
+source ./scripts/functions/stack-exists.sh
 
 # Arguments
 CERT_VALIDATION_STACK_PREFIX="$1"
