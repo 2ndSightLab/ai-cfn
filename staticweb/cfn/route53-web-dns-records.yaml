@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Route 53 Hosted Zone for S3 static website with CloudFront integration'
 
 Parameters:
-  HostedZoneId:
+  HostedZone:
     Type: String
     Description: 'The hosted zone id'
     
