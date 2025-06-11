@@ -201,9 +201,9 @@ Outputs:
       
   WWWDomainName:
     Description: 'WWW Domain Name'
-    Value: !If [IsWWWDomain, !Sub '*.${DomainName}', 'Not Enabled']
+    Value: !If [IsWWWDomain, !Sub 'www.${DomainName}', 'Not Enabled']
     Export:
-      Name: !Sub '${AWS::StackName}-WildcardDomainName'
+      Name: !Sub '${AWS::StackName}-WWWDomainName'
       
   NameServers:
     Description: 'Name Servers (update these in your domain registrar)'
