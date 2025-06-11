@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "scripts/deploy/cloudfront-securityheaderspolicy.sh"
+
 read -p "Deploy CloudFront security headers policy? (y/n): " DEPLOY_POLICY
 if [[ "$DEPLOY_POLICY" == "y" || "$DEPLOY_POLICY" == "Y" ]]; then
 
