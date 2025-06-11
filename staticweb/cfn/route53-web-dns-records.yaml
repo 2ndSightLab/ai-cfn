@@ -97,7 +97,7 @@ Conditions:
     - !Condition IsWildcardDomain
     - !Condition CreateCloudFrontDNSRecords
 
-        
+Resources:        
   S3WebsiteRecord:
     Type: AWS::Route53::RecordSet
     Condition: CreateS3WebsiteRecords
