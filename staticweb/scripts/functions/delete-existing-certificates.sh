@@ -1,10 +1,10 @@
 #!/bin/bash
 function delete_existing_certificates(){
   DOMAIN_NAME="$1"
+  stack_name="$2"
+  region="$3"
   
-  echo "scripts/functions/delete-existing-certificates.sh"
-
-  stack_name=$TLS_CERTIFICATE_STACK
+  echo "scripts/functions/delete-existing-certificates.sh $DOMAIN_NAME $stack_name $region"
 
   if aws cloudformation describe-stacks --stack-name $stack_name --region $region &>/dev/null; then
   
