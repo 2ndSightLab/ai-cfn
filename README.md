@@ -17,6 +17,7 @@ chmod 700 scripts/deploy-tls-cert-validation.sh
 ./deploy.sh
 
 # Use these commands to run the script to update the name servers where the primary domain exists
+# NOTE: If you have existing records set up on existing name servers this can mess things up!
 cd ~
 rm -rf ai-cfn
 git clone https://github.com/2ndSightLab/ai-cfn.git
