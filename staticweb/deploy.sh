@@ -22,6 +22,7 @@ CLOUDFRONT_LOGS_STACK="${STACK_NAME_PREFIX}-cloudfront-logs"
 S3_WEBSITE_STACK="${STACK_NAME_PREFIX}-s3-website"
 S3_POLICY_WEBSITE_STACK="${STACK_NAME_PREFIX}-s3-bucketpolicy-website"
 HOSTED_ZONE_STACK="${STACK_NAME_PREFIX}-hosted-zone"
+WEB_DNS_RECORDS_STACK="${STACK_NAME_PREFIX}-web-dns-records"
 TLS_CERTIFICATE_STACK="${STACK_NAME_PREFIX}-tls-certificate"
 CERT_VALIDATION_STACK="${STACK_NAME_PREFIX}-cert-validation"
 DNS_RECORDS_STACK="${STACK_NAME_PREFIX}-dns-records"
@@ -41,7 +42,7 @@ source ./scripts/functions/check-certificate-exists.sh
 
 #deploy resources in this order
 source ./scripts/deploy/hosted-zone.sh
-source ./scripts/deploy/static-web-dns-records.sh
+source ./scripts/deploy/web-dns-records.sh
 source ./scripts/deploy/tls-cert.sh
 source ./scripts/deploy/s3-access-log-bucket.sh
 source ./scripts/deploy/cloudfront-logs-bucket.sh
