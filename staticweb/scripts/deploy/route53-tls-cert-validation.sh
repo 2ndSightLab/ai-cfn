@@ -10,6 +10,7 @@ CERT_VALIDATION_STACK_PREFIX="$1"
 TLS_CERTIFICATE_STACK="$2"
 HOSTED_ZONE_ID="$3"
 DOMAIN_NAME="$4"
+DOMAIN_TYPE="$5"
 REGION="$5"
 
 echo "deploy-validation-dns-records.sh"
@@ -111,6 +112,8 @@ SUBDOMAIN=""
 if [ "$DOMAIN_TYPE" == "WWW" ]; then SUBDOMAIN="www.$DOMAIN_NAME"; fi
 if [ "$DOMAIN_TYPE" == "*" ]; then SUBDOMAIN="*.$DOMAIN_NAME"; fi
 
+echo "SUBDOMAIN: $SUBDOMAIN"
+
 if [ "$SUBDOMAIN" != "" ]; then
 
   echo "Adding validation record for subdomain: $SUBDOMAIN"
@@ -166,6 +169,7 @@ if [ "$SUBDOMAIN" != "" ]; then
   echo "TLS Certificate Validation DNS record created successfully for $SUBDOMAIN."
      
 fi
+echo "Finished adding TLS Certificate validation records."
 
 
 
