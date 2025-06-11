@@ -41,13 +41,13 @@ read -p "Upload a sample index.html and 404.html file? (y/n): " UPLOAD_SAMPLE
     
     echo "Sample index.html uploaded."
 
-    echo "Creating a sample index.html file..."
-    echo "<html><head><title>Not Found. Sorry :-(</title></head><body><h1>Not Found. Sorry :-(</h1><p>That page wasn't found.</p></body></html>" > /tmp/index.html
+    echo "Creating a sample 404.html file..."
+    echo "<html><head><title>Not Found. Sorry :-(</title></head><body><h1>Not Found. Sorry :-(</h1><p>That page wasn't found.</p></body></html>" > /tmp/404.html
     
     aws s3 cp /tmp/404.html s3://$S3_BUCKET_NAME/404.html \
       --content-type "text/html" \
       --metadata-directive REPLACE
     
-    echo "Sample index.html uploaded."
+    echo "Sample 404.html uploaded."
   fi
   
