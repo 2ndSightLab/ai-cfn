@@ -172,11 +172,6 @@ Resources:
 
 
 Outputs:
-  HostedZoneId:
-    Description: 'Hosted Zone ID'
-    Value: !Ref HostedZone
-    Export:
-      Name: !Sub '${AWS::StackName}-HostedZoneId'
 
   DomainName:
     Description: 'Domain Name'
