@@ -17,32 +17,6 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
     read -p "Domain name (e.g., example.com): " DOMAIN_NAME
   done
 
-  # Ask for domain type type
-  echo "Select domain type:"
-  echo "1) Basic (domain only)"
-  echo "2) WWW (domain + www subdomain)"
-  echo "3) Wildcard (domain + *.domain)"
-  echo "4) Custom subdomains"
-  read -p "Enter your choice (1-4) [2]: " DOMAIN_TYPE_CHOICE
-  DOMAIN_TYPE_CHOICE=${DOMAIN_TYPE_CHOICE:-2}
-  
-  case $DOMAIN_TYPE_CHOICE in
-      1) DOMAIN_TYPE="Basic" ;;
-      2) DOMAIN_TYPE="WWW" ;;
-      3) DOMAIN_TYPE="Wildcard" ;;
-      4) 
-          DOMAIN_TYPE="CustomSubdomains"
-          echo ""
-          echo "Enter fully qualified subdomains, separated by commas"
-          echo "Example: api.${DOMAIN_NAME},blog.${DOMAIN_NAME},shop.${DOMAIN_NAME}"
-          read -p "Subdomains: " CUSTOM_SUBDOMAINS
-          ;;
-      *) 
-          echo "Invalid choice. Defaulting to WWW certificate."
-          exit
-          ;;
-  esac
-
   echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."
   aws cloudformation deploy \
     --region $REGION \
