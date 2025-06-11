@@ -12,7 +12,7 @@ if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; t
 
    read -p "Delete existing TLS certificates? (y/n): " DELETE_TLS_CERTIFICATE
    if [[ "$DELETE_CERTIFICATE" == "y" || "$DELETE_CERTIFICATE" == "Y" ]]; then
-     delete_existing_certificates $DOMAIN_NAME $TLS_CERT_STACK
+     delete_existing_certificates $DOMAIN_NAME $$TLS_CERTIFICATE_STACK $REGION
    fi
    
     # Ask for validation method
