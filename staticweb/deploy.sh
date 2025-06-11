@@ -30,8 +30,8 @@ OAI_STACK="${STACK_NAME_PREFIX}-origin-access-identity"
 OAC_STACK="${STACK_NAME_PREFIX}-origin-access-control"
 CLOUDFRONT_DNS_STACK="${STACK_NAME_PREFIX}-cloudfront-dns"
 CLOUDFRONT_CACHE_POLICY_STACK="${STACK_NAME_PREFIX}-cloudfront-cachepolicy"
-CLOUDFRONT_SECURITYHEADERS_POLICY_STACK="${STACK_NAME_PREFIX}-cloudfront-cachepolicy"
-CLOUDFRONT_ORIGINREQUEST_POLICY_STACK="${STACK_NAME_PREFIX}-cloudfront-cachepolicy"
+CLOUDFRONT_SECURITYHEADERS_POLICY_STACK="${STACK_NAME_PREFIX}-cloudfront-securityheaders"
+CLOUDFRONT_ORIGINREQUEST_POLICY_STACK="${STACK_NAME_PREFIX}-cloudfront-originrequstpolicy"
 
 source ./scripts/stack-exists.sh
 source ./scripts/delete-stack.sh
