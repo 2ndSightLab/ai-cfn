@@ -11,9 +11,6 @@ delete_failed_stack_if_exists() {
      echo "Region not set checking to see if $stack_name exists in a failed state and needs to be deleted"; exit
   fi
   
-
-  if [ "$region" == "" ]; then region="us-east-1"; fi
-  
   if aws cloudformation describe-stacks --stack-name $stack_name --region $region &>/dev/null; then
   
     echo "Checking for existing CloudFormation stack..."
