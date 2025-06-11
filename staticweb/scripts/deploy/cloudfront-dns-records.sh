@@ -1,6 +1,8 @@
 
 #!/bin/bash
 
+echo "scripts/deploy/cloudfront-dns-records.sh"
+
 read -p "Deploy CloudFront DNS records? (y/n): " DEPLOY_CLOUDFRONT_DNS
 if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; then
 
