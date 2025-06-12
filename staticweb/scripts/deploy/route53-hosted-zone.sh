@@ -47,17 +47,32 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
           ;;
   esac
 
-  echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."
-  aws cloudformation deploy \
-    --region $REGION \
-    --template-file cfn/route53-hosted-zone.yaml \
-    --stack-name $HOSTED_ZONE_STACK \
-    --parameter-overrides \
-      DomainName=$DOMAIN_NAME \
-      DomainType=$DOMAIN_TYPE \
-      CustomSubdomains=$CUSTOM_SUBDOMAINS \ 
-    --capabilities CAPABILITY_IAM \
-    --no-fail-on-empty-changeset
+  echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."  
+  if [ "$DOMAIN_TYPE" == "SUBDOMAINS" ]; then 
+
+    aws cloudformation deploy \
+      --region $REGION \
+      --template-file cfn/route53-hosted-zone.yaml \
+      --stack-name $HOSTED_ZONE_STACK \
+      --parameter-overrides \
+        DomainName=$DOMAIN_NAME \
+        DomainType=$DOMAIN_TYPE \
+        CustomSubdomains=$CUSTOM_SUBDOMAINS \ 
+      --no-fail-on-empty-changeset
+      
+   else
+
+      aws cloudformation deploy \
+        --region $REGION \
+        --template-file cfn/route53-hosted-zone.yaml \
+        --stack-name $HOSTED_ZONE_STACK \
+        --parameter-overrides \
+          DomainName=$DOMAIN_NAME \
+          DomainType=$DOMAIN_TYPE \
+        --no-fail-on-empty-changeset
+    
+    fi
+   
 fi
 
 stack_exists $HOSTED_ZONE_STACK $REGION
