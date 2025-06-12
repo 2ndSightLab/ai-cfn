@@ -53,7 +53,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
     --parameter-overrides \
       DomainName=$DOMAIN_NAME \
       DomainType=$DOMAIN_TYPE \
-      CustomSubdomains=$CUSTOM_SUBDOMAINS \ 
+      CustomSubdomains="$CUSTOM_SUBDOMAINS" \ 
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
 fi
