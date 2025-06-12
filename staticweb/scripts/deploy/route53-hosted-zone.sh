@@ -6,6 +6,8 @@ source scripts/functions/check-name-servers.sh
 
 echo "scripts/deploy/route53-hosted-zone.sh"
 
+CustomSubdomains=''
+
 # Route 53 Hosted Zone 
 read -p "Deploy Route 53 hosted zone? (y/n): " DEPLOY_HOSTED_ZONE
 if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
@@ -53,7 +55,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
     --parameter-overrides \
       DomainName=$DOMAIN_NAME \
       DomainType=$DOMAIN_TYPE \
-      CustomSubdomains="$CUSTOM_SUBDOMAINS" \ 
+      CustomSubdomains=$CUSTOM_SUBDOMAINS \ 
     --capabilities CAPABILITY_IAM \
     --no-fail-on-empty-changeset
 fi
