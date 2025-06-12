@@ -4,7 +4,7 @@ echo "scripts/deploy/route53-tls-cert-validation.sh"
 
 source ./scripts/functions/delete-failed-stack-if-exists.sh
 source ./scripts/functions/stack-exists.sh
-source ./scripts/functions/stack-exists.sh
+source ./scripts/functions/delete-stack.sh
 
 # Arguments
 CERT_VALIDATION_STACK_PREFIX="$1"
