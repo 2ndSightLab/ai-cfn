@@ -72,5 +72,4 @@ CLOUDFRONT_DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
     --query "Stacks[0].Outputs[?OutputKey=='DistributionId'].OutputValue" \
     --output text)
 
-echo "CloudFront Domain: $CLOUDFRONT_DOMAIN"
 echo "CloudFront Distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
