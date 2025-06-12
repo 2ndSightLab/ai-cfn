@@ -68,3 +68,7 @@ https://2ndsightlab.medium.com/using-q-to-deploy-cloudfront-and-a-tls-certificat
 Using Q To Deploy CloudFront and a TLS Certificate — AI doesn’t always write code that works and can’t always fix it’s own errors
 
 https://medium.com/cloud-security/using-q-to-deploy-cloudfront-and-a-tls-certificate-ai-doesnt-always-write-code-that-works-and-3f368d656320
+
+Using Q To Deploy CloudFront and a TLS Certificate — Yet Another Problem With the ACM Deployment Process
+
+https://medium.com/cloud-security/using-q-to-deploy-cloudfront-and-a-tls-certificate-yet-another-problem-with-the-acm-deployment-f4814f7852ee
