@@ -42,7 +42,7 @@ if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; the
   deploy_cloudfront_dns_record \
     $CLOUDFRONT_DNS_STACK \
     $DOMAIN_NAME \
-    $HOSTED_ZONE_ID \ 
+    "$HOSTED_ZONE_ID" \
     $CLOUDFRONT_DOMAIN \
     $REGION
 
@@ -51,7 +51,7 @@ if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; the
     deploy_cloudfront_dns_record \
       ${CLOUDFRONT_DNS_STACK}-WWW \
       $DOMAIN_NAME \
-      $HOSTED_ZONE_ID \ 
+      "$HOSTED_ZONE_ID" \
       $CLOUDFRONT_DOMAIN \
       $REGION
   
@@ -62,7 +62,7 @@ if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; the
     deploy_cloudfront_dns_record \
       ${CLOUDFRONT_DNS_STACK}-Wildcard \
       $DOMAIN_NAME \
-      $HOSTED_ZONE_ID \ 
+      "$HOSTED_ZONE_ID" \
       $CLOUDFRONT_DOMAIN \
       $REGION
   fi  
