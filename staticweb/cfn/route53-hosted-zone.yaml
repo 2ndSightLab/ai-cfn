@@ -6,6 +6,16 @@ Parameters:
     Type: String
     Description: 'The domain name for the hosted zone (e.g., example.com)'
 
+  DomainType:
+    Type: String
+    Description: 'The domain type (Basic, WWW, Wildcard, Subdomains)'
+    Default: Basic
+
+  CustomSubdomains:
+    Type: String
+    Description: 'If domain type is subdomains, then provide list of subdomains'
+    Default: ''
+    
 Resources:
   HostedZone:
     Type: AWS::Route53::HostedZone
@@ -28,6 +38,18 @@ Outputs:
     Export:
       Name: !Sub '${AWS::StackName}-DomainName'
 
+  DomainType:
+    Description: 'Domain Type'
+    Value: !Ref DomainType
+    Export:
+      Name: !Sub '${AWS::StackName}-DomainType'
+
+  CustomSubdomains:
+    Description: 'Custom Subdomains'
+    Value: !Ref CustomSubdomains
+    Export:
+      Name: !Sub '${AWS::StackName}-CustomSubdomains'
+      
   NameServers:
     Description: 'Name Servers (update these in your domain registrar)'
     Value: !Join [', ', !GetAtt HostedZone.NameServers]
