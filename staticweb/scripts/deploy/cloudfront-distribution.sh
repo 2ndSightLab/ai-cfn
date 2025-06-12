@@ -58,7 +58,6 @@ if [[ "$DEPLOY_CLOUDFRONT" == "y" || "$DEPLOY_CLOUDFRONT" == "Y" ]]; then
   stack_exists $CLOUDFRONT_STACK $REGION
 fi
 
-
 # Get the CloudFront Distribution domain name
 CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks \
   --stack-name $CLOUDFRONT_STACK \
