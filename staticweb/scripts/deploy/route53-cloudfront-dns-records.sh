@@ -3,6 +3,9 @@
 
 echo "scripts/deploy/route53-cloudfront-dns-records.sh"
 
+echo "REGION: $REGION"
+echo "CLOUDFRONT_DOMAIN: $CLOUDFRONT_DOMAIN"
+
 function deploy_cloudfront_dns_record(){
 
   local stack="$1"
@@ -36,6 +39,13 @@ function deploy_cloudfront_dns_record(){
 read -p "Deploy CloudFront DNS records? (y/n): " DEPLOY_CLOUDFRONT_DNS
 if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; then
 
+  echo "deploy_cloudfront_dns_record \
+    $CLOUDFRONT_DNS_STACK \
+    $DOMAIN_NAME \
+    $HOSTED_ZONE_ID \ 
+    $CLOUDFRONT_DOMAIN \
+    $REGION"
+    
   deploy_cloudfront_dns_record \
     $CLOUDFRONT_DNS_STACK \
     $DOMAIN_NAME \
