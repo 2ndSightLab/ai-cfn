@@ -19,7 +19,7 @@ Parameters:
 
 Conditions:
   IncludeWWWDomain: !Equals [!Ref DomainType, 'WWW']
-  IsWildcard: !Equals [!Ref DomainType, 'WWW']
+  IsWildcard: !Equals [!Ref DomainType, 'Wildcard']
 
 Resources:
   ApexDomainRecord:
