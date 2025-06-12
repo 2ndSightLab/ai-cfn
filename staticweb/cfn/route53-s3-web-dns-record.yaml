@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Route 53 Hosted Zone for S3 static website'
+Description: 'Route 53 Hosted Zone for S3 static website. You really should not use this. Use CloudFront DNS instead.'
 
 Parameters:
   HostedZone:
