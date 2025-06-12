@@ -32,7 +32,7 @@ function deploy_cloudfront_dns_record(){
     --no-fail-on-empty-changeset  
     --region $region
 
-   stack_exists $stack $REGION
+   stack_exists $stack $region
  
 }
 
