@@ -4,6 +4,7 @@ echo "scripts/deploy/route53-tls-cert-validation.sh"
 
 source ./scripts/functions/delete-failed-stack-if-exists.sh
 source ./scripts/functions/stack-exists.sh
+source ./scripts/functions/stack-exists.sh
 
 # Arguments
 CERT_VALIDATION_STACK_PREFIX="$1"
@@ -20,6 +21,11 @@ echo "HOSTED_ZONE_ID=$HOSTED_ZONE_ID"
 echo "DOMAIN_NAME=$DOMAIN_NAME"
 echo "DOMAIN_TYPE=$DOMAIN_TYPE"
 echo "REGION=$REGION"
+
+delete_stack $CERT_VALIDATION_STACK_PREFIX $REGION
+delete_stack $CERT_VALIDATION_STACK_PREFIX-WWW $REGION
+delete_stack $CERT_VALIDATION_STACK_PREFIX-Wildcard $REGION
+delete_stack $CERT_VALIDATION_STACK_PREFIX-Subdomain $REGION
 
 # Initialize loop variables
 MAX_ATTEMPTS=10
@@ -88,7 +94,7 @@ if [[ $RECORD =~ Name:\ ([^,]+),Type:\ ([^,]+),Value:\ ([^}]+) ]]; then
     
     # Create a unique stack name for this validation record
     CURRENT_VALIDATION_STACK="${CERT_VALIDATION_STACK_PREFIX}"
-    
+
     # Delete the stack if it exists and is in a failed state
     delete_failed_stack_if_exists $CURRENT_VALIDATION_STACK $REGION
     
@@ -132,7 +138,8 @@ if [ "$SUBDOMAIN" != "" ]; then
   echo "Adding validation record for subdomain: $SUBDOMAIN"
 
   CURRENT_VALIDATION_STACK="${CERT_VALIDATION_STACK_PREFIX}-${DOMAIN_TYPE}"
-  
+  delete_stack $CURRENT_VALIDATION_STACK $REGION
+
   echo "Searching cert for validation record: $ACM_CERTIFICATE_ARN"
 
   VALIDATION_RECORD=$(aws acm describe-certificate --region $REGION --certificate-arn "$ACM_CERTIFICATE_ARN" | \
