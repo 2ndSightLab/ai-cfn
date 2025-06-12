@@ -50,7 +50,7 @@ source ./scripts/deploy/s3-access-log-bucket.sh
 source ./scripts/deploy/cloudfront-logs-bucket.sh
 source ./scripts/deploy/cloudfront-access.sh
 source ./scripts/deploy/s3-content-bucket.sh
-source ./scripts/deploy/cloudfront-securityehaderspolicy.sh
+source ./scripts/deploy/cloudfront-securityheaderspolicy.sh
 source ./scripts/deploy/cloudfront-originrequestpolicy.sh
 source ./scripts/deploy/cloudfront-cachepolicy.sh
 source ./scripts/deploy/cloudfront-distribution.sh
