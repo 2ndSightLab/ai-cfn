@@ -44,7 +44,7 @@ if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; the
     $DOMAIN_NAME \
     $HOSTED_ZONE_ID \ 
     $CLOUDFRONT_DOMAIN \
-    $REGION"
+    $REGION
     
   deploy_cloudfront_dns_record \
     $CLOUDFRONT_DNS_STACK \
