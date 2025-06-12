@@ -9,8 +9,9 @@ function deploy_cloudfront_dns_record(){
   local domain_name="$2"
   local hosted_zone_id="$3"
   local cloudfront_domain="$4"
+  local region="$5"
   
-  delete_failed_stack_if_exists $stack
+  delete_failed_stack_if_exists $stack $region
   
   aws cloudformation deploy \
     --template-file cfn/route53-cloudfront-dns-record.yaml \
@@ -32,7 +33,8 @@ if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; the
     $CLOUDFRONT_DNS_STACK \
     $DOMAIN_NAME \
     $HOSTED_ZONE_ID \ 
-    $CLOUDFRONT_DOMAIN 
+    $CLOUDFRONT_DOMAIN \
+    $REGION
 
   if [ "$DOMAIN_TYPE" == "WWW" ]; then 
   
@@ -40,7 +42,8 @@ if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; the
       ${CLOUDFRONT_DNS_STACK}-WWW \
       $DOMAIN_NAME \
       $HOSTED_ZONE_ID \ 
-      $CLOUDFRONT_DOMAIN 
+      $CLOUDFRONT_DOMAIN \
+      $REGION
   
   fi
 
@@ -50,7 +53,8 @@ if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; the
       ${CLOUDFRONT_DNS_STACK}-Wildcard \
       $DOMAIN_NAME \
       $HOSTED_ZONE_ID \ 
-      $CLOUDFRONT_DOMAIN 
+      $CLOUDFRONT_DOMAIN \
+      $REGION
   fi  
 
   if [ "$DOMAIN_TYPE" == "Subdomains" ]; then 
