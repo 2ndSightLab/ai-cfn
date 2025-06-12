@@ -43,7 +43,8 @@ source ./scripts/functions/delete-existing-certificates.sh
 
 #deploy resources in this order
 source ./scripts/deploy/route53-hosted-zone.sh
-source ./scripts/deploy/route53-web-dns-records.sh
+#Do we need this if we have the cloudfront records?
+#source ./scripts/deploy/route53-web-dns-records.sh
 source ./scripts/deploy/acm-tls-cert.sh
 source ./scripts/deploy/s3-access-log-bucket.sh
 source ./scripts/deploy/cloudfront-logs-bucket.sh
