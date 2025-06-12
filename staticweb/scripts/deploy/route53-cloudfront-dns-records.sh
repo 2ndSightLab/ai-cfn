@@ -11,8 +11,8 @@ function deploy_cloudfront_dns_record(){
   local stack="$1"
   local domain_name="$2"
   local hosted_zone_id="$3"
-  local cloudfront_domain="$4"
-  local region="$5"
+  cloudfront_domain="$4"
+  region="$5"
 
   echo "stack: $1"
   echo "domain_name: $2"
