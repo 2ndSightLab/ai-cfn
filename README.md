@@ -1,5 +1,5 @@
 # ai-cfn
-CloudFormation templates and scripts created with Amazon Q Developer and a bit of Amazon Bedrock.
+CloudFormation templates and scripts created with Amazon Q Developer and a bit of Amazon Bedrock (More or less...see blog posts below).
 
 # Instructions to Deploy a Static Website With a TLS Certificate and CLoudFront distribution
 
