@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Create an A record for CloudFront'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: The domain name (e.g., example.com)
+  HostedZoneId:
+    Type: String
+    Description: The Route 53 Hosted Zone ID
+  CloudFrontDomainName:
+    Type: String
+    Description: The CloudFront distribution domain name
+ 
+Resources:
+  ApexDomainRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !Ref CloudFrontDomainName
+        HostedZoneId: Z2FDTNDATAQYW2  # This is the fixed hosted zone ID for CloudFront
+        EvaluateTargetHealth: false        
+
+Outputs:
+  DomainName:
+    Description: The apex domain name
+    Value: !Ref DomainName
