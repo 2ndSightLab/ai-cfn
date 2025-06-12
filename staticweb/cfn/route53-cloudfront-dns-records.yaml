@@ -14,12 +14,17 @@ Parameters:
   DomainType:
     Type: String
     Default: 'WWW'
-    AllowedValues: ['Basic', 'WWW', 'Wildcard']
+    AllowedValues: ['Basic', 'WWW', 'Wildcard','Subdomain']
     Description: Domain type
+  CustomSubdomain:
+    Type: String
+    Description: Custom subdomain for DomainType Subdomain
 
 Conditions:
   IncludeWWWDomain: !Equals [!Ref DomainType, 'WWW']
   IsWildcard: !Equals [!Ref DomainType, 'Wildcard']
+  IsSubdomain: !Equals [!Ref DomainType, 'Subdomain']
+    
 
 Resources:
   ApexDomainRecord:
@@ -56,6 +61,19 @@ Resources:
         DNSName: !Ref CloudFrontDomainName
         HostedZoneId: Z2FDTNDATAQYW2  # This is the fixed hosted zone ID for CloudFront
         EvaluateTargetHealth: false
+
+    WildcardDomainRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: IsSubdomain
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref CustomSubdomain
+      Type: A
+      AliasTarget:
+        DNSName: !Ref CloudFrontDomainName
+        HostedZoneId: Z2FDTNDATAQYW2  # This is the fixed hosted zone ID for CloudFront
+        EvaluateTargetHealth: false
+        
 
 Outputs:
   ApexDomainName:
