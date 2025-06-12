@@ -72,6 +72,12 @@ DOMAIN_TYPE=$(aws cloudformation describe-stacks \
     --region $REGION \
     --query "Stacks[0].Outputs[?OutputKey=='DomainType'].OutputValue" \
     --output text)
+
+CUSTOM_SUBDOMAINS=$(aws cloudformation describe-stacks \
+    --stack-name $HOSTED_ZONE_STACK \
+    --region $REGION \
+    --query "Stacks[0].Outputs[?OutputKey=='CustomSubdomains'].OutputValue" \
+    --output text)
     
 # Get the Hosted Zone ID from the stack outputs
 HOSTED_ZONE_ID=$(aws cloudformation describe-stacks \
@@ -85,9 +91,13 @@ NAME_SERVERS=$(aws cloudformation describe-stacks \
     --query "Stacks[0].Outputs[?OutputKey=='NameServers'].OutputValue" \
     --output text \
     --region $REGION)
-  
-echo "Hosted Zone ID: $HOSTED_ZONE_ID"
 
+
+    
+echo "Domain Name: $DOMAIN_NAME"  
+echo "Domain Type: $DOMAIN_TYPE"  
+echo "Hosted Zone ID: $HOSTED_ZONE_ID"
+echo "Custom Subdomains: $CUSTOM_SUBDOMAINS"
 echo "Name Servers:"
 echo "$NAME_SERVERS"
 
