@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+#Note: DomainType and Subdomains are saved in outputs for use in other stacks
+
 source scripts/functions/check-name-servers.sh
 
 echo "scripts/deploy/route53-hosted-zone.sh"
