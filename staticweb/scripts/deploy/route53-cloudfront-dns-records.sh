@@ -8,9 +8,9 @@ echo "CLOUDFRONT_DOMAIN: $CLOUDFRONT_DOMAIN"
 
 function deploy_cloudfront_dns_record(){
 
-  local stack="$1"
-  local domain_name="$2"
-  local hosted_zone_id="$3"
+  stack="$1"
+  domain_name="$2"
+  hosted_zone_id="$3"
   cloudfront_domain="$4"
   region="$5"
 
