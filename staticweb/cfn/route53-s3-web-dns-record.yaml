@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Route 53 Hosted Zone for S3 static website'
+
+Parameters:
+  HostedZone:
+    Type: String
+    Description: 'The hosted zone id'
+    
+  DomainName:
+    Type: String
+    Description: 'The domain name for the hosted zone (e.g., example.com)'
+
+Mappings:
+  RegionMap:
+    us-east-1:
+      S3HostedZoneId: Z3AQBSTGFYJSTF
+    us-east-2:
+      S3HostedZoneId: Z2O1EMRO9K5GLX
+    us-west-1:
+      S3HostedZoneId: Z2F56UZL2M1ACD
+    us-west-2:
+      S3HostedZoneId: Z3BJ6K6RIION7M
+    ca-central-1:
+      S3HostedZoneId: Z1QDHH18159H29
+    eu-west-1:
+      S3HostedZoneId: Z1BKCTXD74EZPE
+    eu-west-2:
+      S3HostedZoneId: Z3GKZC51ZF0DB4
+    eu-west-3:
+      S3HostedZoneId: Z3R1K369G5AVDG
+    eu-central-1:
+      S3HostedZoneId: Z21DNDUVLTQW6Q
+    ap-south-1:
+      S3HostedZoneId: Z11RGJOFQNVJUP
+    ap-northeast-1:
+      S3HostedZoneId: Z2M4EHUR26P7ZW
+    ap-northeast-2:
+      S3HostedZoneId: Z3W03O7B5YMIYP
+    ap-northeast-3:
+      S3HostedZoneId: Z2YQB5RD63NC85
+    ap-southeast-1:
+      S3HostedZoneId: Z3O0J2DXBE1FTB
+    ap-southeast-2:
+      S3HostedZoneId: Z1WCIGYICN2BYD
+    sa-east-1:
+      S3HostedZoneId: Z7KQH4QJS55SO
+
+Resources:        
+  S3WebsiteRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !Sub 's3-website-${AWS::Region}.amazonaws.com'
+        HostedZoneId: !FindInMap [RegionMap, !Ref 'AWS::Region', S3HostedZoneId]
+        EvaluateTargetHealth: false
+
+Outputs:
+  DomainName:
+    Description: 'Domain Name'
+    Value: !Ref DomainName
+    Export:
+      Name: !Sub '${AWS::StackName}-DomainName'
