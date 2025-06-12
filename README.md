@@ -1,7 +1,7 @@
 # ai-cfn
 CloudFormation templates and scripts created with Amazon Q Developer and a bit of Amazon Bedrock.
 
-# Instructions
+# Instructions to Deploy a Static Website With a TLS Certificate and CLoudFront distribution
 
 https://medium.com/cloud-security/code-to-deploy-a-website-hosted-in-an-s3-bucket-a-tls-certificate-and-cloudfront-distribution-9cdaf34d6a12
 
