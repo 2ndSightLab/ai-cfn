@@ -10,6 +10,12 @@ function deploy_cloudfront_dns_record(){
   local hosted_zone_id="$3"
   local cloudfront_domain="$4"
   local region="$5"
+
+  echo "stack: $1"
+  echo "domain_name: $2"
+  echo "hosted_zone_id: $3"
+  echo "cloudfront_domain: $4"
+  echo "region: $5"
   
   delete_failed_stack_if_exists $stack $region
   
