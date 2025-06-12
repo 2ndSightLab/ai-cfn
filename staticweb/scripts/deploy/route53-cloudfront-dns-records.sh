@@ -28,11 +28,11 @@ function deploy_cloudfront_dns_record(){
 read -p "Deploy CloudFront DNS records? (y/n): " DEPLOY_CLOUDFRONT_DNS
 if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; then
 
-deploy_cloudfront_dns_record \
-  $CLOUDFRONT_DNS_STACK \
-  $DOMAIN_NAME \
-  $HOSTED_ZONE_ID \ 
-  $CLOUDFRONT_DOMAIN 
+  deploy_cloudfront_dns_record \
+    $CLOUDFRONT_DNS_STACK \
+    $DOMAIN_NAME \
+    $HOSTED_ZONE_ID \ 
+    $CLOUDFRONT_DOMAIN 
 
   if [ "$DOMAIN_TYPE" == "WWW" ]; then 
   
