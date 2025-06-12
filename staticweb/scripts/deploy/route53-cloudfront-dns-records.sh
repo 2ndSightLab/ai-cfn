@@ -28,9 +28,9 @@ function deploy_cloudfront_dns_record(){
     --parameter-overrides \
       DomainName=$domain_name \
       HostedZoneId=$hosted_zone_id \
-      CloudFrontDomainName=$cloudfront_domain 
-    --no-fail-on-empty-changeset  
-    --region $region
+      CloudFrontDomainName=$cloudfront_domain \
+    --no-fail-on-empty-changeset \
+    --region $region 
 
    stack_exists $stack $region
  
