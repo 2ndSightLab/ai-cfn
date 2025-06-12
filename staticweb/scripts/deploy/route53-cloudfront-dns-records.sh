@@ -34,15 +34,15 @@ read -p "Deploy CloudFront DNS records? (y/n): " DEPLOY_CLOUDFRONT_DNS
 if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; then
 
   if [ "$DOMAIN_NAME" == "" ]; then
-     echo "DOMAIN_NAME is not set: $DOMAIN_NAME"
+     echo "DOMAIN_NAME is not set: $DOMAIN_NAME"; exit
   fi
   
   if [ "$HOSTED_ZONE_ID" == "" ]; then
-     echo "HOSTED_ZONE_ID is not set: $HOSTED_ZONE_ID"
+     echo "HOSTED_ZONE_ID is not set: $HOSTED_ZONE_ID"; exit
   fi
   
   if [ "$CLOUDFRONT_DOMAIN" == "" ]; then
-     echo "CLOUDFRONT_DOMAIN is not set: $CLOUDFRONT_DOMAIN"
+     echo "CLOUDFRONT_DOMAIN is not set: $CLOUDFRONT_DOMAIN"; exit
   fi
 
   if [ "$REGION" == "" ]; then
