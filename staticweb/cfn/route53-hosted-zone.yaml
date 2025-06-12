@@ -14,7 +14,7 @@ Parameters:
   CustomSubdomains:
     Type: String
     Description: 'If domain type is subdomains, then provide list of subdomains'
-    Default: ''
+    Default: 'None'
     
 Resources:
   HostedZone:
