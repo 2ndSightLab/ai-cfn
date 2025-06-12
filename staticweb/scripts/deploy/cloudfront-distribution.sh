@@ -66,6 +66,8 @@ CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks \
 
 echo "CloudFront Distribution Domain: $CLOUDFRONT_DOMAIN"
 
+if [ "$CLOUDFRONT_DOMAIN" == "" ]; then echo "CLOUDFRONT_DOMAIN not found in exports of CloudFront Distribution CLoudFormation stack."; exit; fi
+
 # Get the S3 bucket name from the stack outputs
 CLOUDFRONT_DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
     --stack-name $CLOUDFRONT_STACK \
@@ -73,3 +75,6 @@ CLOUDFRONT_DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
     --output text)
 
 echo "CloudFront Distribution ID: $CLOUDFRONT_DISTRIBUTION_ID"
+
+
+if [ "$CLOUDFRONT_DISTRIBUTION_ID" == "" ]; then echo "CLOUDFRONT_DISTRIBUTION_ID not found in exports of CloudFront Distribution CLoudFormation stack."; exit; fi
