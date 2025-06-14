@@ -79,8 +79,13 @@ if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; the
 
   if [ "$DOMAIN_TYPE" == "Subdomains" ]; then 
   
-    echo "Not implemented: Loop through subdomains and deploy each one"
-    exit
+    #currently assumes there is only one custom domain name
+    deploy_cloudfront_dns_record \
+      "$CLOUDFRONT_DNS_STACK" \
+      "$DOMAIN_NAME" \
+      "$HOSTED_ZONE_ID" \
+      "$CLOUDFRONT_DOMAIN" \
+      "$REGION"
     
   fi  
   
