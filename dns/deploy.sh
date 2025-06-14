@@ -48,7 +48,7 @@ case $RECORD_CHOICE in
     PARAMS="DomainName=$DOMAIN_NAME PValue=$P_VALUE"
     ;;
   2)
-    RECORD_TYPE="google-mail"
+    RECORD_TYPE="google-mx"
     PARAMS="DomainName=$DOMAIN_NAME"
     ;;
   3)
