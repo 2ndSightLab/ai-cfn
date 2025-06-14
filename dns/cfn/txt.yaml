@@ -1,0 +1,25 @@
+# txt.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for TXT DNS record'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: The domain name for the TXT record
+  RecordName:
+    Type: String
+    Description: The name of the TXT record
+  RecordValue:
+    Type: String
+    Description: The value of the TXT record
+
+Resources:
+  TXTRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Ref DomainName
+      Name: !Sub '${RecordName}.${DomainName}'
+      Type: TXT
+      TTL: '300'
+      ResourceRecords:
+        - !Sub '"${RecordValue}"'
