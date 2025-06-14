@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for creating Google Workspace MX records in Route 53'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: 'The domain name for the MX record (e.g., radicalsoftware.com)'
+
+Resources:
+  MXRecord:
+    Type: 'AWS::Route53::RecordSet'
+    Properties:
+      HostedZoneName: !Join ['', [!Ref 'DomainName', '.']]
+      Name: !Ref 'DomainName'
+      Type: 'MX'
+      TTL: '300'
+      ResourceRecords:
+        - '1 ASPMX.L.GOOGLE.COM.'
+        - '5 ALT1.ASPMX.L.GOOGLE.COM.'
+        - '5 ALT2.ASPMX.L.GOOGLE.COM.'
+        - '10 ASPMX2.GOOGLEMAIL.COM.'
+        - '10 ASPMX3.GOOGLEMAIL.COM.'
+
+Outputs:
+  MXRecordSet:
+    Description: 'The created MX record set'
+    Value: !Ref 'MXRecord'
