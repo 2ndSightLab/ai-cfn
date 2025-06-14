@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "Create KMS key for DNSSEC signing"
+
+Parameters:
+  KeySpec:
+    Type: String
+    Default: "ECC_NIST_P256"
+    AllowedValues:
+      - "SYMMETRIC_DEFAULT"
+      - "RSA_2048"
+      - "RSA_3072"
+      - "RSA_4096"
+      - "ECC_NIST_P256"
+      - "ECC_NIST_P384"
+      - "ECC_NIST_P521"
+      - "ECC_SECG_P256K1"
+      - "HMAC_224"
+      - "HMAC_256"
+      - "HMAC_384"
+      - "HMAC_512"
+      - "SM2"
+    Description: "Key specification for the KMS key (must be ECC_NIST_P256 for DNSSEC)"
+    
+  KeyUsage:
+    Type: String
+    Default: "SIGN_VERIFY"
+    AllowedValues:
+      - "ENCRYPT_DECRYPT"
+      - "SIGN_VERIFY"
+      - "GENERATE_VERIFY_MAC"
+    Description: "Key usage (must be SIGN_VERIFY for DNSSEC)"
+    
+  KeyEnabled:
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
+    Description: "Whether the key is enabled"
+    
+  KeyAliasName:
+    Type: String
+    Default: "alias/dnssec-signing-key"
+    Description: "Alias name for the KMS key (must start with alias/)"
+    
+  EnableKeyRotation:
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+    Description: "Whether key rotation is enabled (not recommended for DNSSEC)"
+    
+  PendingWindowInDays:
+    Type: Number
+    Default: 30
+    MinValue: 7
+    MaxValue: 30
+    Description: "Waiting period in days before AWS KMS deletes the key"
+
+Resources:
+  DNSSECKMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: "KMS key for DNSSEC signing"
+      Enabled: !Equals [!Ref KeyEnabled, "true"]
+      KeySpec: !Ref KeySpec
+      KeyUsage: !Ref KeyUsage
+      EnableKeyRotation: !Equals [!Ref EnableKeyRotation, "true"]
+      PendingWindowInDays: !Ref PendingWindowInDays
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "Enable IAM User Permissions"
+            Effect: "Allow"
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+          - Sid: "Allow Route 53 DNSSEC Service"
+            Effect: "Allow"
+            Principal:
+              Service: "dnssec-route53.amazonaws.com"
+            Action:
+              - "kms:DescribeKey"
+              - "kms:GetPublicKey"
+              - "kms:Sign"
+            Resource: "*"
+            Condition:
+              StringEquals:
+                "aws:SourceAccount": !Ref AWS::AccountId
+          - Sid: "Allow Route 53 DNSSEC to CreateGrant"
+            Effect: "Allow"
+            Principal:
+              Service: "dnssec-route53.amazonaws.com"
+            Action: "kms:CreateGrant"
+            Resource: "*"
+            Condition:
+              Bool:
+                "kms:GrantIsForAWSResource": true
+              StringEquals:
+                "aws:SourceAccount": !Ref AWS::AccountId
+                
+  DNSSECKMSKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Ref KeyAliasName
+      TargetKeyId: !Ref DNSSECKMSKey
+
+Outputs:
+  KMSKeyId:
+    Description: "ID of the KMS key for DNSSEC signing"
+    Value: !Ref DNSSECKMSKey
+    Export:
+      Name: DNSSECKMSKeyId
+      
+  KMSKeyArn:
+    Description: "ARN of the KMS key for DNSSEC signing"
+    Value: !GetAtt DNSSECKMSKey.Arn
+    Export:
+      Name: DNSSECKMSKeyArn
