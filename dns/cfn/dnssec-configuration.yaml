@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "Enable DNSSEC for a Route 53 hosted zone"
+
+Parameters:
+  HostedZoneId:
+    Type: String
+    Description: "The ID of the hosted zone to enable DNSSEC for (e.g., Z1234567890ABC)"
+  
+  KeySigningKeyName:
+    Type: String
+    Default: "dnssec-key"
+    Description: "Name for the Key Signing Key (KSK)"
+    
+  KMSKeyArn:
+    Type: String
+    Description: "ARN of the KMS key to use for DNSSEC signing"
+    
+  KeySigningKeyStatus:
+    Type: String
+    Default: "ACTIVE"
+    AllowedValues:
+      - "ACTIVE"
+      - "INACTIVE"
+    Description: "Status of the Key Signing Key"
+
+Resources:
+  KeySigningKey:
+    Type: AWS::Route53::KeySigningKey
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref KeySigningKeyName
+      Status: !Ref KeySigningKeyStatus
+      KeyManagementServiceArn: !Ref KMSKeyArn
+
+  DNSSECConfiguration:
+    Type: AWS::Route53::DNSSEC
+    DependsOn: KeySigningKey
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+
+Outputs:
+  DNSSECStatus:
+    Description: "DNSSEC has been enabled for the hosted zone"
+    Value: !Sub "DNSSEC enabled for hosted zone ${HostedZoneId}"
+    
+  KeySigningKeyId:
+    Description: "ID of the Key Signing Key"
+    Value: !Ref KeySigningKey
