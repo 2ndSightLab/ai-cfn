@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for creating a DKIM record in Route 53'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: 'The domain name for the DKIM record (e.g., fillmanroadnursery.com)'
+  PValue:
+    Type: String
+    Description: 'The p value for the DKIM record'
+
+Resources:
+  DKIMRecord:
+    Type: 'AWS::Route53::RecordSet'
+    Properties:
+      HostedZoneName: !Join ['', [!Ref 'DomainName', '.']]
+      Name: !Join ['', ['google._domainkey.', !Ref 'DomainName', '.']]
+      Type: 'TXT'
+      TTL: '300'
+      ResourceRecords:
+        - !Join ['', ['"v=DKIM1; k=rsa; p=', !Ref 'PValue', '"']]
+
+Outputs:
+  DKIMRecordSet:
+    Description: 'The created DKIM record set'
+    Value: !Ref 'DKIMRecord'
