@@ -84,31 +84,23 @@ case $RECORD_CHOICE in
     echo
     echo "iodef: This tag specifies a URL or email address where CAs should report policy violations or certificate issuance requests that don't comply with your domain's CAA records. It's essentially a reporting mechanism for security incidents."
     read -p "Enter CAA record tag (issue/issuewild/iodef): " CAA_TAG
-    echo
-    echo "The CAA record value corresponds to the CAA tag you selected. This value varies depending on which tag type you chose:"
-    echo
-    echo "If you selected the \"issue\" tag:"
-    echo
-    echo "Enter the domain name of the Certificate Authority (CA) you want to authorize to issue certificates"
-    echo "Examples: \"letsencrypt.org\", \"amazon.com\", \"digicert.com\", \"sectigo.com\""
-    echo "If you want to allow any CA to issue certificates, you can enter \";\""
-    echo "If you selected the \"issuewild\" tag:"
-    echo
-    echo "Enter the domain name of the CA you want to authorize to issue wildcard certificates"
-    echo "Uses the same format as the \"issue\" tag values"
-    echo "Example: \"amazontrust.com\""
-    echo "If you selected the \"iodef\" tag:"
-    echo
-    echo "Enter a URL or email address where CAs should report policy violations"
-    echo "For email: \"mailto:security@yourdomain.com\""
-    echo "For URL: \"https://yourdomain.com/caa-report\""
-    echo "For AWS Certificate Manager (ACM), you would typically use one of these values:"
-    echo
-    echo "amazon.com"
-    echo "amazontrust.com"
-    echo "awstrust.com"
-    echo "amazonaws.com"
-    read -p "Enter CAA record value: " CAA_VALUE
+    
+    if [[ "$CAA_TAG" == "issue" || "$CAA_TAG" == "issuewild" ]]; then
+        echo "Enter the domain name of the Certificate Authority (CA) you want to authorize."
+        echo "For AWS Certificate Manager, you can use: amazon.com, amazontrust.com, awstrust.com, or amazonaws.com"
+        echo "Any of the above values will work for AWS"
+        echo "Other examples: letsencrypt.org, digicert.com, sectigo.com"
+        echo "To allow any CA, enter \";\""
+        read -p "Enter CA domain: " CAA_VALUE
+    elif [[ "$CAA_TAG" == "iodef" ]]; then
+        echo "Enter a URL or email address where CAs should report policy violations"
+        echo "For email: \"mailto:security@yourdomain.com\""
+        echo "For URL: \"https://yourdomain.com/caa-report\""
+        read -p "Enter reporting URL or email: " CAA_VALUE
+    else
+        read -p "Enter CAA record value: " CAA_VALUE
+    fi
+    
     PARAMS="DomainName=$DOMAIN_NAME Flags=$CAA_FLAGS Tag=$CAA_TAG Value=$CAA_VALUE"
     ;;
   *)
@@ -122,6 +114,7 @@ STACK_NAME="$STACK_NAME_BASE-$RECORD_TYPE"
 
 # Deploy the CloudFormation stack using the function
 deploy_stack "$STACK_NAME" "$RECORD_TYPE.yaml" "$PARAMS"
+
 
 
 
