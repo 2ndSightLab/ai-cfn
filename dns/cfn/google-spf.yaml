@@ -1,0 +1,19 @@
+# google-spf.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for Google SPF DNS record'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: The domain name for the SPF record
+
+Resources:
+  SPFRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Ref DomainName
+      Name: !Ref DomainName
+      Type: TXT
+      TTL: '300'
+      ResourceRecords:
+        - '"v=spf1 include:_spf.google.com ~all"'
