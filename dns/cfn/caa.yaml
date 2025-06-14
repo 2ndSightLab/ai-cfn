@@ -1,0 +1,30 @@
+# caa.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for CAA DNS record'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: The domain name for the CAA record
+  Flags:
+    Type: Number
+    Default: 0
+    Description: The flags for the CAA record (0-255)
+  Tag:
+    Type: String
+    AllowedValues: [issue, issuewild, iodef]
+    Description: The tag for the CAA record
+  Value:
+    Type: String
+    Description: The value for the CAA record
+
+Resources:
+  CAARecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Ref DomainName
+      Name: !Ref DomainName
+      Type: CAA
+      TTL: '300'
+      ResourceRecords:
+        - !Sub '${Flags} ${Tag} "${Value}"'
