@@ -1,0 +1,25 @@
+# cname.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for CNAME DNS record'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: The domain name for the CNAME record
+  RecordName:
+    Type: String
+    Description: The name of the CNAME record
+  RecordValue:
+    Type: String
+    Description: The target domain for the CNAME record
+
+Resources:
+  CNAMERecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Ref DomainName
+      Name: !Sub '${RecordName}.${DomainName}'
+      Type: CNAME
+      TTL: '300'
+      ResourceRecords:
+        - !Ref RecordValue
