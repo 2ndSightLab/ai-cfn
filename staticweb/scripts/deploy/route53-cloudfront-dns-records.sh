@@ -82,7 +82,7 @@ if [[ "$DEPLOY_CLOUDFRONT_DNS" == "y" || "$DEPLOY_CLOUDFRONT_DNS" == "Y" ]]; the
     #currently assumes there is only one custom domain name
     deploy_cloudfront_dns_record \
       "$CLOUDFRONT_DNS_STACK" \
-      "$DOMAIN_NAME" \
+      "$CUSTOM_DOMAINS" \
       "$HOSTED_ZONE_ID" \
       "$CLOUDFRONT_DOMAIN" \
       "$REGION"
