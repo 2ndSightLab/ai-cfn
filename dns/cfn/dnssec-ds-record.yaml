@@ -1,0 +1,48 @@
+# dnssec-ds-record.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "Add DS record to Route 53 Domains for DNSSEC"
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: "The domain name (without trailing dot)"
+    
+  KeyTag:
+    Type: Number
+    Description: "The key tag value from the DS record"
+    
+  Algorithm:
+    Type: Number
+    Description: "The algorithm value from the DS record"
+    AllowedValues: [1, 2, 3, 5, 6, 7, 8, 10, 12, 13, 14, 15, 16]
+    
+  DigestType:
+    Type: Number
+    Description: "The digest type value from the DS record"
+    AllowedValues: [1, 2, 3, 4]
+    
+  Digest:
+    Type: String
+    Description: "The digest value from the DS record"
+    
+  MaxItems:
+    Type: Number
+    Default: 1
+    Description: "Maximum number of DNSSEC records"
+
+Resources:
+  DomainDNSSEC:
+    Type: AWS::Route53Domains::DNSSEC
+    Properties:
+      DomainName: !Ref DomainName
+      DSRecords:
+        - Algorithm: !Ref Algorithm
+          DigestType: !Ref DigestType
+          Digest: !Ref Digest
+          KeyTag: !Ref KeyTag
+      MaxItems: !Ref MaxItems
+
+Outputs:
+  DNSSECStatus:
+    Description: "DNSSEC DS record has been added to the domain"
+    Value: !Sub "DS record added for domain ${DomainName}"
