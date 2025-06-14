@@ -44,11 +44,24 @@ read -p "Enter your choice (1-6): " RECORD_CHOICE
 case $RECORD_CHOICE in
   1)
     RECORD_TYPE="google-dkim"
-    read -p "Enter your DKIM p value: " P_VALUE
-    PARAMS="DomainName=$DOMAIN_NAME PValue=$P_VALUE"
+    echo "Log in to your Google Workspace Admin Console"
+    echo
+    echo "Go to admin.google.com and sign in with your administrator account"
+    echo "Navigate to DKIM settings"
+    echo
+    echo "Click on \"Apps\" in the left sidebar"
+    echo "Click on \"Google Workspace\" > \"Gmail\" > \"Authenticate email\""
+    echo "Select the \"DKIM\" tab"
+    echo "Generate the DKIM key"
+    echo
+    echo "Select your domain from the list"
+    echo "Click on \"Generate new record\" if you haven't already generated a DKIM key"
+    echo "If you already have a key, you'll see the DKIM information displayed"
+    read -p "Enter the full DKIM value (v=DKIM1; k=rsa; p=...): " DKIM_VALUE
+    PARAMS="DomainName=$DOMAIN_NAME DKIMValue=$DKIM_VALUE"
     ;;
   2)
-    RECORD_TYPE="google-mx"
+    RECORD_TYPE="google-mail"
     PARAMS="DomainName=$DOMAIN_NAME"
     ;;
   3)
@@ -114,6 +127,7 @@ STACK_NAME="$STACK_NAME_BASE-$RECORD_TYPE"
 
 # Deploy the CloudFormation stack using the function
 deploy_stack "$STACK_NAME" "$RECORD_TYPE.yaml" "$PARAMS"
+
 
 
 
