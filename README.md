@@ -72,3 +72,19 @@ https://medium.com/cloud-security/using-q-to-deploy-cloudfront-and-a-tls-certifi
 Using Q To Deploy CloudFront and a TLS Certificate — Yet Another Problem With the ACM Deployment Process
 
 https://medium.com/cloud-security/using-q-to-deploy-cloudfront-and-a-tls-certificate-yet-another-problem-with-the-acm-deployment-f4814f7852ee
+
+# Instructions to Deploy DNS records:
+
+```
+# Run this scirpt and select the type of DNS record you want to deploy
+cd ~
+rm -rf ai-cfn
+git clone https://github.com/2ndSightLab/ai-cfn.git
+cd ai-cfn/dns
+chmod 700 deploy.sh
+./deploy.sh
+
+# For DNSSEC you will need to deploy a KMS key which you may opt to deploy
+# in a separate account, making sure the key can be used in the account
+# where DNSSEC is configured.
+https://github.com/2ndSightLab/ai-cfn/blob/main/dns/cfn/dnssec-kmskey.yaml
