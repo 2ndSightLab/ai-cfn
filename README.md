@@ -4,8 +4,9 @@ CloudFormation templates and scripts created with Amazon Q Developer and a bit o
 # Related posts on writing code with AI
 https://medium.com/cloud-security/artificial-intelligence-2e97415216c0
 
-# Note: These scripts are for testing only. Production deployments have other considerations
-# as explained in these blog posts
+Note: These scripts are for testing only. Production deployments have other considerations
+as explained in these blog posts:
+
 https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
 
 # Instructions to Deploy a Static Website With a TLS Certificate and CLoudFront distribution
