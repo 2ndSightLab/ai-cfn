@@ -6,9 +6,9 @@ Parameters:
   DomainName:
     Type: String
     Description: The domain name for the DKIM record
-  PValue:
+  DKIMValue:
     Type: String
-    Description: The DKIM p value provided by Google
+    Description: The DKIM value provided by Google
 
 Resources:
   DKIMRecord:
@@ -19,4 +19,4 @@ Resources:
       Type: TXT
       TTL: '300'
       ResourceRecords:
-        - !Sub '"v=DKIM1; k=rsa; p=${PValue}"'
+        - !Sub '"${DKIMValue}"'
