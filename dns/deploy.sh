@@ -31,14 +31,15 @@ fi
 STACK_NAME_BASE=$(echo ${DOMAIN_NAME%?} | tr '.' '-')
 
 # Ask which type of DNS record to deploy
-echo "Which type of DNS record do you want to deploy?"
+echo "Which type of DNS record or configuration do you want to deploy?"
 echo "1) Google DKIM"
 echo "2) Google MAIL"
 echo "3) Google SPF"
 echo "4) TXT"
 echo "5) CNAME"
 echo "6) CAA"
-read -p "Enter your choice (1-6): " RECORD_CHOICE
+echo "7) DNSSEC"
+read -p "Enter your choice (1-7): " RECORD_CHOICE
 
 # Use case statement to handle different record types
 case $RECORD_CHOICE in
@@ -116,6 +117,54 @@ case $RECORD_CHOICE in
     
     PARAMS="DomainName=$DOMAIN_NAME Flags=$CAA_FLAGS Tag=$CAA_TAG Value=$CAA_VALUE"
     ;;
+  7)
+    echo "DNSSEC deployment requires two steps:"
+    echo "1. Creating a KMS key for DNSSEC signing"
+    echo "2. Enabling DNSSEC for your hosted zone"
+    echo
+    echo "Do you want to:"
+    echo "1) Create a new KMS key and enable DNSSEC"
+    echo "2) Use an existing KMS key and enable DNSSEC"
+    read -p "Enter your choice (1-2): " DNSSEC_CHOICE
+    
+    # Get hosted zone ID
+    read -p "Enter your Route 53 hosted zone ID (e.g., Z1234567890ABC): " HOSTED_ZONE_ID
+    
+    if [[ "$DNSSEC_CHOICE" == "1" ]]; then
+      # Deploy KMS key first
+      echo "Deploying KMS key for DNSSEC signing..."
+      KMS_STACK_NAME="${STACK_NAME_BASE}-dnssec-kms"
+      
+      # Optional KMS key parameters
+      read -p "Enter KMS key alias name [alias/dnssec-${STACK_NAME_BASE}]: " KMS_ALIAS
+      KMS_ALIAS=${KMS_ALIAS:-alias/dnssec-${STACK_NAME_BASE}}
+      
+      deploy_stack "$KMS_STACK_NAME" "dnssec-kms-key.yaml" "KeyAliasName=$KMS_ALIAS"
+      
+      echo "Waiting for KMS key creation to complete..."
+      aws cloudformation wait stack-create-complete --stack-name "$KMS_STACK_NAME"
+      
+      # Get KMS key ARN
+      KMS_KEY_ARN=$(aws cloudformation describe-stacks --stack-name "$KMS_STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='KMSKeyArn'].OutputValue" --output text)
+      
+      if [[ -z "$KMS_KEY_ARN" ]]; then
+        echo "Failed to retrieve KMS key ARN. Please check the stack status and try again."
+        exit 1
+      fi
+      
+      echo "KMS key created with ARN: $KMS_KEY_ARN"
+    else
+      # Use existing KMS key
+      read -p "Enter the ARN of your existing KMS key for DNSSEC: " KMS_KEY_ARN
+    fi
+    
+    # Deploy DNSSEC configuration
+    RECORD_TYPE="dnssec-configuration"
+    read -p "Enter a name for your Key Signing Key [dnssec-key-${STACK_NAME_BASE}]: " KSK_NAME
+    KSK_NAME=${KSK_NAME:-dnssec-key-${STACK_NAME_BASE}}
+    
+    PARAMS="HostedZoneId=$HOSTED_ZONE_ID KeySigningKeyName=$KSK_NAME KMSKeyArn=$KMS_KEY_ARN"
+    ;;
   *)
     echo "Invalid choice. Exiting."
     exit 1
@@ -123,10 +172,82 @@ case $RECORD_CHOICE in
 esac
 
 # Create final stack name
-STACK_NAME="$STACK_NAME_BASE-$RECORD_TYPE"
+if [[ "$RECORD_CHOICE" == "7" ]]; then
+  STACK_NAME="$STACK_NAME_BASE-dnssec"
+else
+  STACK_NAME="$STACK_NAME_BASE-$RECORD_TYPE"
+fi
 
 # Deploy the CloudFormation stack using the function
 deploy_stack "$STACK_NAME" "$RECORD_TYPE.yaml" "$PARAMS"
+
+## For DNSSEC, provide additional information and complete setup
+if [[ "$RECORD_CHOICE" == "7" ]]; then
+  echo
+  echo "DNSSEC deployment initiated. Waiting for stack to complete..."
+  aws cloudformation wait stack-create-complete --stack-name "$STACK_NAME"
+  
+  # Check if DNSSEC is enabled
+  DNSSEC_STATUS=$(aws route53 get-dnssec --hosted-zone-id "$HOSTED_ZONE_ID" --query "Status.ServeSignature" --output text 2>/dev/null || echo "DISABLED")
+  
+  if [[ "$DNSSEC_STATUS" != "SIGNING" ]]; then
+    echo "DNSSEC is not yet enabled. Enabling DNSSEC signing..."
+    aws route53 enable-hosted-zone-dnssec --hosted-zone-id "$HOSTED_ZONE_ID" > /dev/null
+    
+    # Wait for DNSSEC to be enabled
+    echo "Waiting for DNSSEC to be enabled (this may take a few minutes)..."
+    while [[ "$DNSSEC_STATUS" != "SIGNING" ]]; do
+      sleep 30
+      DNSSEC_STATUS=$(aws route53 get-dnssec --hosted-zone-id "$HOSTED_ZONE_ID" --query "Status.ServeSignature" --output text 2>/dev/null || echo "DISABLED")
+      echo "Current DNSSEC status: $DNSSEC_STATUS"
+    done
+  fi
+  
+  echo "DNSSEC is enabled. Retrieving DS record information..."
+  
+  # Get domain name without trailing dot for Route 53 Domains
+  DOMAIN_NAME_NO_DOT=${DOMAIN_NAME%?}
+  
+  # Check if domain is registered with Route 53 Domains
+  if aws route53domains get-domain-detail --domain-name "$DOMAIN_NAME_NO_DOT" &>/dev/null; then
+    echo "Domain is registered with Route 53 Domains. Adding DS record automatically..."
+    
+    # Get DS record information
+    DS_RECORD_INFO=$(aws route53 get-dnssec --hosted-zone-id "$HOSTED_ZONE_ID" --query "KeySigningKeys[0].DSRecord" --output text)
+    
+    if [[ -n "$DS_RECORD_INFO" ]]; then
+      # Parse DS record
+      DS_KEY_TAG=$(echo "$DS_RECORD_INFO" | awk '{print $1}')
+      DS_ALGORITHM=$(echo "$DS_RECORD_INFO" | awk '{print $2}')
+      DS_DIGEST_TYPE=$(echo "$DS_RECORD_INFO" | awk '{print $3}')
+      DS_DIGEST=$(echo "$DS_RECORD_INFO" | awk '{print $4}')
+      
+      # Deploy DS record template
+      DS_STACK_NAME="${STACK_NAME_BASE}-ds-record"
+      DS_PARAMS="DomainName=$DOMAIN_NAME_NO_DOT KeyTag=$DS_KEY_TAG Algorithm=$DS_ALGORITHM DigestType=$DS_DIGEST_TYPE Digest=$DS_DIGEST"
+      
+      deploy_stack "$DS_STACK_NAME" "dnssec-ds-record.yaml" "$DS_PARAMS"
+      
+      echo "DS record deployment initiated. Waiting for completion..."
+      aws cloudformation wait stack-create-complete --stack-name "$DS_STACK_NAME"
+      echo "DS record has been added to your domain in Route 53 Domains."
+    else
+      echo "Could not retrieve DS record information. Please add the DS record manually."
+    fi
+  else
+    echo "Domain is not registered with Route 53 Domains or not accessible."
+    echo "Please add the DS record to your domain registrar manually."
+    echo
+    echo "DS record information:"
+    aws route53 get-dnssec --hosted-zone-id "$HOSTED_ZONE_ID" --query "KeySigningKeys[0]" --output json
+  fi
+  
+  echo
+  echo "DNSSEC setup is complete for your hosted zone."
+  echo "If your domain is not registered with Route 53 Domains, please add the DS record to your domain registrar."
+  echo "Note: It may take some time for DNSSEC to fully propagate through the DNS system."
+fi
+
 
 
 
