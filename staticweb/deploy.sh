@@ -40,6 +40,7 @@ source ./scripts/functions/delete-stack.sh
 source ./scripts/functions/delete-failed-stack-if-exists.sh
 source ./scripts/functions/check-certificate-exists.sh
 source ./scripts/functions/delete-existing-certificates.sh
+source ./scripts/functions/extract-primary-domain.sh
 
 #deploy resources in this order
 source ./scripts/deploy/route53-hosted-zone.sh
