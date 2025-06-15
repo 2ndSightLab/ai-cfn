@@ -93,7 +93,7 @@ else
       --stack-name $TLS_CERTIFICATE_STACK \
       --region $CERT_REGION \
       --query "StackResourceSummaries[?ResourceType=='AWS::CertificateManager::Certificate'].PhysicalResourceId" \
-      --output text 2)
+      --output text)
 fi
 
 echo "ACM_CERTIFICATE_ARN: $ACM_CERTIFICATE_ARN"
