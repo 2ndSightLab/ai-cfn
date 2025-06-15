@@ -106,6 +106,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
     echo "DNS propagation may take up to 48 hours."
     echo -e "\nEnter to continue after you have upated the records."
     read ok
+  fi
 fi
 #this doesn't work in cloudshell because dig is not installed.
 #I wonder why ? ;^)
