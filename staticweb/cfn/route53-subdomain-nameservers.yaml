@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to deploy NS records for a subdomain in a hosted zone'
+
+Parameters:
+  HostedZoneId:
+    Type: AWS::Route53::HostedZone::Id
+    Description: The ID of the hosted zone where the NS records will be created
+
+  Subdomain:
+    Type: String
+    Description: The subdomain for which to create NS records (e.g., sub.example.com)
+
+  NameServers:
+    Type: CommaDelimitedList
+    Description: Comma-separated list of name servers
+
+Resources:
+  SubdomainNSRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref Subdomain
+      Type: NS
+      TTL: '300'
+      ResourceRecords: !Ref NameServers
