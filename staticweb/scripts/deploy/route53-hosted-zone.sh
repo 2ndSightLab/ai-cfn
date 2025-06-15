@@ -7,7 +7,7 @@ source scripts/functions/check-name-servers.sh
 
 echo "scripts/deploy/route53-hosted-zone.sh"
 
-CustomSubdomains=''
+CUSTOM_SUBDOMAINS=""
 
 # Route 53 Hosted Zone 
 read -p "Deploy Route 53 hosted zone? (y/n): " DEPLOY_HOSTED_ZONE
@@ -35,14 +35,12 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
       1) DOMAIN_TYPE="Basic" ;;
       2) DOMAIN_TYPE="WWW" ;;
       3) DOMAIN_TYPE="Wildcard" ;;
-      4) 
-          DOMAIN_TYPE="Subdomain";;
+      4) DOMAIN_TYPE="Subdomain" ;;
       *) 
           echo "Invalid choice. Exit."
           exit
           ;;
   esac
-
 
   aws cloudformation deploy \
         --region $REGION \
@@ -68,12 +66,6 @@ DOMAIN_TYPE=$(aws cloudformation describe-stacks \
     --stack-name $HOSTED_ZONE_STACK \
     --region $REGION \
     --query "Stacks[0].Outputs[?OutputKey=='DomainType'].OutputValue" \
-    --output text)
-
-CUSTOM_SUBDOMAINS=$(aws cloudformation describe-stacks \
-    --stack-name $HOSTED_ZONE_STACK \
-    --region $REGION \
-    --query "Stacks[0].Outputs[?OutputKey=='CustomSubdomains'].OutputValue" \
     --output text)
     
 # Get the Hosted Zone ID from the stack outputs
@@ -102,9 +94,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
   if [[ "DOMAIN_TYPE" == "SUBDOMAIN" ]]; then
      parent_domain=$(extract_primary_domain $DOMAIN_NAME)
      parent_hosted_zone_id=$(aws route53 list-hosted-zones-by-name --dns-name $parent_domain)
-
      echo "Add an NS record for the above name servers in the hosted zone ID: $parent_hosted_zone for $parent_domain"
-
      echo -e "\nEnter to continue after you have upated the records."
      read ok
   else
