@@ -89,6 +89,11 @@ if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; t
     
 else
     echo "Get certificate ARN"
+    echo 'aws cloudformation list-stack-resources \
+      --stack-name $TLS_CERTIFICATE_STACK \
+      --region $CERT_REGION
+      --query "StackResourceSummaries[?ResourceType=='AWS::CertificateManager::Certificate'].PhysicalResourceId" \
+      --output text 2'
     ACM_CERTIFICATE_ARN=$(aws cloudformation list-stack-resources \
       --stack-name $TLS_CERTIFICATE_STACK \
       --region $CERT_REGION
