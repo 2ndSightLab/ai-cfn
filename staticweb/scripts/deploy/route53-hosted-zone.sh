@@ -92,13 +92,16 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
   echo -e "\nIMPORTANT:"
 
   if [[ "DOMAIN_TYPE" == "SUBDOMAIN" ]]; then
+     echo "subdomain"
      parent_domain=$(extract_primary_domain $DOMAIN_NAME)
      parent_hosted_zone_id=$(aws route53 list-hosted-zones-by-name --dns-name $parent_domain)
      echo "Add an NS record for the above name servers in the hosted zone ID: $parent_hosted_zone for $parent_domain"
      echo -e "\nEnter to continue after you have upated the records."
      read ok
   else
+    echo "Not a subdomain"
     echo "Update your domain's name servers with your registrar to point to the above name servers before proceeding."
+    echo "Alternatively, create an NS record in the current hosted zone pointing the name servers."
     echo "Refer to the instructions in the github repository and related blogs for more information."
     echo "DNS propagation may take up to 48 hours."
     echo -e "\nEnter to continue after you have upated the records."
