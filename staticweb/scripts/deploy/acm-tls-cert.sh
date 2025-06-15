@@ -45,7 +45,7 @@ if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; t
           ValidationMethod=$VALIDATION_METHOD \
           HostedZoneId=$HOSTED_ZONE_ID \
           CustomSubdomains=${CUSTOM_SUBDOMAINS:-''} \
-        --no-fail-on-empty-changeset
+        --no-fail-on-empty-changeset \
         --region $CERT_REGION
         
     stack_exists $TLS_CERTIFICATE_STACK $CERT_REGION
@@ -62,7 +62,7 @@ if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; t
       # Look for a resource of type AWS::CertificateManager::Certificate
       ACM_CERTIFICATE_ARN=$(aws cloudformation list-stack-resources \
         --stack-name $TLS_CERTIFICATE_STACK \
-        --region $CERT_REGION
+        --region $CERT_REGION \
         --query "StackResourceSummaries[?ResourceType=='AWS::CertificateManager::Certificate'].PhysicalResourceId" \
         --output text)
       
@@ -91,7 +91,7 @@ else
     echo "Get certificate ARN"
     ACM_CERTIFICATE_ARN=$(aws cloudformation list-stack-resources \
       --stack-name $TLS_CERTIFICATE_STACK \
-      --region $CERT_REGION
+      --region $CERT_REGION \
       --query "StackResourceSummaries[?ResourceType=='AWS::CertificateManager::Certificate'].PhysicalResourceId" \
       --output text 2)
 fi
