@@ -2,6 +2,7 @@
 
 #Note: DomainType and Subdomains are saved in outputs for use in other stacks
 
+
 source scripts/functions/check-name-servers.sh
 
 echo "scripts/deploy/route53-hosted-zone.sh"
@@ -35,12 +36,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
       2) DOMAIN_TYPE="WWW" ;;
       3) DOMAIN_TYPE="Wildcard" ;;
       4) 
-          DOMAIN_TYPE="Subdomains"
-          echo ""
-          echo "Enter fully qualified subdomains, separated by commas"
-          echo "Example: api.${DOMAIN_NAME},blog.${DOMAIN_NAME},shop.${DOMAIN_NAME}"
-          read -p "Subdomains: " CUSTOM_SUBDOMAINS
-          ;;
+          DOMAIN_TYPE="Subdomain";;
       *) 
           echo "Invalid choice. Exit."
           exit
@@ -48,17 +44,12 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
   esac
 
   echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."  
-  if [ "$DOMAIN_TYPE" == "SUBDOMAINS" ]; then 
-
-    aws cloudformation deploy \
-      --region $REGION \
-      --template-file cfn/route53-hosted-zone.yaml \
-      --stack-name $HOSTED_ZONE_STACK \
-      --parameter-overrides \
-        DomainName=$DOMAIN_NAME \
-        DomainType=$DOMAIN_TYPE \
-        CustomSubdomains=$CUSTOM_SUBDOMAINS \ 
-      --no-fail-on-empty-changeset
+  if [ "$DOMAIN_TYPE" == "SUBDOMAIN" ]; then 
+  
+     #if we are deploying a subdomain then we need to look up the hosted id
+     #for the parent domain and add the name servers for the subdomain
+     #in the paraent hosted zone.
+     
       
    else
 
