@@ -10,8 +10,7 @@ Parameters:
   CSPDirectives:
     Type: String
     Description: 'Content Security Policy directives'
-    Default: "default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'"
-        
+    Default: "default-src 'self'; img-src 'self' data: *; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'"
   IncludeWWW:
     Type: String
     Description: 'Include www subdomain as an alias'
