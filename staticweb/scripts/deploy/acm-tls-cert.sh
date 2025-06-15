@@ -64,7 +64,7 @@ if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; t
         --stack-name $TLS_CERTIFICATE_STACK \
         --region $CERT_REGION
         --query "StackResourceSummaries[?ResourceType=='AWS::CertificateManager::Certificate'].PhysicalResourceId" \
-        --output text 2>/dev/null)
+        --output text)
       
       # Check if we got a valid ARN
       if [ -n "$ACM_CERTIFICATE_ARN" ] && [ "$ACM_CERTIFICATE_ARN" != "None" ]; then
