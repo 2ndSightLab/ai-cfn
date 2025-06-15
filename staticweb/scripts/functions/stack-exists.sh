@@ -18,6 +18,7 @@ stack_exists() {
     return 0  # Stack exists
        
   else
+    echo "Stack $stack_name" does not exist in "$region"
     return 1  # Stack does not exist
   fi
 }
