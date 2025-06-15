@@ -5,15 +5,15 @@ Parameters:
 
   DomainName:
     Type: String
-    Description: 'The primary domain name for the CloudFront distribution
+    Description: 'The primary domain name for the CloudFront distribution'
 
-  #Default: "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self'"
-  #not as secure - for inline styles
-  #Default: "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'"
-  #this policy allows images from the site as well
   CSPDirectives:
     Type: String
     Description: 'Content Security Policy directives'
+    # Default: "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self'; font-src 'self'; connect-src 'self'"
+    # not as secure - for inline styles
+    # Default: "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'"
+    # this policy allows images from the site as well
     Default: !Sub "default-src 'self'; img-src 'self' data: https://${DomainName}.com https://*.${DomainName}.com; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'"
 
   IncludeWWW:
