@@ -10,12 +10,8 @@ Parameters:
   CSPDirectives:
     Type: String
     Description: 'Content Security Policy directives'
-    Parameters:
-  DomainName:
-    Type: String
-    Description: The domain name for the website (e.g., rainierrhododendrons.com)
-    Default: !Sub "default-src 'self'; img-src 'self' data: https://${DomainName} https://*.${DomainName}; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'"
-    
+    Default: "default-src 'self'; img-src 'self' data: https:; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'"
+        
   IncludeWWW:
     Type: String
     Description: 'Include www subdomain as an alias'
