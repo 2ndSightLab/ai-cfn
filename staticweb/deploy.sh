@@ -33,7 +33,6 @@ CLOUDFRONT_DNS_STACK="${STACK_NAME_PREFIX}-cloudfront-dns"
 CLOUDFRONT_CACHE_POLICY_STACK="${STACK_NAME_PREFIX}-cloudfront-cachepolicy"
 CLOUDFRONT_SECURITYHEADERS_POLICY_STACK="${STACK_NAME_PREFIX}-cloudfront-securityheaders"
 CLOUDFRONT_ORIGINREQUEST_POLICY_STACK="${STACK_NAME_PREFIX}-cloudfront-originrequstpolicy"
-SUBDOMAIN_NS_STACK="${STACK_NAME_PREFIX}-route53-subdomain-ns-stack"
 
 #include functions
 source ./scripts/functions/stack-exists.sh
