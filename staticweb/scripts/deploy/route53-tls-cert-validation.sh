@@ -177,7 +177,7 @@ if [ "$SUBDOMAIN" != "" ]; then
       --region $REGION \
       --no-fail-on-empty-changeset"
     
-  # Check if the stack was created successfully
+  echo "stack_exists $CURRENT_VALIDATION_STACK $REGION"
   stack_exists $CURRENT_VALIDATION_STACK $REGION
     
   echo "TLS Certificate Validation DNS record created successfully for $SUBDOMAIN."
