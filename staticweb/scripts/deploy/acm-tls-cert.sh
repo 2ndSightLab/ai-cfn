@@ -2,7 +2,7 @@
 echo "scripts/deploy/acm-tls-cert.sh"
 
 # Override Region 
-REGION=us-east-1
+CERT_REGION=us-east-1
 
 # TLS Certificate 
 ACM_CERTIFICATE_ARN=""
@@ -13,7 +13,7 @@ if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; t
    echo "Any existing certificates for $DOMAIN_NAME will cause this process to fail."
    read -p "Delete existing TLS certificates for $DOMAIN_NAME? (y/n): " DELETE_TLS_CERTIFICATE
    if [[ "$DELETE_TLS_CERTIFICATE" == "y" || "$DELETE_TLS_CERTIFICATE" == "Y" ]]; then
-      delete_existing_certificates $DOMAIN_NAME $TLS_CERTIFICATE_STACK $REGION
+      delete_existing_certificates $DOMAIN_NAME $TLS_CERTIFICATE_STACK $CERT_REGION
    fi
    
     # Ask for validation method
@@ -30,10 +30,10 @@ if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; t
     fi
     
     # Check if stack exists and delete if failed
-    delete_failed_stack_if_exists $TLS_CERTIFICATE_STACK $REGION
+    delete_failed_stack_if_exists $TLS_CERTIFICATE_STACK $CERT_REGION
 
    # Starting validation script to wait for certificate stack
-   ./scripts/deploy/route53-tls-cert-validation.sh $CERT_VALIDATION_STACK $TLS_CERTIFICATE_STACK $HOSTED_ZONE_ID $DOMAIN_NAME $DOMAIN_TYPE $REGION $ACM_CERTIFICATE_ARN &
+   ./scripts/deploy/route53-tls-cert-validation.sh $CERT_VALIDATION_STACK $TLS_CERTIFICATE_STACK $HOSTED_ZONE_ID $DOMAIN_NAME $DOMAIN_TYPE $CERT_REGION $ACM_CERTIFICATE_ARN &
 
     # Deploy certificate
     aws cloudformation deploy \
@@ -46,8 +46,9 @@ if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; t
           HostedZoneId=$HOSTED_ZONE_ID \
           CustomSubdomains=${CUSTOM_SUBDOMAINS:-''} \
         --no-fail-on-empty-changeset
+        --region $CERT_REGION
         
-    stack_exists $TLS_CERTIFICATE_STACK $REGION
+    stack_exists $TLS_CERTIFICATE_STACK $CERT_REGION
       
     echo "Certificate stack creation has been initiated."
     echo "Stack name: $TLS_CERTIFICATE_STACK"
@@ -61,6 +62,7 @@ if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; t
       # Look for a resource of type AWS::CertificateManager::Certificate
       ACM_CERTIFICATE_ARN=$(aws cloudformation list-stack-resources \
         --stack-name $TLS_CERTIFICATE_STACK \
+        --region $CERT_REGION
         --query "StackResourceSummaries[?ResourceType=='AWS::CertificateManager::Certificate'].PhysicalResourceId" \
         --output text 2>/dev/null)
       
@@ -81,16 +83,20 @@ if [[ "$DEPLOY_TLS_CERTIFICATE" == "y" || "$DEPLOY_TLS_CERTIFICATE" == "Y" ]]; t
       echo "Timed out waiting for certificate ARN. You can check the CloudFormation console for status."
       echo "Stack name: $TLS_CERTIFICATE_STACK"
     fi
+    #must wait for the child process to complete before exiting or bad things happen
+    echo "Wait"
+    wait
     
 else
+    echo "Get certificate ARN"
     ACM_CERTIFICATE_ARN=$(aws cloudformation list-stack-resources \
       --stack-name $TLS_CERTIFICATE_STACK \
+      --region $CERT_REGION
       --query "StackResourceSummaries[?ResourceType=='AWS::CertificateManager::Certificate'].PhysicalResourceId" \
-      --output text 2>/dev/null)
+      --output text 2)
 fi
 
 echo "ACM_CERTIFICATE_ARN: $ACM_CERTIFICATE_ARN"
 
-#must wait for the child process to complete before exiting or bad things happen
-wait
+
 
