@@ -43,17 +43,8 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
           ;;
   esac
 
-  echo "Deploying Route 53 hosted zone for $DOMAIN_NAME..."  
-  if [ "$DOMAIN_TYPE" == "SUBDOMAIN" ]; then 
-  
-     #if we are deploying a subdomain then we need to look up the hosted id
-     #for the parent domain and add the name servers for the subdomain
-     #in the paraent hosted zone.
-     
-      
-   else
 
-      aws cloudformation deploy \
+  aws cloudformation deploy \
         --region $REGION \
         --template-file cfn/route53-hosted-zone.yaml \
         --stack-name $HOSTED_ZONE_STACK \
@@ -61,9 +52,7 @@ if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
           DomainName=$DOMAIN_NAME \
           DomainType=$DOMAIN_TYPE \
         --no-fail-on-empty-changeset
-    
-    fi
-   
+
 fi
 
 stack_exists $HOSTED_ZONE_STACK $REGION
@@ -100,8 +89,6 @@ NAME_SERVERS=$(aws cloudformation describe-stacks \
     --output text \
     --region $REGION)
 
-
-    
 echo "Domain Name: $DOMAIN_NAME"  
 echo "Domain Type: $DOMAIN_TYPE"  
 echo "Hosted Zone ID: $HOSTED_ZONE_ID"
@@ -111,11 +98,21 @@ echo "$NAME_SERVERS"
 
 if [[ "$DEPLOY_HOSTED_ZONE" == "y" || "$DEPLOY_HOSTED_ZONE" == "Y" ]]; then
   echo -e "\nIMPORTANT:"
-  echo "Update your domain's name servers with your registrar to point to the above name servers before proceeding."
-  echo "Refer to the instructions in the github repository and related blogs for more information."
-  echo "DNS propagation may take up to 48 hours."
-  echo -e "\nEnter to continue after you have upated the records."
-  read ok
+
+  if [[ "DOMAIN_TYPE" == "SUBDOMAIN" ]]; then
+     parent_domain=$(extract_primary_domain $DOMAIN_NAME)
+     parent_hosted_zone_id=$(aws route53 list-hosted-zones-by-name --dns-name $parent_domain)
+
+     echo "Add an NS record for the above name servers in the hosted zone ID: $parent_hosted_zone for $parent_domain"
+
+     echo -e "\nEnter to continue after you have upated the records."
+     read ok
+  else
+    echo "Update your domain's name servers with your registrar to point to the above name servers before proceeding."
+    echo "Refer to the instructions in the github repository and related blogs for more information."
+    echo "DNS propagation may take up to 48 hours."
+    echo -e "\nEnter to continue after you have upated the records."
+    read ok
 fi
 #this doesn't work in cloudshell because dig is not installed.
 #I wonder why ? ;^)
