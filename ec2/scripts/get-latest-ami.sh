@@ -28,6 +28,57 @@ if [ -z "$REGION" ]; then
     exit 1
 fi
 
+# Function to get AMI details by ID
+get_ami_details_by_id() {
+    local ami_id=$1
+    local region=$2
+    
+    echo "Looking up details for AMI $ami_id in region $region..."
+    
+    # Get AMI details
+    AMI_DETAILS=$(aws ec2 describe-images \
+        --region $region \
+        --image-ids $ami_id \
+        --output json)
+        
+    # Check if AMI was found
+    if [ -z "$AMI_DETAILS" ] || [ "$(echo "$AMI_DETAILS" | grep -c "Images")" -eq 0 ]; then
+        echo "AMI $ami_id not found in region $region."
+        exit 1
+    fi
+    
+    # Extract individual fields using grep and sed for maximum compatibility
+    AMI_NAME=$(echo "$AMI_DETAILS" | grep '"Name":' | head -1 | sed -E 's/.*"Name": "([^"]+)".*/\1/')
+    AMI_DESC=$(echo "$AMI_DETAILS" | grep '"Description":' | head -1 | sed -E 's/.*"Description": "([^"]+)".*/\1/')
+    AMI_DATE=$(echo "$AMI_DETAILS" | grep '"CreationDate":' | head -1 | sed -E 's/.*"CreationDate": "([^"]+)".*/\1/')
+    AMI_OWNER=$(echo "$AMI_DETAILS" | grep '"OwnerId":' | head -1 | sed -E 's/.*"OwnerId": "([^"]+)".*/\1/')
+    AMI_PUBLIC=$(echo "$AMI_DETAILS" | grep '"Public":' | head -1 | sed -E 's/.*"Public": ([^,]+).*/\1/')
+    AMI_ARCH=$(echo "$AMI_DETAILS" | grep '"Architecture":' | head -1 | sed -E 's/.*"Architecture": "([^"]+)".*/\1/')
+    
+    # Check if this is a marketplace image
+    PRODUCT_CODES=$(echo "$AMI_DETAILS" | grep -c '"ProductCodes":')
+    if [ "$PRODUCT_CODES" -gt 0 ] && [ "$(echo "$AMI_DETAILS" | grep -c '"ProductCodes": \[\]')" -eq 0 ]; then
+        echo "Warning: This appears to be a marketplace image."
+    fi
+    
+    echo "AMI Details:"
+    echo "AMI ID: $ami_id"
+    echo "Name: $AMI_NAME"
+    echo "Description: $AMI_DESC"
+    echo "Creation Date: $AMI_DATE"
+    echo "Owner ID: $AMI_OWNER"
+    echo "Public: $AMI_PUBLIC"
+    echo "Architecture: $AMI_ARCH"
+    echo "Region: $region"
+}
+
+# Check if an AMI ID was provided
+if [[ "$1" == "ami-"* ]]; then
+    # Use the provided AMI ID directly
+    get_ami_details_by_id "$1" "$REGION"
+    exit 0
+fi
+
 # Function to prompt user to select architecture
 select_architecture() {
     # Print directly to stderr to ensure visibility
@@ -115,6 +166,7 @@ else
         *)
             echo "Error: Invalid architecture '$1'. Valid options are 'x86_64' or 'arm64'." >&2
             echo "Usage: get_ami_id.sh [architecture] [os]" >&2
+            echo "       get_ami_id.sh [ami-id]" >&2
             echo "  architecture: x86_64, arm64" >&2
             echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
             exit 1
@@ -138,6 +190,7 @@ else
             echo "Error: Invalid operating system '$2'." >&2
             echo "Valid options are: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
             echo "Usage: get_ami_id.sh [architecture] [os]" >&2
+            echo "       get_ami_id.sh [ami-id]" >&2
             echo "  architecture: x86_64, arm64" >&2
             echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
             exit 1
@@ -301,9 +354,4 @@ fi
 echo "Latest $OS_NAME AMI Details:"
 echo "AMI ID: $AMI_ID"
 echo "Name: $AMI_NAME"
-echo "Description: $AMI_DESC"
-echo "Creation Date: $AMI_DATE"
-echo "Owner ID: $AMI_OWNER"
-echo "Public: $AMI_PUBLIC"
-echo "Architecture: $AMI_ARCH"
-echo "Region: $REGION"
+echo "Description: $AMI_
