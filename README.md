@@ -51,3 +51,13 @@ chmod 700 deploy.sh
 # in a separate account, making sure the key can be used in the account
 # where DNSSEC is configured.
 https://github.com/2ndSightLab/ai-cfn/blob/main/dns/cfn/dnssec-kmskey.yaml
+
+
+
+# Instructions to use EC2 get_latest_ami.sh
+cd ~
+rm -rf ai-cfn
+git clone https://github.com/2ndSightLab/ai-cfn.git
+cd ai-cfn/ec2/scripts
+chmod 700 ai-cfn/ec2/get-latest-ami.sh
+./ai-cfn/ec2/get-latest-ami.sh
