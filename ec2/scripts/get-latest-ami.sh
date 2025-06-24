@@ -36,4 +36,207 @@ select_architecture() {
     echo "2) arm64 (ARM 64-bit, e.g., AWS Graviton)" >&2
     
     local selection
-    read -p "Enter your choice (1-2): "
+    read -p "Enter your choice (1-2): " selection
+    
+    case $selection in
+        1)
+            echo "x86_64"
+            ;;
+        2)
+            echo "arm64"
+            ;;
+        *)
+            echo "Invalid selection. Please try again." >&2
+            select_architecture
+            ;;
+    esac
+}
+
+# Function to prompt user to select operating system
+select_os() {
+    # Print directly to stderr to ensure visibility
+    echo "Please select the operating system:" >&2
+    echo "1) Amazon Linux 2023" >&2
+    echo "2) Amazon Linux 2" >&2
+    echo "3) Ubuntu (standard)" >&2
+    echo "4) Ubuntu Pro" >&2
+    echo "5) Red Hat Enterprise Linux (RHEL)" >&2
+    echo "6) SUSE Linux Enterprise Server (SLES)" >&2
+    echo "7) Debian" >&2
+    echo "8) Windows Server" >&2
+    
+    local selection
+    read -p "Enter your choice (1-8): " selection
+    
+    case $selection in
+        1)
+            echo "al2023"
+            ;;
+        2)
+            echo "amzn2"
+            ;;
+        3)
+            echo "ubuntu"
+            ;;
+        4)
+            echo "ubuntu-pro"
+            ;;
+        5)
+            echo "rhel"
+            ;;
+        6)
+            echo "sles"
+            ;;
+        7)
+            echo "debian"
+            ;;
+        8)
+            echo "windows"
+            ;;
+        *)
+            echo "Invalid selection. Please try again." >&2
+            select_os
+            ;;
+    esac
+}
+
+# Check if architecture was provided as argument
+if [ -z "$1" ]; then
+    # No architecture provided, prompt user to select
+    echo "No architecture specified as argument. Interactive selection mode:" >&2
+    ARCHITECTURE=$(select_architecture)
+    echo "Selected architecture: $ARCHITECTURE" >&2
+else
+    # Validate provided architecture
+    case "$1" in
+        x86_64|arm64)
+            ARCHITECTURE=$1
+            ;;
+        *)
+            echo "Error: Invalid architecture '$1'. Valid options are 'x86_64' or 'arm64'." >&2
+            echo "Usage: get_ami_id.sh [architecture] [os]" >&2
+            echo "  architecture: x86_64, arm64" >&2
+            echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
+            exit 1
+            ;;
+    esac
+fi
+
+# Check if OS was provided as argument
+if [ -z "$2" ]; then
+    # No OS provided, prompt user to select
+    echo "No OS specified as argument. Interactive selection mode:" >&2
+    OS=$(select_os)
+    echo "Selected OS: $OS" >&2
+else
+    # Validate provided OS
+    case "$2" in
+        al2023|amzn2|ubuntu|ubuntu-pro|rhel|sles|debian|windows)
+            OS=$2
+            ;;
+        *)
+            echo "Error: Invalid operating system '$2'." >&2
+            echo "Valid options are: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
+            echo "Usage: get_ami_id.sh [architecture] [os]" >&2
+            echo "  architecture: x86_64, arm64" >&2
+            echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
+            exit 1
+            ;;
+    esac
+fi
+
+# Set the appropriate filter values and owner based on OS selection
+case "$OS" in
+    al2023)
+        OS_FILTER="al2023-ami-*"
+        OS_NAME="Amazon Linux 2023"
+        OWNER="amazon"
+        ;;
+    amzn2)
+        OS_FILTER="amzn2-ami-hvm-*"
+        OS_NAME="Amazon Linux 2"
+        OWNER="amazon"
+        ;;
+    ubuntu)
+        OS_FILTER="ubuntu/images/hvm-ssd/ubuntu-*-*-server-*"
+        OS_NAME="Ubuntu"
+        OWNER="099720109477" # Canonical's AWS account ID
+        ;;
+    ubuntu-pro)
+        OS_FILTER="ubuntu-pro-*"
+        OS_NAME="Ubuntu Pro"
+        OWNER="099720109477" # Canonical's AWS account ID
+        ;;
+    rhel)
+        OS_FILTER="RHEL-*"
+        OS_NAME="Red Hat Enterprise Linux"
+        OWNER="309956199498" # Red Hat's AWS account ID
+        ;;
+    sles)
+        OS_FILTER="suse-sles-*"
+        OS_NAME="SUSE Linux Enterprise Server"
+        OWNER="amazon"
+        ;;
+    debian)
+        OS_FILTER="debian-*"
+        OS_NAME="Debian"
+        OWNER="136693071363" # Debian's AWS account ID
+        ;;
+    windows)
+        OS_FILTER="Windows_Server-*"
+        OS_NAME="Windows Server"
+        OWNER="amazon"
+        ;;
+esac
+
+echo "Searching for latest $OS_NAME AMI in region $REGION with architecture $ARCHITECTURE..."
+
+# Get the latest AMI for the selected OS and architecture
+# Adding filters to ensure we only get Amazon-owned images that are not marketplace or private
+AMI_ID=$(aws ec2 describe-images \
+    --region $REGION \
+    --owners $OWNER \
+    --filters \
+    "Name=name,Values=$OS_FILTER" \
+    "Name=state,Values=available" \
+    "Name=architecture,Values=$ARCHITECTURE" \
+    "Name=is-public,Values=true" \
+    --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
+    --output text)
+
+if [ -z "$AMI_ID" ] || [ "$AMI_ID" == "None" ]; then
+    echo "No $OS_NAME AMI found for architecture $ARCHITECTURE in region $REGION."
+    exit 1
+fi
+
+# Get additional details about the AMI using JSON output format for more reliable parsing
+AMI_DETAILS=$(aws ec2 describe-images \
+    --region $REGION \
+    --image-ids $AMI_ID \
+    --output json)
+
+# Extract individual fields using jq if available, otherwise fall back to grep and sed
+if command -v jq &> /dev/null; then
+    AMI_NAME=$(echo "$AMI_DETAILS" | jq -r '.Images[0].Name')
+    AMI_DESC=$(echo "$AMI_DETAILS" | jq -r '.Images[0].Description')
+    AMI_DATE=$(echo "$AMI_DETAILS" | jq -r '.Images[0].CreationDate')
+    AMI_OWNER=$(echo "$AMI_DETAILS" | jq -r '.Images[0].OwnerId')
+    AMI_PUBLIC=$(echo "$AMI_DETAILS" | jq -r '.Images[0].Public')
+else
+    # Extract fields using grep and sed as a fallback
+    AMI_NAME=$(echo "$AMI_DETAILS" | grep '"Name":' | sed -E 's/.*"Name": "([^"]+)".*/\1/')
+    AMI_DESC=$(echo "$AMI_DETAILS" | grep '"Description":' | sed -E 's/.*"Description": "([^"]+)".*/\1/')
+    AMI_DATE=$(echo "$AMI_DETAILS" | grep '"CreationDate":' | sed -E 's/.*"CreationDate": "([^"]+)".*/\1/')
+    AMI_OWNER=$(echo "$AMI_DETAILS" | grep '"OwnerId":' | sed -E 's/.*"OwnerId": "([^"]+)".*/\1/')
+    AMI_PUBLIC=$(echo "$AMI_DETAILS" | grep '"Public":' | sed -E 's/.*"Public": ([^,]+).*/\1/')
+fi
+
+echo "Latest $OS_NAME AMI Details:"
+echo "AMI ID: $AMI_ID"
+echo "Name: $AMI_NAME"
+echo "Description: $AMI_DESC"
+echo "Creation Date: $AMI_DATE"
+echo "Owner ID: $AMI_OWNER"
+echo "Public: $AMI_PUBLIC"
+echo "Region: $REGION"
+echo "Architecture: $ARCHITECTURE"
