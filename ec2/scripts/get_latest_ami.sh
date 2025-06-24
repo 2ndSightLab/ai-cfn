@@ -1,1 +1,211 @@
+#!/bin/bash
+
+# Function to get the current AWS region
+get_current_region() {
+    # First try to get region from AWS CLI configuration
+    local region=$(aws configure get region)
+    
+    # If not found in config, try to get from AWS_REGION environment variable
+    if [ -z "$region" ]; then
+        region=$AWS_REGION
+    fi
+    
+    # Return the region if found
+    if [ -n "$region" ]; then
+        echo "$region"
+    else
+        echo ""
+    fi
+}
+
+# Get the current region
+REGION=$(get_current_region)
+
+# Check if region is valid
+if [ -z "$REGION" ]; then
+    echo "Error: Could not determine AWS region from your configuration or environment."
+    echo "Please configure your AWS CLI with 'aws configure' or set the AWS_REGION environment variable."
+    exit 1
+fi
+
+# Function to prompt user to select architecture
+select_architecture() {
+    echo "Please select the CPU architecture:"
+    echo "1) x86_64 (Intel/AMD 64-bit)"
+    echo "2) arm64 (ARM 64-bit, e.g., AWS Graviton)"
+    
+    local selection
+    read -p "Enter your choice (1-2): " selection
+    
+    case $selection in
+        1)
+            echo "x86_64"
+            ;;
+        2)
+            echo "arm64"
+            ;;
+        *)
+            echo "Invalid selection. Please try again."
+            select_architecture
+            ;;
+    esac
+}
+
+# Function to prompt user to select operating system
+select_os() {
+    echo "Please select the operating system:"
+    echo "1) Amazon Linux 2023"
+    echo "2) Amazon Linux 2"
+    echo "3) Ubuntu (standard)"
+    echo "4) Ubuntu Pro"
+    echo "5) Red Hat Enterprise Linux (RHEL)"
+    echo "6) SUSE Linux Enterprise Server (SLES)"
+    echo "7) Debian"
+    echo "8) Windows Server"
+    
+    local selection
+    read -p "Enter your choice (1-8): " selection
+    
+    case $selection in
+        1)
+            echo "al2023"
+            ;;
+        2)
+            echo "amzn2"
+            ;;
+        3)
+            echo "ubuntu"
+            ;;
+        4)
+            echo "ubuntu-pro"
+            ;;
+        5)
+            echo "rhel"
+            ;;
+        6)
+            echo "sles"
+            ;;
+        7)
+            echo "debian"
+            ;;
+        8)
+            echo "windows"
+            ;;
+        *)
+            echo "Invalid selection. Please try again."
+            select_os
+            ;;
+    esac
+}
+
+# Check if architecture was provided as argument
+if [ -z "$1" ]; then
+    # No architecture provided, prompt user to select
+    ARCHITECTURE=$(select_architecture)
+else
+    # Validate provided architecture
+    case "$1" in
+        x86_64|arm64)
+            ARCHITECTURE=$1
+            ;;
+        *)
+            echo "Error: Invalid architecture '$1'. Valid options are 'x86_64' or 'arm64'."
+            echo "Usage: get_ami_id.sh [architecture] [os]"
+            echo "  architecture: x86_64, arm64"
+            echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows"
+            exit 1
+            ;;
+    esac
+fi
+
+# Check if OS was provided as argument
+if [ -z "$2" ]; then
+    # No OS provided, prompt user to select
+    OS=$(select_os)
+else
+    # Validate provided OS
+    case "$2" in
+        al2023|amzn2|ubuntu|ubuntu-pro|rhel|sles|debian|windows)
+            OS=$2
+            ;;
+        *)
+            echo "Error: Invalid operating system '$2'."
+            echo "Valid options are: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows"
+            echo "Usage: get_ami_id.sh [architecture] [os]"
+            echo "  architecture: x86_64, arm64"
+            echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows"
+            exit 1
+            ;;
+    esac
+fi
+
+# Set the appropriate filter values based on OS selection
+case "$OS" in
+    al2023)
+        OS_FILTER="al2023-ami-*"
+        OS_NAME="Amazon Linux 2023"
+        ;;
+    amzn2)
+        OS_FILTER="amzn2-ami-hvm-*"
+        OS_NAME="Amazon Linux 2"
+        ;;
+    ubuntu)
+        OS_FILTER="ubuntu/images/hvm-ssd/ubuntu-*-*-server-*"
+        OS_NAME="Ubuntu"
+        ;;
+    ubuntu-pro)
+        OS_FILTER="ubuntu-pro-*"
+        OS_NAME="Ubuntu Pro"
+        ;;
+    rhel)
+        OS_FILTER="RHEL-*"
+        OS_NAME="Red Hat Enterprise Linux"
+        ;;
+    sles)
+        OS_FILTER="suse-sles-*"
+        OS_NAME="SUSE Linux Enterprise Server"
+        ;;
+    debian)
+        OS_FILTER="debian-*"
+        OS_NAME="Debian"
+        ;;
+    windows)
+        OS_FILTER="Windows_Server-*"
+        OS_NAME="Windows Server"
+        ;;
+esac
+
+echo "Searching for latest $OS_NAME AMI in region $REGION with architecture $ARCHITECTURE..."
+
+# Get the latest AMI for the selected OS and architecture
+AMI_ID=$(aws ec2 describe-images \
+    --region $REGION \
+    --owners amazon \
+    --filters "Name=name,Values=$OS_FILTER" "Name=state,Values=available" "Name=architecture,Values=$ARCHITECTURE" \
+    --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
+    --output text)
+
+if [ -z "$AMI_ID" ] || [ "$AMI_ID" == "None" ]; then
+    echo "No $OS_NAME AMI found for architecture $ARCHITECTURE in region $REGION."
+    exit 1
+fi
+
+# Get additional details about the AMI
+AMI_DETAILS=$(aws ec2 describe-images \
+    --region $REGION \
+    --image-ids $AMI_ID \
+    --query 'Images[0].[Name,Description,CreationDate]' \
+    --output text)
+
+AMI_NAME=$(echo "$AMI_DETAILS" | head -1)
+AMI_DESC=$(echo "$AMI_DETAILS" | head -2 | tail -1)
+AMI_DATE=$(echo "$AMI_DETAILS" | tail -1)
+
+echo "Latest $OS_NAME AMI Details:"
+echo "AMI ID: $AMI_ID"
+echo "Name: $AMI_NAME"
+echo "Description: $AMI_DESC"
+echo "Creation Date: $AMI_DATE"
+echo "Region: $REGION"
+echo "Architecture: $ARCHITECTURE"
 
