@@ -30,9 +30,10 @@ fi
 
 # Function to prompt user to select architecture
 select_architecture() {
-    echo "Please select the CPU architecture:"
-    echo "1) x86_64 (Intel/AMD 64-bit)"
-    echo "2) arm64 (ARM 64-bit, e.g., AWS Graviton)"
+    # Print directly to stderr to ensure visibility
+    echo "Please select the CPU architecture:" >&2
+    echo "1) x86_64 (Intel/AMD 64-bit)" >&2
+    echo "2) arm64 (ARM 64-bit, e.g., AWS Graviton)" >&2
     
     local selection
     read -p "Enter your choice (1-2): " selection
@@ -45,7 +46,7 @@ select_architecture() {
             echo "arm64"
             ;;
         *)
-            echo "Invalid selection. Please try again."
+            echo "Invalid selection. Please try again." >&2
             select_architecture
             ;;
     esac
@@ -53,15 +54,16 @@ select_architecture() {
 
 # Function to prompt user to select operating system
 select_os() {
-    echo "Please select the operating system:"
-    echo "1) Amazon Linux 2023"
-    echo "2) Amazon Linux 2"
-    echo "3) Ubuntu (standard)"
-    echo "4) Ubuntu Pro"
-    echo "5) Red Hat Enterprise Linux (RHEL)"
-    echo "6) SUSE Linux Enterprise Server (SLES)"
-    echo "7) Debian"
-    echo "8) Windows Server"
+    # Print directly to stderr to ensure visibility
+    echo "Please select the operating system:" >&2
+    echo "1) Amazon Linux 2023" >&2
+    echo "2) Amazon Linux 2" >&2
+    echo "3) Ubuntu (standard)" >&2
+    echo "4) Ubuntu Pro" >&2
+    echo "5) Red Hat Enterprise Linux (RHEL)" >&2
+    echo "6) SUSE Linux Enterprise Server (SLES)" >&2
+    echo "7) Debian" >&2
+    echo "8) Windows Server" >&2
     
     local selection
     read -p "Enter your choice (1-8): " selection
@@ -92,7 +94,7 @@ select_os() {
             echo "windows"
             ;;
         *)
-            echo "Invalid selection. Please try again."
+            echo "Invalid selection. Please try again." >&2
             select_os
             ;;
     esac
@@ -101,7 +103,9 @@ select_os() {
 # Check if architecture was provided as argument
 if [ -z "$1" ]; then
     # No architecture provided, prompt user to select
+    echo "No architecture specified as argument. Interactive selection mode:" >&2
     ARCHITECTURE=$(select_architecture)
+    echo "Selected architecture: $ARCHITECTURE" >&2
 else
     # Validate provided architecture
     case "$1" in
@@ -109,10 +113,10 @@ else
             ARCHITECTURE=$1
             ;;
         *)
-            echo "Error: Invalid architecture '$1'. Valid options are 'x86_64' or 'arm64'."
-            echo "Usage: get_ami_id.sh [architecture] [os]"
-            echo "  architecture: x86_64, arm64"
-            echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows"
+            echo "Error: Invalid architecture '$1'. Valid options are 'x86_64' or 'arm64'." >&2
+            echo "Usage: get_ami_id.sh [architecture] [os]" >&2
+            echo "  architecture: x86_64, arm64" >&2
+            echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
             exit 1
             ;;
     esac
@@ -121,7 +125,9 @@ fi
 # Check if OS was provided as argument
 if [ -z "$2" ]; then
     # No OS provided, prompt user to select
+    echo "No OS specified as argument. Interactive selection mode:" >&2
     OS=$(select_os)
+    echo "Selected OS: $OS" >&2
 else
     # Validate provided OS
     case "$2" in
@@ -129,11 +135,11 @@ else
             OS=$2
             ;;
         *)
-            echo "Error: Invalid operating system '$2'."
-            echo "Valid options are: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows"
-            echo "Usage: get_ami_id.sh [architecture] [os]"
-            echo "  architecture: x86_64, arm64"
-            echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows"
+            echo "Error: Invalid operating system '$2'." >&2
+            echo "Valid options are: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
+            echo "Usage: get_ami_id.sh [architecture] [os]" >&2
+            echo "  architecture: x86_64, arm64" >&2
+            echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
             exit 1
             ;;
     esac
@@ -208,4 +214,3 @@ echo "Description: $AMI_DESC"
 echo "Creation Date: $AMI_DATE"
 echo "Region: $REGION"
 echo "Architecture: $ARCHITECTURE"
-
