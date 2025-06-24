@@ -158,58 +158,13 @@ case "$OS" in
         OWNER="amazon"
         ;;
     ubuntu)
-        OS_FILTER="ubuntu/images/hvm-ssd/ubuntu-*-*-server-*"
+        OS_FILTER="ubuntu"
         OS_NAME="Ubuntu"
         OWNER="099720109477" # Canonical's AWS account ID
         ;;
     ubuntu-pro)
         OS_NAME="Ubuntu Pro"
         OWNER="099720109477" # Canonical's AWS account ID
-        
-        echo "Searching for base Ubuntu Pro server images..."
-        
-        # Use a very specific pattern for base Ubuntu Pro server images
-        # This pattern matches the standard Ubuntu Pro server images without specialized features
-        AMI_ID=$(aws ec2 describe-images \
-            --region $REGION \
-            --owners $OWNER \
-            --filters \
-            "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-*-pro-server-*" \
-            "Name=state,Values=available" \
-            "Name=architecture,Values=$ARCHITECTURE" \
-            --query 'Images[?!contains(Name, `eks`) && !contains(Name, `kubernetes`) && !contains(Name, `k8s`) && !contains(Description, `EKS`) && !contains(Description, `Kubernetes`)] | sort_by(@, &CreationDate)[-1].ImageId' \
-            --output text)
-            
-        if [ -z "$AMI_ID" ] || [ "$AMI_ID" == "None" ]; then
-            echo "No base Ubuntu Pro server images found. Trying alternative approach..."
-            
-            # If the query approach fails, try a more direct approach
-            # Get all Ubuntu Pro images and filter manually
-            AMI_LIST=$(aws ec2 describe-images \
-                --region $REGION \
-                --owners $OWNER \
-                --filters \
-                "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-*-pro-server-*" \
-                "Name=state,Values=available" \
-                "Name=architecture,Values=$ARCHITECTURE" \
-                --output json)
-                
-            # Use grep to filter out specialized images
-            if echo "$AMI_LIST" | grep -q "ImageId"; then
-                # Extract standard Ubuntu Pro server images (excluding EKS, etc.)
-                STANDARD_AMIS=$(echo "$AMI_LIST" | grep -A 10 "ImageId" | grep -v "eks" | grep -v "kubernetes" | grep -v "k8s" | grep -v "EKS" | grep -v "Kubernetes" | grep "ImageId" | head -1 | sed -E 's/.*"ImageId": "([^"]+)".*/\1/')
-                
-                if [ -n "$STANDARD_AMIS" ]; then
-                    AMI_ID=$STANDARD_AMIS
-                else
-                    echo "No standard Ubuntu Pro images found after filtering."
-                    exit 1
-                fi
-            else
-                echo "No Ubuntu Pro images found."
-                exit 1
-            fi
-        fi
         ;;
     rhel)
         OS_FILTER="RHEL-*"
@@ -271,12 +226,6 @@ AMI_ARCH=$(echo "$AMI_DETAILS" | grep '"Architecture":' | head -1 | sed -E 's/.*
 PRODUCT_CODES=$(echo "$AMI_DETAILS" | grep -c '"ProductCodes":')
 if [ "$PRODUCT_CODES" -gt 0 ] && [ "$(echo "$AMI_DETAILS" | grep -c '"ProductCodes": \[\]')" -eq 0 ]; then
     echo "Warning: This appears to be a marketplace image."
-fi
-
-# Check if this is an EKS or specialized image
-if [[ "$AMI_NAME" == *"eks"* ]] || [[ "$AMI_NAME" == *"kubernetes"* ]] || [[ "$AMI_NAME" == *"k8s"* ]] || 
-   [[ "$AMI_DESC" == *"EKS"* ]] || [[ "$AMI_DESC" == *"Kubernetes"* ]]; then
-    echo "Warning: This appears to be a specialized image (EKS/Kubernetes), not a base Ubuntu Pro image."
 fi
 
 echo "Latest $OS_NAME AMI Details:"
