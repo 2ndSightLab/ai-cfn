@@ -61,5 +61,5 @@ cd ~
 rm -rf ai-cfn
 git clone https://github.com/2ndSightLab/ai-cfn.git
 cd ai-cfn/ec2/scripts
-chmod 700 ai-cfn/ec2/scripts/get-latest-ami.sh
-./ai-cfn/ec2/scripts/get-latest-ami.sh
+chmod 700 get-latest-ami.sh
+./get-latest-ami.sh
