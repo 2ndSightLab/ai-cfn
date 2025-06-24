@@ -28,57 +28,6 @@ if [ -z "$REGION" ]; then
     exit 1
 fi
 
-# Function to get AMI details by ID
-get_ami_details_by_id() {
-    local ami_id=$1
-    local region=$2
-    
-    echo "Looking up details for AMI $ami_id in region $region..."
-    
-    # Get AMI details
-    AMI_DETAILS=$(aws ec2 describe-images \
-        --region $region \
-        --image-ids $ami_id \
-        --output json)
-        
-    # Check if AMI was found
-    if [ -z "$AMI_DETAILS" ] || [ "$(echo "$AMI_DETAILS" | grep -c "Images")" -eq 0 ]; then
-        echo "AMI $ami_id not found in region $region."
-        exit 1
-    fi
-    
-    # Extract individual fields using grep and sed for maximum compatibility
-    AMI_NAME=$(echo "$AMI_DETAILS" | grep '"Name":' | head -1 | sed -E 's/.*"Name": "([^"]+)".*/\1/')
-    AMI_DESC=$(echo "$AMI_DETAILS" | grep '"Description":' | head -1 | sed -E 's/.*"Description": "([^"]+)".*/\1/')
-    AMI_DATE=$(echo "$AMI_DETAILS" | grep '"CreationDate":' | head -1 | sed -E 's/.*"CreationDate": "([^"]+)".*/\1/')
-    AMI_OWNER=$(echo "$AMI_DETAILS" | grep '"OwnerId":' | head -1 | sed -E 's/.*"OwnerId": "([^"]+)".*/\1/')
-    AMI_PUBLIC=$(echo "$AMI_DETAILS" | grep '"Public":' | head -1 | sed -E 's/.*"Public": ([^,]+).*/\1/')
-    AMI_ARCH=$(echo "$AMI_DETAILS" | grep '"Architecture":' | head -1 | sed -E 's/.*"Architecture": "([^"]+)".*/\1/')
-    
-    # Check if this is a marketplace image
-    PRODUCT_CODES=$(echo "$AMI_DETAILS" | grep -c '"ProductCodes":')
-    if [ "$PRODUCT_CODES" -gt 0 ] && [ "$(echo "$AMI_DETAILS" | grep -c '"ProductCodes": \[\]')" -eq 0 ]; then
-        echo "Warning: This appears to be a marketplace image."
-    fi
-    
-    echo "AMI Details:"
-    echo "AMI ID: $ami_id"
-    echo "Name: $AMI_NAME"
-    echo "Description: $AMI_DESC"
-    echo "Creation Date: $AMI_DATE"
-    echo "Owner ID: $AMI_OWNER"
-    echo "Public: $AMI_PUBLIC"
-    echo "Architecture: $AMI_ARCH"
-    echo "Region: $region"
-}
-
-# Check if an AMI ID was provided
-if [[ "$1" == "ami-"* ]]; then
-    # Use the provided AMI ID directly
-    get_ami_details_by_id "$1" "$REGION"
-    exit 0
-fi
-
 # Function to prompt user to select architecture
 select_architecture() {
     # Print directly to stderr to ensure visibility
@@ -166,7 +115,6 @@ else
         *)
             echo "Error: Invalid architecture '$1'. Valid options are 'x86_64' or 'arm64'." >&2
             echo "Usage: get_ami_id.sh [architecture] [os]" >&2
-            echo "       get_ami_id.sh [ami-id]" >&2
             echo "  architecture: x86_64, arm64" >&2
             echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
             exit 1
@@ -190,7 +138,6 @@ else
             echo "Error: Invalid operating system '$2'." >&2
             echo "Valid options are: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
             echo "Usage: get_ami_id.sh [architecture] [os]" >&2
-            echo "       get_ami_id.sh [ami-id]" >&2
             echo "  architecture: x86_64, arm64" >&2
             echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
             exit 1
@@ -216,76 +163,51 @@ case "$OS" in
         OWNER="099720109477" # Canonical's AWS account ID
         ;;
     ubuntu-pro)
-        # Use multiple filters to match names starting with "ubuntu-pro/" or "ubuntu-pro-server/"
         OS_NAME="Ubuntu Pro"
         OWNER="099720109477" # Canonical's AWS account ID
         
-        echo "Searching for Ubuntu Pro AMIs with names starting with 'ubuntu-pro/' or 'ubuntu-pro-server/'..."
+        echo "Searching for base Ubuntu Pro server images..."
         
-        # AWS CLI doesn't support OR conditions in filters directly, so we'll need to make two separate calls
-        # and combine the results
-        
-        # First, search for AMIs with names starting with "ubuntu-pro/"
-        AMI_ID_1=$(aws ec2 describe-images \
+        # Use a very specific pattern for base Ubuntu Pro server images
+        # This pattern matches the standard Ubuntu Pro server images without specialized features
+        AMI_ID=$(aws ec2 describe-images \
             --region $REGION \
             --owners $OWNER \
             --filters \
-            "Name=name,Values=ubuntu-pro/*" \
+            "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-*-pro-server-*" \
             "Name=state,Values=available" \
             "Name=architecture,Values=$ARCHITECTURE" \
-            --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
+            --query 'Images[?!contains(Name, `eks`) && !contains(Name, `kubernetes`) && !contains(Name, `k8s`) && !contains(Description, `EKS`) && !contains(Description, `Kubernetes`)] | sort_by(@, &CreationDate)[-1].ImageId' \
             --output text)
             
-        # Then, search for AMIs with names starting with "ubuntu-pro-server/"
-        AMI_ID_2=$(aws ec2 describe-images \
-            --region $REGION \
-            --owners $OWNER \
-            --filters \
-            "Name=name,Values=ubuntu-pro-server/*" \
-            "Name=state,Values=available" \
-            "Name=architecture,Values=$ARCHITECTURE" \
-            --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
-            --output text)
+        if [ -z "$AMI_ID" ] || [ "$AMI_ID" == "None" ]; then
+            echo "No base Ubuntu Pro server images found. Trying alternative approach..."
             
-        # Get the creation dates for both AMIs to determine which is newer
-        if [ -n "$AMI_ID_1" ] && [ "$AMI_ID_1" != "None" ]; then
-            AMI_DATE_1=$(aws ec2 describe-images \
+            # If the query approach fails, try a more direct approach
+            # Get all Ubuntu Pro images and filter manually
+            AMI_LIST=$(aws ec2 describe-images \
                 --region $REGION \
-                --image-ids $AMI_ID_1 \
-                --query 'Images[0].CreationDate' \
-                --output text)
-        else
-            AMI_DATE_1=""
-        fi
-        
-        if [ -n "$AMI_ID_2" ] && [ "$AMI_ID_2" != "None" ]; then
-            AMI_DATE_2=$(aws ec2 describe-images \
-                --region $REGION \
-                --image-ids $AMI_ID_2 \
-                --query 'Images[0].CreationDate' \
-                --output text)
-        else
-            AMI_DATE_2=""
-        fi
-        
-        # Choose the newer AMI
-        if [ -z "$AMI_DATE_1" ] && [ -z "$AMI_DATE_2" ]; then
-            echo "No Ubuntu Pro AMIs found with names starting with 'ubuntu-pro/' or 'ubuntu-pro-server/'."
-            exit 1
-        elif [ -z "$AMI_DATE_1" ]; then
-            AMI_ID=$AMI_ID_2
-            echo "Found Ubuntu Pro AMI with name starting with 'ubuntu-pro-server/'."
-        elif [ -z "$AMI_DATE_2" ]; then
-            AMI_ID=$AMI_ID_1
-            echo "Found Ubuntu Pro AMI with name starting with 'ubuntu-pro/'."
-        else
-            # Compare dates and choose the newer one
-            if [[ "$AMI_DATE_1" > "$AMI_DATE_2" ]]; then
-                AMI_ID=$AMI_ID_1
-                echo "Found newer Ubuntu Pro AMI with name starting with 'ubuntu-pro/'."
+                --owners $OWNER \
+                --filters \
+                "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-*-pro-server-*" \
+                "Name=state,Values=available" \
+                "Name=architecture,Values=$ARCHITECTURE" \
+                --output json)
+                
+            # Use grep to filter out specialized images
+            if echo "$AMI_LIST" | grep -q "ImageId"; then
+                # Extract standard Ubuntu Pro server images (excluding EKS, etc.)
+                STANDARD_AMIS=$(echo "$AMI_LIST" | grep -A 10 "ImageId" | grep -v "eks" | grep -v "kubernetes" | grep -v "k8s" | grep -v "EKS" | grep -v "Kubernetes" | grep "ImageId" | head -1 | sed -E 's/.*"ImageId": "([^"]+)".*/\1/')
+                
+                if [ -n "$STANDARD_AMIS" ]; then
+                    AMI_ID=$STANDARD_AMIS
+                else
+                    echo "No standard Ubuntu Pro images found after filtering."
+                    exit 1
+                fi
             else
-                AMI_ID=$AMI_ID_2
-                echo "Found newer Ubuntu Pro AMI with name starting with 'ubuntu-pro-server/'."
+                echo "No Ubuntu Pro images found."
+                exit 1
             fi
         fi
         ;;
@@ -351,7 +273,18 @@ if [ "$PRODUCT_CODES" -gt 0 ] && [ "$(echo "$AMI_DETAILS" | grep -c '"ProductCod
     echo "Warning: This appears to be a marketplace image."
 fi
 
+# Check if this is an EKS or specialized image
+if [[ "$AMI_NAME" == *"eks"* ]] || [[ "$AMI_NAME" == *"kubernetes"* ]] || [[ "$AMI_NAME" == *"k8s"* ]] || 
+   [[ "$AMI_DESC" == *"EKS"* ]] || [[ "$AMI_DESC" == *"Kubernetes"* ]]; then
+    echo "Warning: This appears to be a specialized image (EKS/Kubernetes), not a base Ubuntu Pro image."
+fi
+
 echo "Latest $OS_NAME AMI Details:"
 echo "AMI ID: $AMI_ID"
 echo "Name: $AMI_NAME"
-echo "Description: $AMI_
+echo "Description: $AMI_DESC"
+echo "Creation Date: $AMI_DATE"
+echo "Owner ID: $AMI_OWNER"
+echo "Public: $AMI_PUBLIC"
+echo "Architecture: $AMI_ARCH"
+echo "Region: $REGION"
