@@ -163,7 +163,8 @@ case "$OS" in
         OWNER="099720109477" # Canonical's AWS account ID
         ;;
     ubuntu-pro)
-        OS_FILTER="ubuntu/images/hvm-ssd/ubuntu-*-*-pro-server-*"
+        # Use a broader filter to catch all Ubuntu Pro images
+        OS_FILTER="*ubuntu*pro*"
         OS_NAME="Ubuntu Pro"
         OWNER="099720109477" # Canonical's AWS account ID
         ;;
@@ -201,7 +202,6 @@ AMI_ID=$(aws ec2 describe-images \
     "Name=state,Values=available" \
     "Name=architecture,Values=$ARCHITECTURE" \
     "Name=is-public,Values=true" \
-    "Name=product-code,Values=" \
     --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
     --output text)
 
@@ -227,7 +227,7 @@ if command -v jq &> /dev/null; then
     # Check if this is a marketplace image
     PRODUCT_CODES=$(echo "$AMI_DETAILS" | jq -r '.Images[0].ProductCodes | length')
     if [ "$PRODUCT_CODES" -gt 0 ]; then
-        echo "Warning: This appears to be a marketplace image despite our filters."
+        echo "Warning: This appears to be a marketplace image."
         PRODUCT_CODE=$(echo "$AMI_DETAILS" | jq -r '.Images[0].ProductCodes[0].ProductCodeId')
         echo "Product Code: $PRODUCT_CODE"
     fi
@@ -242,7 +242,7 @@ else
     # Check if this is a marketplace image
     PRODUCT_CODES=$(echo "$AMI_DETAILS" | grep -c '"ProductCodes":')
     if [ "$PRODUCT_CODES" -gt 0 ] && [ "$(echo "$AMI_DETAILS" | grep -c '"ProductCodes": \[\]')" -eq 0 ]; then
-        echo "Warning: This appears to be a marketplace image despite our filters."
+        echo "Warning: This appears to be a marketplace image."
     fi
 fi
 
@@ -255,3 +255,4 @@ echo "Owner ID: $AMI_OWNER"
 echo "Public: $AMI_PUBLIC"
 echo "Region: $REGION"
 echo "Architecture: $ARCHITECTURE"
+
