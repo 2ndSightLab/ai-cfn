@@ -163,7 +163,7 @@ case "$OS" in
         OWNER="099720109477" # Canonical's AWS account ID
         ;;
     ubuntu-pro)
-        OS_FILTER="ubuntu-pro-*"
+        OS_FILTER="ubuntu/images/hvm-ssd/ubuntu-*-*-pro-server-*"
         OS_NAME="Ubuntu Pro"
         OWNER="099720109477" # Canonical's AWS account ID
         ;;
@@ -192,7 +192,7 @@ esac
 echo "Searching for latest $OS_NAME AMI in region $REGION with architecture $ARCHITECTURE..."
 
 # Get the latest AMI for the selected OS and architecture
-# Adding filters to ensure we only get Amazon-owned images that are not marketplace or private
+# Adding filters to ensure we only get non-marketplace images
 AMI_ID=$(aws ec2 describe-images \
     --region $REGION \
     --owners $OWNER \
@@ -201,6 +201,7 @@ AMI_ID=$(aws ec2 describe-images \
     "Name=state,Values=available" \
     "Name=architecture,Values=$ARCHITECTURE" \
     "Name=is-public,Values=true" \
+    "Name=product-code,Values=" \
     --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
     --output text)
 
@@ -222,6 +223,14 @@ if command -v jq &> /dev/null; then
     AMI_DATE=$(echo "$AMI_DETAILS" | jq -r '.Images[0].CreationDate')
     AMI_OWNER=$(echo "$AMI_DETAILS" | jq -r '.Images[0].OwnerId')
     AMI_PUBLIC=$(echo "$AMI_DETAILS" | jq -r '.Images[0].Public')
+    
+    # Check if this is a marketplace image
+    PRODUCT_CODES=$(echo "$AMI_DETAILS" | jq -r '.Images[0].ProductCodes | length')
+    if [ "$PRODUCT_CODES" -gt 0 ]; then
+        echo "Warning: This appears to be a marketplace image despite our filters."
+        PRODUCT_CODE=$(echo "$AMI_DETAILS" | jq -r '.Images[0].ProductCodes[0].ProductCodeId')
+        echo "Product Code: $PRODUCT_CODE"
+    fi
 else
     # Extract fields using grep and sed as a fallback
     AMI_NAME=$(echo "$AMI_DETAILS" | grep '"Name":' | sed -E 's/.*"Name": "([^"]+)".*/\1/')
@@ -229,6 +238,12 @@ else
     AMI_DATE=$(echo "$AMI_DETAILS" | grep '"CreationDate":' | sed -E 's/.*"CreationDate": "([^"]+)".*/\1/')
     AMI_OWNER=$(echo "$AMI_DETAILS" | grep '"OwnerId":' | sed -E 's/.*"OwnerId": "([^"]+)".*/\1/')
     AMI_PUBLIC=$(echo "$AMI_DETAILS" | grep '"Public":' | sed -E 's/.*"Public": ([^,]+).*/\1/')
+    
+    # Check if this is a marketplace image
+    PRODUCT_CODES=$(echo "$AMI_DETAILS" | grep -c '"ProductCodes":')
+    if [ "$PRODUCT_CODES" -gt 0 ] && [ "$(echo "$AMI_DETAILS" | grep -c '"ProductCodes": \[\]')" -eq 0 ]; then
+        echo "Warning: This appears to be a marketplace image despite our filters."
+    fi
 fi
 
 echo "Latest $OS_NAME AMI Details:"
