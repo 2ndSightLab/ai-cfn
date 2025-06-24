@@ -145,49 +145,62 @@ else
     esac
 fi
 
-# Set the appropriate filter values based on OS selection
+# Set the appropriate filter values and owner based on OS selection
 case "$OS" in
     al2023)
         OS_FILTER="al2023-ami-*"
         OS_NAME="Amazon Linux 2023"
+        OWNER="amazon"
         ;;
     amzn2)
         OS_FILTER="amzn2-ami-hvm-*"
         OS_NAME="Amazon Linux 2"
+        OWNER="amazon"
         ;;
     ubuntu)
         OS_FILTER="ubuntu/images/hvm-ssd/ubuntu-*-*-server-*"
         OS_NAME="Ubuntu"
+        OWNER="099720109477" # Canonical's AWS account ID
         ;;
     ubuntu-pro)
         OS_FILTER="ubuntu-pro-*"
         OS_NAME="Ubuntu Pro"
+        OWNER="099720109477" # Canonical's AWS account ID
         ;;
     rhel)
         OS_FILTER="RHEL-*"
         OS_NAME="Red Hat Enterprise Linux"
+        OWNER="309956199498" # Red Hat's AWS account ID
         ;;
     sles)
         OS_FILTER="suse-sles-*"
         OS_NAME="SUSE Linux Enterprise Server"
+        OWNER="amazon"
         ;;
     debian)
         OS_FILTER="debian-*"
         OS_NAME="Debian"
+        OWNER="136693071363" # Debian's AWS account ID
         ;;
     windows)
         OS_FILTER="Windows_Server-*"
         OS_NAME="Windows Server"
+        OWNER="amazon"
         ;;
 esac
 
 echo "Searching for latest $OS_NAME AMI in region $REGION with architecture $ARCHITECTURE..."
 
 # Get the latest AMI for the selected OS and architecture
+# Adding filters to ensure we only get Amazon-owned images that are not marketplace or private
 AMI_ID=$(aws ec2 describe-images \
     --region $REGION \
-    --owners amazon \
-    --filters "Name=name,Values=$OS_FILTER" "Name=state,Values=available" "Name=architecture,Values=$ARCHITECTURE" \
+    --owners $OWNER \
+    --filters \
+    "Name=name,Values=$OS_FILTER" \
+    "Name=state,Values=available" \
+    "Name=architecture,Values=$ARCHITECTURE" \
+    "Name=is-public,Values=true" \
     --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
     --output text)
 
@@ -200,17 +213,21 @@ fi
 AMI_DETAILS=$(aws ec2 describe-images \
     --region $REGION \
     --image-ids $AMI_ID \
-    --query 'Images[0].[Name,Description,CreationDate]' \
+    --query 'Images[0].[Name,Description,CreationDate,OwnerId,Public]' \
     --output text)
 
 AMI_NAME=$(echo "$AMI_DETAILS" | head -1)
 AMI_DESC=$(echo "$AMI_DETAILS" | head -2 | tail -1)
-AMI_DATE=$(echo "$AMI_DETAILS" | tail -1)
+AMI_DATE=$(echo "$AMI_DETAILS" | head -3 | tail -1)
+AMI_OWNER=$(echo "$AMI_DETAILS" | head -4 | tail -1)
+AMI_PUBLIC=$(echo "$AMI_DETAILS" | head -5 | tail -1)
 
 echo "Latest $OS_NAME AMI Details:"
 echo "AMI ID: $AMI_ID"
 echo "Name: $AMI_NAME"
 echo "Description: $AMI_DESC"
 echo "Creation Date: $AMI_DATE"
+echo "Owner ID: $AMI_OWNER"
+echo "Public: $AMI_PUBLIC"
 echo "Region: $REGION"
 echo "Architecture: $ARCHITECTURE"
