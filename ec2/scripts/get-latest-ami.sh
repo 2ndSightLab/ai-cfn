@@ -163,7 +163,7 @@ case "$OS" in
         OWNER="099720109477" # Canonical's AWS account ID
         ;;
     ubuntu-pro)
-        OS_FILTER="ubuntu*"
+        OS_FILTER="ubuntu-pro*"
         OS_NAME="Ubuntu Pro"
         OWNER="099720109477" # Canonical's AWS account ID
         ;;
