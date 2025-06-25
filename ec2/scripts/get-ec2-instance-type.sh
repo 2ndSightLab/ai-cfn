@@ -22,6 +22,11 @@ echo "Minimum vCPUs: $min_vcpu"
 echo "Minimum Memory: $min_memory_mib MiB"
 echo "Maximum Price per Hour: $max_price"
 
+# Get AMI virtualization types
+virtualization_types=$(aws ec2 describe-images --image-ids $AMI_ID --region $REGION --query 'Images[0].VirtualizationType' --output text)
+
+echo "AMI ID: $AMI_ID (Supported virtualization types: $virtualization_types)"
+
 # Retrieve and display matching instance types in a table
 echo "Retrieving matching instance types..."
 
@@ -29,8 +34,6 @@ aws ec2 describe-instance-types \
     --region $REGION \
     --filters "Name=vcpu-info.default-vcpus,Values=$min_vcpu-" \
               "Name=memory-info.size-in-mib,Values=$min_memory_mib-" \
-    --query "InstanceTypes[?{
-        vcpu: to_number(VCpuInfo.DefaultVCpus) >= $min_vcpu,
-        memory: to_number(MemoryInfo.SizeInMiB) >= $min_memory_mib
-    }].[InstanceType, VCpuInfo.DefaultVCpus, MemoryInfo.SizeInMiB]" \
+              "Name=supported-virtualization-type,Values=$virtualization_types" \
+    --query "InstanceTypes[?VCpuInfo.DefaultVCpus >= \`$min_vcpu\` && MemoryInfo.SizeInMiB >= \`$min_memory_mib\`].[InstanceType, VCpuInfo.DefaultVCpus, MemoryInfo.SizeInMiB]" \
     --output table
