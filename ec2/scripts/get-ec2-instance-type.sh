@@ -29,60 +29,78 @@ virtualization_type=$(aws ec2 describe-images --image-ids $AMI_ID --region $REGI
 
 echo "AMI ID: $AMI_ID (Architecture: $ami_arch, Virtualization: $virtualization_type)"
 
-# Get instance types that meet vCPU and memory requirements
-echo "Retrieving matching instance types..."
-compatible_instances=$(aws ec2 describe-instance-types \
-    --region $REGION \
-    --filters "Name=supported-virtualization-type,Values=$virtualization_type" \
-              "Name=processor-info.supported-architecture,Values=$ami_arch" \
-    --query "InstanceTypes[?VCpuInfo.DefaultVCpus >= \`$min_vcpu\` && MemoryInfo.SizeInMiB >= \`$min_memory_mib\`].InstanceType" \
-    --output text)
+# First get all instance types with prices below max_price, sorted by price
+echo "Querying pricing data..."
+# Create a temporary file to store pricing data
+pricing_data=$(mktemp)
 
-# Get pricing information and filter based on max price
-echo "Filtering instance types based on price..."
+# Get all EC2 pricing data for the region
+aws pricing get-products \
+    --region us-east-1 \
+    --service-code AmazonEC2 \
+    --filters "Type=TERM_MATCH,Field=operatingSystem,Value=Linux" \
+              "Type=TERM_MATCH,Field=tenancy,Value=Shared" \
+              "Type=TERM_MATCH,Field=capacitystatus,Value=Used" \
+              "Type=TERM_MATCH,Field=preInstalledSw,Value=NA" \
+              "Type=TERM_MATCH,Field=regionCode,Value=$REGION" \
+    --output json > $pricing_data
+
+# Extract and sort instance types by price
+echo "Sorting instances by price..."
+sorted_instances=$(cat $pricing_data | jq -r '.PriceList[] | 
+    select(.product.attributes.operatingSystem == "Linux") | 
+    {
+        instanceType: .product.attributes.instanceType,
+        price: (.terms.OnDemand | to_entries[0].value.priceDimensions | to_entries[0].value.pricePerUnit.USD)
+    }' | 
+    jq -s 'sort_by(.price | tonumber) | 
+    map(select(.price | tonumber <= '$max_price')) | 
+    .[].instanceType')
+
+# Filter for compatible instances and limit to 10 results
+echo "Filtering for compatible instances..."
 filtered_instances=()
-for instance in $compatible_instances; do
-    # Use us-east-1 region specifically for pricing API calls
-    price=$(aws pricing get-products \
-        --region us-east-1 \
-        --service-code AmazonEC2 \
-        --filters "Type=TERM_MATCH,Field=instanceType,Value=$instance" \
-                  "Type=TERM_MATCH,Field=operatingSystem,Value=Linux" \
-                  "Type=TERM_MATCH,Field=tenancy,Value=Shared" \
-                  "Type=TERM_MATCH,Field=capacitystatus,Value=Used" \
-                  "Type=TERM_MATCH,Field=preInstalledSw,Value=NA" \
-                  "Type=TERM_MATCH,Field=regionCode,Value=$REGION" \
-        --query 'PriceList[0]' \
-        --output text | jq -r '.terms.OnDemand[].priceDimensions[].pricePerUnit.USD')
-    
-    # Use awk for floating-point comparison instead of bc
-    if (( $(awk 'BEGIN {print ("'$price'" <= "'$max_price'")}') )); then
-        filtered_instances+=("$instance")
-    fi
-done
+count=0
+total_compatible=0
 
-# Display results
-echo "Matching instance types within price range:"
-printf "%-20s %-10s %-15s %-10s\n" "Instance Type" "vCPUs" "Memory (MiB)" "Price/Hour"
-for instance in "${filtered_instances[@]}"; do
+for instance in $sorted_instances; do
+    # Check if instance type is compatible with AMI and meets requirements
     instance_info=$(aws ec2 describe-instance-types \
         --instance-types $instance \
         --region $REGION \
-        --query 'InstanceTypes[0].[InstanceType, VCpuInfo.DefaultVCpus, MemoryInfo.SizeInMiB]' \
-        --output text)
+        --filters "Name=supported-virtualization-type,Values=$virtualization_type" \
+                  "Name=processor-info.supported-architecture,Values=$ami_arch" \
+        --query "InstanceTypes[?VCpuInfo.DefaultVCpus >= \`$min_vcpu\` && MemoryInfo.SizeInMiB >= \`$min_memory_mib\`].[InstanceType, VCpuInfo.DefaultVCpus, MemoryInfo.SizeInMiB]" \
+        --output text 2>/dev/null)
     
-    # Use us-east-1 region specifically for pricing API calls
-    price=$(aws pricing get-products \
-        --region us-east-1 \
-        --service-code AmazonEC2 \
-        --filters "Type=TERM_MATCH,Field=instanceType,Value=$instance" \
-                  "Type=TERM_MATCH,Field=operatingSystem,Value=Linux" \
-                  "Type=TERM_MATCH,Field=tenancy,Value=Shared" \
-                  "Type=TERM_MATCH,Field=capacitystatus,Value=Used" \
-                  "Type=TERM_MATCH,Field=preInstalledSw,Value=NA" \
-                  "Type=TERM_MATCH,Field=regionCode,Value=$REGION" \
-        --query 'PriceList[0]' \
-        --output text | jq -r '.terms.OnDemand[].priceDimensions[].pricePerUnit.USD')
-    
-    printf "%-20s %-10s %-15s $%-10s\n" $instance_info $price
+    if [ ! -z "$instance_info" ]; then
+        total_compatible=$((total_compatible + 1))
+        
+        # Get price for this instance type
+        price=$(cat $pricing_data | jq -r '.PriceList[] | 
+            select(.product.attributes.instanceType == "'$instance'") | 
+            .terms.OnDemand | to_entries[0].value.priceDimensions | to_entries[0].value.pricePerUnit.USD' | head -1)
+        
+        filtered_instances+=("$instance_info $price")
+        count=$((count + 1))
+        
+        if [ $count -eq 10 ]; then
+            break
+        fi
+    fi
 done
+
+# Clean up temporary file
+rm $pricing_data
+
+# Display results
+echo "Matching instance types within price range (limited to 10):"
+printf "%-20s %-10s %-15s %-10s\n" "Instance Type" "vCPUs" "Memory (MiB)" "Price/Hour"
+for instance in "${filtered_instances[@]}"; do
+    printf "%-20s %-10s %-15s $%-10s\n" $instance
+done
+
+# Alert if more than 10 compatible types were found
+if [ $total_compatible -gt 10 ]; then
+    echo "Note: More than 10 compatible instance types were found. Only showing the 10 lowest-priced options."
+fi
