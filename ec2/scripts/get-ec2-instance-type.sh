@@ -99,13 +99,13 @@ while true; do  # Main loop to allow restarting the query
     while IFS= read -r instance_info; do
         instance_type=$(echo $instance_info | jq -r '.[0]')
         vcpus=$(echo $instance_info | jq -r '.[1]')
-        memory=$(echo $instance_info | jq -r '.[2]')
+        memory_mib=$(echo $instance_info | jq -r '.[2]')
         
         # Get price for this instance type from our sorted pricing data
         price=$(echo $sorted_pricing | jq -r --arg instance "$instance_type" '.[] | select(.instanceType == $instance) | .price')
         
         if [ ! -z "$price" ]; then
-            filtered_instances+=("$instance_type $vcpus $memory $price")
+            filtered_instances+=("$instance_type $vcpus $memory_mib $price")
             count=$((count + 1))
             
             if [ $count -eq 10 ]; then
@@ -116,9 +116,15 @@ while true; do  # Main loop to allow restarting the query
 
     # Display results
     echo "Matching instance types within price range (limited to 10):"
-    printf "%-20s %-10s %-15s %-10s\n" "Instance Type" "vCPUs" "Memory (MiB)" "Price/Hour"
+    printf "%-20s %-10s %-15s %-10s\n" "Instance Type" "vCPUs" "Memory (GiB)" "Price/Hour"
     for instance in "${filtered_instances[@]}"; do
-        printf "%-20s %-10s %-15s $%-10s\n" $instance
+        # Split the instance data
+        read -r inst_type vcpus memory_mib price <<< "$instance"
+        
+        # Convert memory from MiB to GiB
+        memory_gib=$(awk "BEGIN {printf \"%.1f\", $memory_mib / 1024}")
+        
+        printf "%-20s %-10s %-15s $%-10s\n" "$inst_type" "$vcpus" "$memory_gib" "$price"
     done
 
     # Alert if more than 10 compatible types were found
@@ -159,4 +165,5 @@ while true; do  # Main loop to allow restarting the query
 done
 
 echo "Script completed with instance type: $INSTANCE_TYPE"
+
 
