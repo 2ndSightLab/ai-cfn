@@ -107,34 +107,34 @@ while true; do  # Main loop to allow restarting the query
         echo "Note: More than 10 compatible instance types were found. Only showing the 10 lowest-priced options."
     fi
 
-    # Ask user to select an instance type or run a new query
-    echo ""
-    read -p "Enter an instance type from the list above or press Enter to run a new query: " selected_type
-    
-    if [ -z "$selected_type" ]; then
-        echo "Starting a new query..."
-        continue  # Start over
-    else
-        # Check if the selected type is in the list
-        found=0
-        for instance in "${filtered_instances[@]}"; do
-            instance_type=$(echo $instance | awk '{print $1}')
-            if [ "$instance_type" == "$selected_type" ]; then
-                found=1
-                break
-            fi
-        done
+    # Inner loop for instance type selection
+    while true; do
+        echo ""
+        read -p "Enter an instance type from the list above or press Enter to run a new query: " selected_type
         
-        if [ $found -eq 1 ]; then
-            echo "You selected: $selected_type"
-            break  # Exit the loop
+        if [ -z "$selected_type" ]; then
+            echo "Starting a new query..."
+            break  # Break out of the inner loop to restart the query
         else
-            echo "Invalid instance type. Please select from the list or press Enter to run a new query."
-            read -p "Press Enter to continue..." dummy
-            # Don't start over automatically, show the same results again
+            # Check if the selected type is in the list
+            found=0
+            for instance in "${filtered_instances[@]}"; do
+                instance_type=$(echo $instance | awk '{print $1}')
+                if [ "$instance_type" == "$selected_type" ]; then
+                    found=1
+                    break
+                fi
+            done
+            
+            if [ $found -eq 1 ]; then
+                echo "You selected: $selected_type"
+                break 2  # Break out of both loops
+            else
+                echo "Invalid instance type. Please select from the list or press Enter to run a new query."
+                # Continue in the inner loop to allow re-entry
+            fi
         fi
-    fi
+    done
 done
 
-echo "Script completed."
 
