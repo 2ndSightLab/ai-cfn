@@ -26,14 +26,24 @@ while true; do  # Main loop to allow restarting the query
     echo "Minimum Memory: $min_memory_mib MiB"
     echo "Maximum Price per Hour: $max_price"
 
-    # Get AMI details
+    # Get AMI details - combine into a single API call
     echo "Getting AMI details for $AMI_ID..."
-    ami_arch=$(aws ec2 describe-images --image-ids $AMI_ID --region $REGION --query 'Images[0].Architecture' --output text)
-    virtualization_type=$(aws ec2 describe-images --image-ids $AMI_ID --region $REGION --query 'Images[0].VirtualizationType' --output text)
+    ami_info=$(aws ec2 describe-images --image-ids $AMI_ID --region $REGION --query 'Images[0].[Architecture,VirtualizationType]' --output text)
+    ami_arch=$(echo $ami_info | cut -d' ' -f1)
+    virtualization_type=$(echo $ami_info | cut -d' ' -f2)
 
     echo "AMI ID: $AMI_ID (Architecture: $ami_arch, Virtualization: $virtualization_type)"
 
-    # Query pricing data and sort by price
+    # Get available instance types in the region first to narrow down our search
+    echo "Getting available instance types in $REGION..."
+    available_types=$(aws ec2 describe-instance-type-offerings \
+        --location-type region \
+        --region $REGION \
+        --filters "Name=instance-type,Values=*" \
+        --query 'InstanceTypeOfferings[].InstanceType' \
+        --output text)
+
+    # Query pricing data with more specific filters
     echo "Querying pricing data and sorting by price..."
     sorted_pricing=$(aws pricing get-products \
         --region us-east-1 \
@@ -50,8 +60,7 @@ while true; do  # Main loop to allow restarting the query
             instanceType: .product.attributes.instanceType,
             price: (.terms.OnDemand | to_entries[0].value.priceDimensions | to_entries[0].value.pricePerUnit.USD)
         }' | 
-        jq -s 'sort_by(.price | tonumber) | 
-        map(select((.price | tonumber > 0) and (.price | tonumber <= '$max_price')))')
+        jq -s 'map(select((.price | tonumber > 0) and (.price | tonumber <= '$max_price'))) | sort_by(.price | tonumber)')
 
     # Check if we got any results
     if [ "$(echo $sorted_pricing | jq 'length')" -eq 0 ]; then
@@ -67,36 +76,43 @@ while true; do  # Main loop to allow restarting the query
     # Extract just the instance types for further processing
     sorted_instances=$(echo $sorted_pricing | jq -r '.[].instanceType')
 
+    # Get instance details in bulk for better performance
+    echo "Getting instance type details..."
+    # Create a comma-separated list of the first 100 instance types (to avoid API limits)
+    instance_list=$(echo $sorted_instances | tr ' ' '\n' | head -100 | tr '\n' ',' | sed 's/,$//')
+    
+    # Get instance details in bulk
+    instance_details=$(aws ec2 describe-instance-types \
+        --instance-types $(echo $instance_list | tr ',' ' ') \
+        --region $REGION \
+        --filters "Name=supported-virtualization-type,Values=$virtualization_type" \
+                 "Name=processor-info.supported-architecture,Values=$ami_arch" \
+        --query "InstanceTypes[?VCpuInfo.DefaultVCpus >= \`$min_vcpu\` && MemoryInfo.SizeInMiB >= \`$min_memory_mib\`].[InstanceType, VCpuInfo.DefaultVCpus, MemoryInfo.SizeInMiB]" \
+        --output json)
+
     # Filter for compatible instances and limit to 10 results
     echo "Filtering for compatible instances..."
     filtered_instances=()
     count=0
-    total_compatible=0
-
-    for instance in $sorted_instances; do
-        # Check if instance type is compatible with AMI and meets requirements
-        instance_info=$(aws ec2 describe-instance-types \
-            --instance-types $instance \
-            --region $REGION \
-            --filters "Name=supported-virtualization-type,Values=$virtualization_type" \
-                    "Name=processor-info.supported-architecture,Values=$ami_arch" \
-            --query "InstanceTypes[?VCpuInfo.DefaultVCpus >= \`$min_vcpu\` && MemoryInfo.SizeInMiB >= \`$min_memory_mib\`].[InstanceType, VCpuInfo.DefaultVCpus, MemoryInfo.SizeInMiB]" \
-            --output text)
+    
+    # Process the bulk results
+    while IFS= read -r instance_info; do
+        instance_type=$(echo $instance_info | jq -r '.[0]')
+        vcpus=$(echo $instance_info | jq -r '.[1]')
+        memory=$(echo $instance_info | jq -r '.[2]')
         
-        if [ ! -z "$instance_info" ]; then
-            total_compatible=$((total_compatible + 1))
-            
-            # Get price for this instance type from our sorted pricing data
-            price=$(echo $sorted_pricing | jq -r '.[] | select(.instanceType == "'$instance'") | .price')
-            
-            filtered_instances+=("$instance_info $price")
+        # Get price for this instance type from our sorted pricing data
+        price=$(echo $sorted_pricing | jq -r --arg instance "$instance_type" '.[] | select(.instanceType == $instance) | .price')
+        
+        if [ ! -z "$price" ]; then
+            filtered_instances+=("$instance_type $vcpus $memory $price")
             count=$((count + 1))
             
             if [ $count -eq 10 ]; then
                 break
             fi
         fi
-    done
+    done < <(echo $instance_details | jq -c '.[]')
 
     # Display results
     echo "Matching instance types within price range (limited to 10):"
@@ -106,6 +122,7 @@ while true; do  # Main loop to allow restarting the query
     done
 
     # Alert if more than 10 compatible types were found
+    total_compatible=$(echo $instance_details | jq 'length')
     if [ $total_compatible -gt 10 ]; then
         echo "Note: More than 10 compatible instance types were found. Only showing the 10 lowest-priced options."
     fi
@@ -142,3 +159,4 @@ while true; do  # Main loop to allow restarting the query
 done
 
 echo "Script completed with instance type: $INSTANCE_TYPE"
+
