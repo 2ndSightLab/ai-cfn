@@ -9,8 +9,8 @@ validate_numeric() {
     local min=$2
     local name=$3
     
-    # Check if input is a valid number
-    if ! [[ $input =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+    # Check if input is a valid number (including formats like .5)
+    if ! [[ $input =~ ^[0-9]*\.?[0-9]+$ ]]; then
         echo "Error: $name must be a number"
         return 1
     fi
@@ -295,5 +295,3 @@ while true; do  # Main loop to allow restarting the query
 done
 
 echo "Script completed with instance type: $INSTANCE_TYPE"
-
-
