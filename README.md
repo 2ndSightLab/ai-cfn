@@ -73,5 +73,7 @@ rm -rf ai-cfn
 git clone https://github.com/2ndSightLab/ai-cfn.git
 cd ai-cfn/ec2
 chmod 700 run.sh
+chmod 700 scripts/get-ec2-instance-type.sh
+chmod 700 scripts/get-latest-ami.sh
 ./run.sh
 ```
