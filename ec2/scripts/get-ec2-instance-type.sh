@@ -48,6 +48,7 @@ aws pricing get-products \
 # Extract and sort instance types by price
 echo "Sorting instances by price..."
 sorted_instances=$(cat $pricing_data | jq -r '.PriceList[] | 
+    fromjson | 
     select(.product.attributes.operatingSystem == "Linux") | 
     {
         instanceType: .product.attributes.instanceType,
@@ -78,6 +79,7 @@ for instance in $sorted_instances; do
         
         # Get price for this instance type
         price=$(cat $pricing_data | jq -r '.PriceList[] | 
+            fromjson | 
             select(.product.attributes.instanceType == "'$instance'") | 
             .terms.OnDemand | to_entries[0].value.priceDimensions | to_entries[0].value.pricePerUnit.USD' | head -1)
         
