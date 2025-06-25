@@ -5,7 +5,7 @@ REGION=""
 AMI_ID=""
 
 #get the latest ami id for the selected OS
-scripts/get-latest-ami.sh
+source scripts/get-latest-ami.sh
 
 if [ "$REGION" == "" ]; then echo "Error: Region is not set in get-latest-ami.sh"; exit; fi
 if [ "$AMI_ID" == "" ]; then echo "Error: AMI ID is not set in get-latest-ami.sh"; exit; fi
