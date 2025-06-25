@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+# Initialize INSTANCE_TYPE variable
+INSTANCE_TYPE=""
+
 while true; do  # Main loop to allow restarting the query
     # Assume AMI_ID and REGION are already set
 
@@ -110,9 +113,9 @@ while true; do  # Main loop to allow restarting the query
     # Inner loop for instance type selection
     while true; do
         echo ""
-        read -p "Enter an instance type from the list above or press Enter to run a new query: " selected_type
+        read -p "Enter an instance type from the list above or press Enter to run a new query: " input_type
         
-        if [ -z "$selected_type" ]; then
+        if [ -z "$input_type" ]; then
             echo "Starting a new query..."
             break  # Break out of the inner loop to restart the query
         else
@@ -120,14 +123,15 @@ while true; do  # Main loop to allow restarting the query
             found=0
             for instance in "${filtered_instances[@]}"; do
                 instance_type=$(echo $instance | awk '{print $1}')
-                if [ "$instance_type" == "$selected_type" ]; then
+                if [ "$instance_type" == "$input_type" ]; then
                     found=1
+                    INSTANCE_TYPE="$input_type"  # Set the global INSTANCE_TYPE variable
                     break
                 fi
             done
             
             if [ $found -eq 1 ]; then
-                echo "You selected: $selected_type"
+                echo "You selected: $INSTANCE_TYPE"
                 break 2  # Break out of both loops
             else
                 echo "Invalid instance type. Please select from the list or press Enter to run a new query."
@@ -137,4 +141,4 @@ while true; do  # Main loop to allow restarting the query
     done
 done
 
-
+echo "Script completed with instance type: $INSTANCE_TYPE"
