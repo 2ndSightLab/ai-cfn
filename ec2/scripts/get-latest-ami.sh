@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # Function to get the current AWS region
 get_current_region() {
@@ -10,23 +10,18 @@ get_current_region() {
         region=$AWS_REGION
     fi
     
-    # Return the region if found
+    # Return the region if found, otherwise throw an error
     if [ -n "$region" ]; then
         echo "$region"
     else
-        echo ""
+        echo "Error: Could not determine AWS region from your configuration or environment." >&2
+        echo "Please configure your AWS CLI with 'aws configure' or set the AWS_REGION environment variable." >&2
+        exit 1
     fi
 }
 
 # Get the current region
 REGION=$(get_current_region)
-
-# Check if region is valid
-if [ -z "$REGION" ]; then
-    echo "Error: Could not determine AWS region from your configuration or environment."
-    echo "Please configure your AWS CLI with 'aws configure' or set the AWS_REGION environment variable."
-    exit 1
-fi
 
 # Function to prompt user to select architecture
 select_architecture() {
@@ -100,6 +95,26 @@ select_os() {
     esac
 }
 
+# Function to prompt user for version offset
+select_version_offset() {
+    echo "How many versions back from the latest do you want to use?" >&2
+    echo "0 = latest (most recent)" >&2
+    echo "1 = second most recent" >&2
+    echo "2 = third most recent" >&2
+    echo "etc..." >&2
+    
+    local selection
+    read -p "Enter version offset (0-10): " selection
+    
+    # Validate input is a number between 0 and 10
+    if [[ "$selection" =~ ^[0-9]+$ ]] && [ "$selection" -ge 0 ] && [ "$selection" -le 10 ]; then
+        echo "$selection"
+    else
+        echo "Invalid selection. Please enter a number between 0 and 10." >&2
+        select_version_offset
+    fi
+}
+
 # Check if architecture was provided as argument
 if [ -z "$1" ]; then
     # No architecture provided, prompt user to select
@@ -114,9 +129,10 @@ else
             ;;
         *)
             echo "Error: Invalid architecture '$1'. Valid options are 'x86_64' or 'arm64'." >&2
-            echo "Usage: get_ami_id.sh [architecture] [os]" >&2
+            echo "Usage: get_ami_id.sh [architecture] [os] [version_offset]" >&2
             echo "  architecture: x86_64, arm64" >&2
             echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
+            echo "  version_offset: 0-10 (0 = latest, 1 = second most recent, etc.)" >&2
             exit 1
             ;;
     esac
@@ -137,12 +153,33 @@ else
         *)
             echo "Error: Invalid operating system '$2'." >&2
             echo "Valid options are: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
-            echo "Usage: get_ami_id.sh [architecture] [os]" >&2
+            echo "Usage: get_ami_id.sh [architecture] [os] [version_offset]" >&2
             echo "  architecture: x86_64, arm64" >&2
             echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
+            echo "  version_offset: 0-10 (0 = latest, 1 = second most recent, etc.)" >&2
             exit 1
             ;;
     esac
+fi
+
+# Check if version offset was provided as argument
+if [ -z "$3" ]; then
+    # No version offset provided, prompt user to select
+    echo "No version offset specified as argument. Interactive selection mode:" >&2
+    VERSION_OFFSET=$(select_version_offset)
+    echo "Selected version offset: $VERSION_OFFSET" >&2
+else
+    # Validate provided version offset
+    if [[ "$3" =~ ^[0-9]+$ ]] && [ "$3" -ge 0 ] && [ "$3" -le 10 ]; then
+        VERSION_OFFSET=$3
+    else
+        echo "Error: Invalid version offset '$3'. Please enter a number between 0 and 10." >&2
+        echo "Usage: get_ami_id.sh [architecture] [os] [version_offset]" >&2
+        echo "  architecture: x86_64, arm64" >&2
+        echo "  os: al2023, amzn2, ubuntu, ubuntu-pro, rhel, sles, debian, windows" >&2
+        echo "  version_offset: 0-10 (0 = latest, 1 = second most recent, etc.)" >&2
+        exit 1
+    fi
 fi
 
 # Set the appropriate filter values and owner based on OS selection
@@ -158,12 +195,12 @@ case "$OS" in
         OWNER="amazon"
         ;;
     ubuntu)
-        OS_FILTER="ubuntu/*"
+        OS_FILTER="ubuntu/"
         OS_NAME="Ubuntu"
         OWNER="099720109477" # Canonical's AWS account ID
         ;;
     ubuntu-pro)
-        OS_FILTER="ubuntu-pro/*"
+        OS_FILTER="ubuntu-pro-server/*"
         OS_NAME="Ubuntu Pro"
         OWNER="099720109477" # Canonical's AWS account ID
         ;;
@@ -189,10 +226,10 @@ case "$OS" in
         ;;
 esac
 
-echo "Searching for latest $OS_NAME AMI in region $REGION with architecture $ARCHITECTURE..."
+# Search for the AMI with gp3 volume type and no product codes (to exclude marketplace images)
+echo "Searching for $OS_NAME AMI in region $REGION with architecture $ARCHITECTURE and gp3 volume type..."
+echo "Version offset: $VERSION_OFFSET"
 
-echo "aws ec2 describe-images --region $REGION --owners $OWNER --filters 'Name=name,Values=$OS_FILTER' 'Name=state,Values=available' 'Name=architecture,Values=$ARCHITECTURE' --query 'sort_by(Images, &CreationDate)[-1].ImageId' --output text"
-    
 AMI_ID=$(aws ec2 describe-images \
     --region $REGION \
     --owners $OWNER \
@@ -200,14 +237,14 @@ AMI_ID=$(aws ec2 describe-images \
     "Name=name,Values=$OS_FILTER" \
     "Name=state,Values=available" \
     "Name=architecture,Values=$ARCHITECTURE" \
-    --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
+    "Name=block-device-mapping.volume-type,Values=gp3" \
+    --query 'reverse(sort_by(Images, &CreationDate))[$VERSION_OFFSET].[ImageId]' \
     --output text)
     
 if [ -z "$AMI_ID" ] || [ "$AMI_ID" == "None" ]; then
-    echo "No $OS_NAME AMI found for architecture $ARCHITECTURE in region $REGION."
+    echo "No $OS_NAME AMI found for architecture $ARCHITECTURE in region $REGION with gp3 volume type at version offset $VERSION_OFFSET."
     exit 1
 fi
-
 
 # Get additional details about the AMI using JSON output format for more reliable parsing
 AMI_DETAILS=$(aws ec2 describe-images \
@@ -223,13 +260,10 @@ AMI_OWNER=$(echo "$AMI_DETAILS" | grep '"OwnerId":' | head -1 | sed -E 's/.*"Own
 AMI_PUBLIC=$(echo "$AMI_DETAILS" | grep '"Public":' | head -1 | sed -E 's/.*"Public": ([^,]+).*/\1/')
 AMI_ARCH=$(echo "$AMI_DETAILS" | grep '"Architecture":' | head -1 | sed -E 's/.*"Architecture": "([^"]+)".*/\1/')
 
-# Check if this is a marketplace image
-PRODUCT_CODES=$(echo "$AMI_DETAILS" | grep -c '"ProductCodes":')
-if [ "$PRODUCT_CODES" -gt 0 ] && [ "$(echo "$AMI_DETAILS" | grep -c '"ProductCodes": \[\]')" -eq 0 ]; then
-    echo "Warning: This appears to be a marketplace image."
-fi
+# Get volume type information
+VOLUME_TYPE=$(echo "$AMI_DETAILS" | grep -A 5 '"Ebs":' | grep '"VolumeType":' | head -1 | sed -E 's/.*"VolumeType": "([^"]+)".*/\1/')
 
-echo "Latest $OS_NAME AMI Details:"
+echo "$OS_NAME AMI Details (version offset: $VERSION_OFFSET):"
 echo "AMI ID: $AMI_ID"
 echo "Name: $AMI_NAME"
 echo "Description: $AMI_DESC"
@@ -237,4 +271,6 @@ echo "Creation Date: $AMI_DATE"
 echo "Owner ID: $AMI_OWNER"
 echo "Public: $AMI_PUBLIC"
 echo "Architecture: $AMI_ARCH"
+echo "Volume Type: $VOLUME_TYPE"
 echo "Region: $REGION"
+
