@@ -238,7 +238,7 @@ AMI_ID=$(aws ec2 describe-images \
     "Name=state,Values=available" \
     "Name=architecture,Values=$ARCHITECTURE" \
     "Name=block-device-mapping.volume-type,Values=gp3" \
-    --query 'reverse(sort_by(Images, &CreationDate))[$VERSION_OFFSET].[ImageId]' \
+    --query "reverse(sort_by(Images[?!not_null(ProductCodes)], &CreationDate))[$VERSION_OFFSET].ImageId" \
     --output text)
     
 if [ -z "$AMI_ID" ] || [ "$AMI_ID" == "None" ]; then
@@ -273,4 +273,3 @@ echo "Public: $AMI_PUBLIC"
 echo "Architecture: $AMI_ARCH"
 echo "Volume Type: $VOLUME_TYPE"
 echo "Region: $REGION"
-
