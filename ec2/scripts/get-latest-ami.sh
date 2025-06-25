@@ -191,7 +191,7 @@ esac
 
 echo "Searching for latest $OS_NAME AMI in region $REGION with architecture $ARCHITECTURE..."
 
-echo "AMI_ID=$(aws ec2 describe-images --region $REGION --owners $OWNER --filters 'Name=name,Values=$OS_FILTER' 'Name=state,Values=available' 'Name=architecture,Values=$ARCHITECTURE' --query 'sort_by(Images, &CreationDate)[-1].ImageId' --output text)"
+echo "aws ec2 describe-images --region $REGION --owners $OWNER --filters 'Name=name,Values=$OS_FILTER' 'Name=state,Values=available' 'Name=architecture,Values=$ARCHITECTURE' --query 'sort_by(Images, &CreationDate)[-1].ImageId' --output text"
     
 AMI_ID=$(aws ec2 describe-images \
     --region $REGION \
