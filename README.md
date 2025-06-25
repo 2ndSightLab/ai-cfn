@@ -63,3 +63,15 @@ git clone https://github.com/2ndSightLab/ai-cfn.git
 cd ai-cfn/ec2/scripts
 chmod 700 get-latest-ami.sh
 ./get-latest-ami.sh
+```
+
+# Instructions to use EC2 run.sh to launch instance or create AMI:
+
+```
+cd ~
+rm -rf ai-cfn
+git clone https://github.com/2ndSightLab/ai-cfn.git
+cd ai-cfn/ec2
+chmod 700 run.sh
+./run.sh
+```
