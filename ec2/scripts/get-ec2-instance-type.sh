@@ -29,13 +29,9 @@ virtualization_type=$(aws ec2 describe-images --image-ids $AMI_ID --region $REGI
 
 echo "AMI ID: $AMI_ID (Architecture: $ami_arch, Virtualization: $virtualization_type)"
 
-# First get all instance types with prices below max_price, sorted by price
-echo "Querying pricing data..."
-# Create a temporary file to store pricing data
-pricing_data=$(mktemp)
-
-# Get all EC2 pricing data for the region
-aws pricing get-products \
+# Query pricing data and sort by price
+echo "Querying pricing data and sorting by price..."
+sorted_pricing=$(aws pricing get-products \
     --region us-east-1 \
     --service-code AmazonEC2 \
     --filters "Type=TERM_MATCH,Field=operatingSystem,Value=Linux" \
@@ -43,11 +39,7 @@ aws pricing get-products \
               "Type=TERM_MATCH,Field=capacitystatus,Value=Used" \
               "Type=TERM_MATCH,Field=preInstalledSw,Value=NA" \
               "Type=TERM_MATCH,Field=regionCode,Value=$REGION" \
-    --output json > $pricing_data
-
-# Extract and sort instance types by price
-echo "Sorting instances by price..."
-sorted_instances=$(cat $pricing_data | jq -r '.PriceList[] | 
+    --output json | jq '.PriceList[] | 
     fromjson | 
     select(.product.attributes.operatingSystem == "Linux") | 
     {
@@ -55,8 +47,20 @@ sorted_instances=$(cat $pricing_data | jq -r '.PriceList[] |
         price: (.terms.OnDemand | to_entries[0].value.priceDimensions | to_entries[0].value.pricePerUnit.USD)
     }' | 
     jq -s 'sort_by(.price | tonumber) | 
-    map(select(.price | tonumber <= '$max_price')) | 
-    .[].instanceType')
+    map(select(.price | tonumber <= '$max_price'))')
+
+# Check if we got any results
+if [ "$(echo $sorted_pricing | jq 'length')" -eq 0 ]; then
+    echo "ERROR: No instance types found within the specified price range. Please increase your maximum price or check your filters."
+    exit 1
+fi
+
+# Print the sorted pricing results
+echo "Sorted pricing results (lowest to highest):"
+echo $sorted_pricing | jq -r '.[] | "Instance Type: \(.instanceType), Price: $\(.price)"'
+
+# Extract just the instance types for further processing
+sorted_instances=$(echo $sorted_pricing | jq -r '.[].instanceType')
 
 # Filter for compatible instances and limit to 10 results
 echo "Filtering for compatible instances..."
@@ -77,11 +81,8 @@ for instance in $sorted_instances; do
     if [ ! -z "$instance_info" ]; then
         total_compatible=$((total_compatible + 1))
         
-        # Get price for this instance type
-        price=$(cat $pricing_data | jq -r '.PriceList[] | 
-            fromjson | 
-            select(.product.attributes.instanceType == "'$instance'") | 
-            .terms.OnDemand | to_entries[0].value.priceDimensions | to_entries[0].value.pricePerUnit.USD' | head -1)
+        # Get price for this instance type from our sorted pricing data
+        price=$(echo $sorted_pricing | jq -r '.[] | select(.instanceType == "'$instance'") | .price')
         
         filtered_instances+=("$instance_info $price")
         count=$((count + 1))
@@ -91,9 +92,6 @@ for instance in $sorted_instances; do
         fi
     fi
 done
-
-# Clean up temporary file
-rm $pricing_data
 
 # Display results
 echo "Matching instance types within price range (limited to 10):"
@@ -106,3 +104,4 @@ done
 if [ $total_compatible -gt 10 ]; then
     echo "Note: More than 10 compatible instance types were found. Only showing the 10 lowest-priced options."
 fi
+
