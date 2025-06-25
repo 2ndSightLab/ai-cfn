@@ -29,14 +29,53 @@ virtualization_type=$(aws ec2 describe-images --image-ids $AMI_ID --region $REGI
 
 echo "AMI ID: $AMI_ID (Architecture: $ami_arch, Virtualization: $virtualization_type)"
 
-# Retrieve and display matching instance types in a table
+# Get instance types that meet vCPU and memory requirements
 echo "Retrieving matching instance types..."
-
-# Use a simpler approach without complex filters
-aws ec2 describe-instance-types \
+compatible_instances=$(aws ec2 describe-instance-types \
     --region $REGION \
     --filters "Name=supported-virtualization-type,Values=$virtualization_type" \
               "Name=processor-info.supported-architecture,Values=$ami_arch" \
-    --query "InstanceTypes[?VCpuInfo.DefaultVCpus >= \`$min_vcpu\` && MemoryInfo.SizeInMiB >= \`$min_memory_mib\`].[InstanceType, VCpuInfo.DefaultVCpus, MemoryInfo.SizeInMiB]" \
-    --output table
+    --query "InstanceTypes[?VCpuInfo.DefaultVCpus >= \`$min_vcpu\` && MemoryInfo.SizeInMiB >= \`$min_memory_mib\`].InstanceType" \
+    --output text)
+
+# Get pricing information and filter based on max price
+echo "Filtering instance types based on price..."
+filtered_instances=()
+for instance in $compatible_instances; do
+    price=$(aws pricing get-products \
+        --service-code AmazonEC2 \
+        --filters "Type=TERM_MATCH,Field=instanceType,Value=$instance" \
+                  "Type=TERM_MATCH,Field=operatingSystem,Value=Linux" \
+                  "Type=TERM_MATCH,Field=tenancy,Value=Shared" \
+                  "Type=TERM_MATCH,Field=capacitystatus,Value=Used" \
+                  "Type=TERM_MATCH,Field=preInstalledSw,Value=NA" \
+                  "Type=TERM_MATCH,Field=regionCode,Value=$REGION" \
+        --query 'PriceList[0]' \
+        --output text | jq -r '.terms.OnDemand[].priceDimensions[].pricePerUnit.USD')
+    
+    if (( $(echo "$price <= $max_price" | bc -l) )); then
+        filtered_instances+=("$instance")
+    fi
+done
+
+# Display results
+echo "Matching instance types within price range:"
+printf "%-20s %-10s %-15s %-10s\n" "Instance Type" "vCPUs" "Memory (MiB)" "Price/Hour"
+for instance in "${filtered_instances[@]}"; do
+    instance_info=$(aws ec2 describe-instance-types \
+        --instance-types $instance \
+        --query 'InstanceTypes[0].[InstanceType, VCpuInfo.DefaultVCpus, MemoryInfo.SizeInMiB]' \
+        --output text)
+    price=$(aws pricing get-products \
+        --service-code AmazonEC2 \
+        --filters "Type=TERM_MATCH,Field=instanceType,Value=$instance" \
+                  "Type=TERM_MATCH,Field=operatingSystem,Value=Linux" \
+                  "Type=TERM_MATCH,Field=tenancy,Value=Shared" \
+                  "Type=TERM_MATCH,Field=capacitystatus,Value=Used" \
+                  "Type=TERM_MATCH,Field=preInstalledSw,Value=NA" \
+                  "Type=TERM_MATCH,Field=regionCode,Value=$REGION" \
+        --query 'PriceList[0]' \
+        --output text | jq -r '.terms.OnDemand[].priceDimensions[].pricePerUnit.USD')
+    printf "%-20s %-10s %-15s $%-10s\n" $instance_info $price
+done
 
