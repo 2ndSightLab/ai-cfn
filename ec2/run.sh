@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 #temp for testing
-REGION=us-east-2
+REGION=""
 AMI_ID=""
 
 #get the latest ami id for the selected OS
