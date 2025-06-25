@@ -42,7 +42,9 @@ compatible_instances=$(aws ec2 describe-instance-types \
 echo "Filtering instance types based on price..."
 filtered_instances=()
 for instance in $compatible_instances; do
+    # Use us-east-1 region specifically for pricing API calls
     price=$(aws pricing get-products \
+        --region us-east-1 \
         --service-code AmazonEC2 \
         --filters "Type=TERM_MATCH,Field=instanceType,Value=$instance" \
                   "Type=TERM_MATCH,Field=operatingSystem,Value=Linux" \
@@ -64,9 +66,13 @@ printf "%-20s %-10s %-15s %-10s\n" "Instance Type" "vCPUs" "Memory (MiB)" "Price
 for instance in "${filtered_instances[@]}"; do
     instance_info=$(aws ec2 describe-instance-types \
         --instance-types $instance \
+        --region $REGION \
         --query 'InstanceTypes[0].[InstanceType, VCpuInfo.DefaultVCpus, MemoryInfo.SizeInMiB]' \
         --output text)
+    
+    # Use us-east-1 region specifically for pricing API calls
     price=$(aws pricing get-products \
+        --region us-east-1 \
         --service-code AmazonEC2 \
         --filters "Type=TERM_MATCH,Field=instanceType,Value=$instance" \
                   "Type=TERM_MATCH,Field=operatingSystem,Value=Linux" \
@@ -76,6 +82,6 @@ for instance in "${filtered_instances[@]}"; do
                   "Type=TERM_MATCH,Field=regionCode,Value=$REGION" \
         --query 'PriceList[0]' \
         --output text | jq -r '.terms.OnDemand[].priceDimensions[].pricePerUnit.USD')
+    
     printf "%-20s %-10s %-15s $%-10s\n" $instance_info $price
 done
-
