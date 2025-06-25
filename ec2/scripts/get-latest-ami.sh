@@ -189,25 +189,33 @@ case "$OS" in
         ;;
 esac
 
-# If we haven't already found an AMI (for Ubuntu Pro), search for it now
-if [ -z "$AMI_ID" ]; then
-    echo "Searching for latest $OS_NAME AMI in region $REGION with architecture $ARCHITECTURE..."
+echo "Searching for latest $OS_NAME AMI in region $REGION with architecture $ARCHITECTURE..."
+
+echo "AMI_ID=$(aws ec2 describe-images \
+    --region $REGION \
+    --owners $OWNER \
+    --filters \
+    "Name=name,Values=$OS_FILTER" \
+    "Name=state,Values=available" \
+    "Name=architecture,Values=$ARCHITECTURE" \
+    --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
+    --output text)"
     
-    AMI_ID=$(aws ec2 describe-images \
-        --region $REGION \
-        --owners $OWNER \
-        --filters \
-        "Name=name,Values=$OS_FILTER" \
-        "Name=state,Values=available" \
-        "Name=architecture,Values=$ARCHITECTURE" \
-        --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
-        --output text)
-        
-    if [ -z "$AMI_ID" ] || [ "$AMI_ID" == "None" ]; then
-        echo "No $OS_NAME AMI found for architecture $ARCHITECTURE in region $REGION."
-        exit 1
-    fi
+AMI_ID=$(aws ec2 describe-images \
+    --region $REGION \
+    --owners $OWNER \
+    --filters \
+    "Name=name,Values=$OS_FILTER" \
+    "Name=state,Values=available" \
+    "Name=architecture,Values=$ARCHITECTURE" \
+    --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
+    --output text)
+    
+if [ -z "$AMI_ID" ] || [ "$AMI_ID" == "None" ]; then
+    echo "No $OS_NAME AMI found for architecture $ARCHITECTURE in region $REGION."
+    exit 1
 fi
+
 
 # Get additional details about the AMI using JSON output format for more reliable parsing
 AMI_DETAILS=$(aws ec2 describe-images \
