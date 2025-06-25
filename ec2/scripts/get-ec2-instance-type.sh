@@ -55,7 +55,8 @@ for instance in $compatible_instances; do
         --query 'PriceList[0]' \
         --output text | jq -r '.terms.OnDemand[].priceDimensions[].pricePerUnit.USD')
     
-    if (( $(echo "$price <= $max_price" | bc -l) )); then
+    # Use awk for floating-point comparison instead of bc
+    if (( $(awk 'BEGIN {print ("'$price'" <= "'$max_price'")}') )); then
         filtered_instances+=("$instance")
     fi
 done
