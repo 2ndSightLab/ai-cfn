@@ -14,8 +14,6 @@ to rework the automation I created here with some improvements:
 
 https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
 
-I've found some resources along the way that I didn't know existed (why are they not more widely published?) and I think they will help dramatically speed up the process. Plus I've got some new and improved ideas about naming conventions, shared functions, etc.
-
 IN PROGRESS
 
 Try out what I have so far in CloudShell - the goal is to deploy any resource.
