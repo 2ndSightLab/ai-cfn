@@ -1,9 +1,20 @@
-#!/bin/bash
+#!/bin/bash -e
 
-# Get the current user's name (just the username, not the full ARN)
-DEPLOY_USER_NAME=$(aws sts get-caller-identity --query 'UserId' --output text)
-# Alternative way to get just the username
-# DEPLOY_USER_NAME=$(aws sts get-caller-identity --query 'Arn' --output text | cut -d '/' -f 2)
+# Get the current user's ARN
+DEPLOY_USER_ARN=$(aws sts get-caller-identity --query "Arn" --output text)
+
+# Extract the username from the ARN
+# Handle different ARN formats:
+# - User ARNs: arn:aws:iam::123456789012:user/username
+# - Role ARNs: arn:aws:iam::123456789012:role/rolename
+# - Root user: arn:aws:iam::123456789012:root
+if [[ $DEPLOY_USER_ARN == *":root" ]]; then
+    # For root user
+    DEPLOY_USER_NAME="root"
+else
+    # For IAM users and roles
+    DEPLOY_USER_NAME=$(echo $DEPLOY_USER_ARN | rev | cut -d'/' -f1 | rev)
+fi
 
 # Check if the template file exists
 TEMPLATE_FILE="cfn/iam-user-with-secret.yaml"
@@ -41,9 +52,6 @@ done
 # and starts with an alphabetic character
 STACK_NAME="${ENV_NAME}-${DEPLOY_USER_NAME}-iam-user-${USERNAME}"
 
-# Get the current user's ARN for the AdditionalPrincipalArn parameter
-CURRENT_USER_ARN=$(aws sts get-caller-identity --query "Arn" --output text)
-
 # Display all values in KEY: VALUE format before deployment
 echo "Deployment Configuration:"
 echo "Deploying User: $DEPLOY_USER_NAME"
@@ -52,7 +60,7 @@ echo "IAM Username: $USERNAME"
 echo "Stack Name: $STACK_NAME"
 echo "Template File: $TEMPLATE_FILE"
 echo "KMS Key ARN: $KMS_KEY_ARN"
-echo "Additional Principal ARN: $CURRENT_USER_ARN"
+echo "Additional Principal ARN: $DEPLOY_USER_ARN"
 echo "-----------------------------------"
 echo "Deploying CloudFormation stack..."
 
@@ -64,7 +72,7 @@ aws cloudformation deploy \
   --parameter-overrides \
     Username=$USERNAME \
     KmsKeyArn=$KMS_KEY_ARN \
-    AdditionalPrincipalArn=$CURRENT_USER_ARN
+    AdditionalPrincipalArn=$DEPLOY_USER_ARN
 
 # Check if deployment was successful
 if [ $? -eq 0 ]; then
@@ -75,10 +83,11 @@ if [ $? -eq 0 ]; then
   
   echo "Environment: $ENV_NAME"
   echo "Created IAM user: $USERNAME"
-  echo "Additional access granted to: $CURRENT_USER_ARN"
+  echo "Additional access granted to: $DEPLOY_USER_ARN"
 else
   echo "Stack deployment failed. Check the AWS CloudFormation console for details."
 fi
+
 
 
 
