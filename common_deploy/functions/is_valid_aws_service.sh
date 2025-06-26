@@ -23,6 +23,7 @@ is_valid_aws_service() {
         return 0  # Valid service
     else
         echo "Error: '$service_name' is not a valid AWS service." >&2
+        list_aws_service_names
         exit
     fi
 }
