@@ -6,9 +6,8 @@ list_service_resource_names(){
   # Fetch the service list first to get available services
   SERVICE_LIST_URL="https://servicereference.us-east-1.amazonaws.com/v1/service-list.json"
 
-  # Check if the service exists in the service list
-  # Iterate over the 'services' array and select the object where 'name' matches the service name.
-  SERVICE_CHECK=$(curl -s "$SERVICE_LIST_URL" | jq -r '.services[] | select(.name == "'"$SERVICE_NAME"'")')
+  # Use jq to iterate over the array directly and select the service by name
+  SERVICE_CHECK=$(curl -s "$SERVICE_LIST_URL" | jq -r '[] | select(.name == "'"$SERVICE_NAME"'")')
 
   if [ -n "$SERVICE_CHECK" ]; then
     # Service exists, now get its resources
@@ -20,7 +19,7 @@ list_service_resource_names(){
   else
     echo "Service '$SERVICE_NAME' not found in the service list."
     echo "Available services:"
-    # Iterate over the 'services' array and print the 'name' field for each object.
-    curl -s "$SERVICE_LIST_URL" | jq -r '.services[].name' | sort
+    # If the top-level is an array of service objects, iterate and print names
+    curl -s "$SERVICE_LIST_URL" | jq -r '[] | .name' | sort
   fi
 }
