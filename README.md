@@ -1,5 +1,7 @@
 # ai-cfn
-CloudFormation templates and scripts created with Amazon Q Developer and a bit of Amazon Bedrock (Kind of...see blog posts).
+CloudFormation templates and scripts created with Amazon Q Developer and a bit of Amazon Bedrock (Kind of...see blogposts). 
+
+TBC = To be continued...
 
 # Related posts on writing code with AI
 
@@ -38,6 +40,8 @@ chmod 700 update-nameservers.sh
 
 # Instructions to Deploy DNS records:
 
+TBC
+
 ```
 # Run this scirpt and select the type of DNS record you want to deploy
 cd ~
@@ -56,6 +60,8 @@ https://github.com/2ndSightLab/ai-cfn/blob/main/dns/cfn/dnssec-kmskey.yaml
 
 # Instructions to use EC2 get_latest_ami.sh:
 
+https://medium.com/cloud-security/using-q-developer-to-create-a-script-to-get-the-latest-ami-id-e47c413ab8bf
+
 ```
 cd ~
 rm -rf ai-cfn
@@ -66,6 +72,16 @@ chmod 700 get-latest-ami.sh
 ```
 
 # Instructions to use EC2 run.sh to launch instance or create AMI:
+
+The file run.sh runs the scripts and tempaltes documented in these posts:
+
+1. Get AMI ID
+https://medium.com/cloud-security/using-q-developer-to-create-a-script-to-get-the-latest-ami-id-e47c413ab8bf
+
+2. Get EC2 instance type based on criteria: minimum vpcu, minimum memory, max cost
+https://medium.com/cloud-security/a-script-to-query-for-ec2-instance-type-by-memory-vcpus-and-cost-c0b82999ffa7
+
+TBC
 
 ```
 cd ~
