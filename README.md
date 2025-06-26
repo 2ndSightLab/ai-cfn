@@ -13,7 +13,7 @@ These scripts are for testing only.
 For secure deployment considerations check out these posts:
 https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
 
-# Instructions to Deploy a Static Website With a TLS Certificate and CloudFront distribution
+# Deploy a Static Website With a TLS Certificate and CloudFront distribution
 
 https://medium.com/cloud-security/code-to-deploy-a-website-hosted-in-an-s3-bucket-a-tls-certificate-and-cloudfront-distribution-9cdaf34d6a12
 
@@ -39,7 +39,7 @@ chmod 700 update-nameservers.sh
 ./update-nameservers.sh
 ```
 
-# Instructions to Deploy DNS records:
+# Deploy DNS records:
 
 TBC
 
@@ -59,7 +59,7 @@ https://github.com/2ndSightLab/ai-cfn/blob/main/dns/cfn/dnssec-kmskey.yaml
 ```
 
 
-# Instructions to use EC2 get_latest_ami.sh:
+# Get the latest official AMI ID for any operating system: 
 
 https://medium.com/cloud-security/using-q-developer-to-create-a-script-to-get-the-latest-ami-id-e47c413ab8bf
 
@@ -72,7 +72,7 @@ chmod 700 get-latest-ami.sh
 ./get-latest-ami.sh
 ```
 
-# Instructions to use EC2 run.sh to launch instance or create AMI:
+# Launch and instance or create an AMI
 
 The file run.sh runs the scripts and tempaltes documented in these posts:
 
