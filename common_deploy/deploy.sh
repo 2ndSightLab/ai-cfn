@@ -21,6 +21,8 @@ while [ -z "$SERVICE_NAME" ]; do
     fi
 done
 
+is_valid_aws_service $SERVICE_NAME
+
 RESOURCE_NAME=""
 while [ -z "$RESOURCE_NAME" ]; do
     echo "Enter the resource of the service $SERVICE_NAME that you want to deploy (type help for a list of resources):"
@@ -30,6 +32,8 @@ while [ -z "$RESOURCE_NAME" ]; do
        RESOURCE_NAME=""
     fi
 done
+
+is_valid_service_resource $SERVICE_NAME $RESOURCE_NAME
 
 NAME=""
 echo "Is this resource a user, for a specific user, or associated with an application? [y]"
