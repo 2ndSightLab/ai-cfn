@@ -1,5 +1,5 @@
 #!/bin/bash
-function list_service_resource_names(){
+list_service_resource_names(){
   SERVICE_NAME="$1"
   
   # Fetch the service list first to get available services
