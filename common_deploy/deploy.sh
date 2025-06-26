@@ -6,7 +6,7 @@ for file in functions/*; do [ -f "$file" ] && source "$file"; done
 # We could skip checking these every time but I want to make sure they are right
 REGION=$(get_region)
 IDENTITY_ARN=$(get_current_identity_arn)
-IDENTITY_NAME=$(get_current_identity_name)
+IDENTITY_NAME=$(get_identity_name_from_arn)
 
 echo "Enter environment name (prod, dev, test):"
 read ENV_NAME
