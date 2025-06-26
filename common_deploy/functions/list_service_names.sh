@@ -1,5 +1,5 @@
 #!/bin/bash
-function_list_service_names(){
+list_service_names(){
     # Fetch the service list from the AWS service reference endpoint
     response=$(curl -s https://servicereference.us-east-1.amazonaws.com/v1/service-list.json)
     
