@@ -10,7 +10,7 @@ get_current_identity_arn() {
     echo "$arn"
 }
 
-get_username_from_arn() {
+get_identityname_from_arn() {
     local arn=$1
     
     # Check if ARN is provided
@@ -66,36 +66,40 @@ get_username_from_arn() {
 
 get_stack_name() {
     local ENV_NAME=$1
-    local USERNAME=$2
+    local IDENTITY_NAME=$2
     local SERVICE=$3
     local RESOURCE=$4
     local NAME=$5
 
     # Check if all parameters are provided
-    if [ -z "$ENV_NAME" ] || [ -z "$USERNAME" ] || [ -z "$SERVICE" ] || [ -z "$RESOURCE" ] || [ -z "$NAME" ]; then
+    if [ -z "$ENV_NAME" ] || [ -z "$IDENTITY_NAME" ] || [ -z "$SERVICE" ] || [ -z "$RESOURCE" ] || [ -z "$NAME" ]; then
         echo "Error: All parameters (ENV_NAME, USERNAME, SERVICE, RESOURCE, NAME) must be provided." >&2
         return 1
     fi
 
     # Return the concatenated string
-    echo "$ENV_NAME-$USERNAME-$SERVICE-$RESOURCE-$NAME"
+    echo "$ENV_NAME-$IDENTITY_NAME-$SERVICE-$RESOURCE-$NAME"
 }
 
 
-get_resource_name() {
+get_cfn_resource_name() {
     local ENV_NAME=$1
-    local SERVICE=$3
-    local RESOURCE=$4
-    local NAME=$5
+    local SERVICE=$2
+    local RESOURCE=$3
+    local NAME=$4
 
     # Check if all parameters are provided
-    if [ -z "$ENV_NAME" ] || [ -z "$SERVICE" ] || [ -z "$RESOURCE" ] || [ -z "$NAME" ]; then
-        echo "Error: All parameters (ENV_NAME, SERVICE, RESOURCE, NAME) must be provided." >&2
+    if [ -z "$ENV_NAME" ] || [ -z "$SERVICE" ] || [ -z "$RESOURCE" ] ; then
+        echo "Error: All parameters (ENV_NAME, SERVICE, RESOURCE) must be provided." >&2
         return 1
     fi
 
     # Return the concatenated string
-    echo "$ENV_NAME-$SERVICE-$RESOURCE-$NAME"
+    resource_name="$ENV_NAME-$SERVICE-$RESOURCE"
+
+    if [ "$NAME != "" ]; then
+        resource_name="$resource_name-$NAME"
+    fi
 }
 
 is_valid_aws_service() {
@@ -160,5 +164,98 @@ is_valid_service_resource() {
     fi
 }
 
+is_valid_aws_region() {
+    local region_name=$1
+    
+    # Check if region name is provided
+    if [ -z "$region_name" ]; then
+        echo "Error: Region name must be provided." >&2
+        return 1
+    fi
+    
+    # Fetch the list of valid AWS regions
+    local aws_regions=$(aws ec2 describe-regions --query 'Regions[].RegionName' --output text 2>/dev/null)
+    
+    # Check if aws command failed
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to retrieve AWS region list." >&2
+        return 1
+    fi
+    
+    # Check if the region name is in the list
+    if [[ $aws_regions =~ (^|[[:space:]])$region_name($|[[:space:]]) ]]; then
+        return 0  # Valid region
+    else
+        echo "Error: '$region_name' is not a valid AWS region." >&2
+        return 1  # Invalid region
+    fi
+}
 
+get_region() {
+    local region=""
+    
+    # Try to get region from AWS CLI configuration
+    region=$(aws configure get region 2>/dev/null)
+    
+    # If still not found, try to get it from ECS task metadata
+    if [ -z "$region" ] && [ ! -z "$ECS_CONTAINER_METADATA_URI_V4" ]; then
+        region=$(curl -s ${ECS_CONTAINER_METADATA_URI_V4}/task 2>/dev/null | jq -r '.AvailabilityZone | .[:-1]' 2>/dev/null)
+    fi
+    
+    # If still not found, try to get it from AWS_REGION environment variable
+    if [ -z "$region" ] && [ ! -z "$AWS_REGION" ]; then
+        region=$AWS_REGION
+    fi
+    
+    # If region is still empty, exit with an error
+    if [ -z "$region" ]; then
+        echo "Error: Unable to determine AWS region" >&2
+        return 1
+    fi
+    
+    # Validate the region using the is_valid_aws_region function
+    is_valid_aws_region "$region"
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+    
+    # If we've made it here, the region is valid
+    echo "$region"
+    return 0
+}
+
+# We could skip checking these every time but I want to make sure they are right
+REGION=$(get_region)
+IDENTITY_ARN=$(get_current_identity_arn)
+IDENTITY_NAME=$(get_current_identity_arn)
+
+Echo "Enter the service from which you want to deploy a resource:"
+read SERVICE_NAME
+is_valid_aws_service $SERVICE_NAME
+
+echo "Enter the type of resource you would like to deploy"
+read RESOURCE_NAME
+is_valid_resource_service $RESOURCE_NAME
+
+echo "Enter environment name (prod, dev, test):
+read ENV_NAME
+
+echo "Is this resource a user, for a specific user, or associated with an application? [y]"
+read hasname
+if [ "$hasname" == "y" ]; then 
+  echo "Enter the name: "
+  read NAME
+else
+  NAME=""
+fi
+
+STACK_NAME=$(get_stack_name $ENV_NAME, $IDENTITY_NAME, $SERVICE, $RESOURCE, $NAME)
+CFN_RESOURCE_NAME=$(get_cfn_resource_name $ENV_NAME, $SERVICE, $RESOURCE, $NAME)
+
+echo "ENV: $ENV_NAME"
+echo "IDENTITY_ARN: $IDENTITY_ARN"
+echo "IDENTITY_NAME: $IDENTITY_NAME"
+echo "REGION: $REGION"
+echo "STACK_NAME: $STACK_NAME"
+echo "CFN_RESOURCE_NAME: $CFN_RESOURCE_NAME"
 
