@@ -10,7 +10,7 @@ is_valid_aws_service() {
     fi
     
     # Fetch the list of valid AWS service names
-    local aws_services=$(curl -s https://servicereference.us-east-1.amazonaws.com/v1/service-list.json | jq -r '.services[].id')
+    local aws_services=$(curl -s https://servicereference.us-east-1.amazonaws.com/v1/service-list.json | jq -r '.[].service')
     
     # Check if curl or jq command failed
     if [ $? -ne 0 ]; then
