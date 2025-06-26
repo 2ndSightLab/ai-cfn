@@ -30,7 +30,7 @@ Try out what I have so far in CloudShell - the goal is to deploy any resource.
 cd ~
 rm -rf ai-cfn
 git clone https://github.com/2ndSightLab/ai-cfn.git
-cd ai-cfn/common-deploy
+cd ai-cfn/common_deploy
 chmod 700 deploy.sh
 ./deploy.sh
 ```
