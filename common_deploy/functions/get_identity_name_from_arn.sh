@@ -11,12 +11,6 @@ get_identity_name_from_arn() {
     # Split the ARN into parts
     local arn_parts=(${arn//:/ })
     
-    # Check if the ARN has enough parts
-    if [ ${#arn_parts[@]} -lt 6 ]; then
-        echo "Error: Invalid ARN format." >&2
-        return 1
-    fi
-    
     # Get the resource type and name
     local resource_path=${arn_parts[5]}
     
