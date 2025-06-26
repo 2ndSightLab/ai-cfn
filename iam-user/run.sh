@@ -74,19 +74,13 @@ aws cloudformation deploy \
     KmsKeyArn=$KMS_KEY_ARN \
     AdditionalPrincipalArn=$DEPLOY_USER_ARN
 
-# Check if deployment was successful
-if [ $? -eq 0 ]; then
-  echo "Stack deployment completed successfully!"
-  
-  # Get outputs from the stack
-  SECRET_NAME=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SecretName'].OutputValue" --output text)
-  
-  echo "Environment: $ENV_NAME"
-  echo "Created IAM user: $USERNAME"
-  echo "Additional access granted to: $DEPLOY_USER_ARN"
-else
-  echo "Stack deployment failed. Check the AWS CloudFormation console for details."
-fi
+# Get outputs from the stack
+SECRET_NAME=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SecretName'].OutputValue" --output text)
+
+echo "Stack deployment completed successfully!"
+echo "Environment: $ENV_NAME"
+echo "Created IAM user: $USERNAME"
+echo "Additional access granted to: $DEPLOY_USER_ARN"
 
 
 
