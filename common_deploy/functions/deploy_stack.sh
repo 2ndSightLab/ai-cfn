@@ -1,4 +1,4 @@
-#/bin/bash
+#/bin/bash -e
 deploy_cloudformation_stack() {
     local STACK_NAME=$1
     local TEMPLATE_FILE_PATH=$2
@@ -16,6 +16,10 @@ deploy_cloudformation_stack() {
     local deploy_cmd="aws cloudformation deploy --stack-name $STACK_NAME --template-file $TEMPLATE_FILE_PATH"
 
     # Handle parameter list if provided
+    # Apparently all these formats are supported:
+    # "InstanceType=t2.micro" "KeyName=my-key" "BucketName=my-bucket" "Description=This is a sample description with spaces" 
+    # InstanceType=t2.micro KeyName=my-key BucketName=my-bucket "Description=This is a sample description with spaces" 
+    # InstanceType=t2.micro KeyName=my-key BucketName=my-bucket Description="This is a sample description with spaces" 
     if [ -n "$ENCODED_PARAMETER_LIST" ]; then
         local decoded_params=$(echo "$ENCODED_PARAMETER_LIST" | base64 --decode)
         deploy_cmd+=" --parameter-overrides $decoded_params"
