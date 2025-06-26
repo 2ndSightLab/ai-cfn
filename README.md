@@ -13,7 +13,7 @@ These scripts are for testing only.
 For secure deployment considerations check out these posts:
 https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
 
-# Deploy a Static Website With a TLS Certificate and CloudFront distribution
+# Deploy an S3 Website, TLS Certificate, and CloudFront distribution
 
 https://medium.com/cloud-security/code-to-deploy-a-website-hosted-in-an-s3-bucket-a-tls-certificate-and-cloudfront-distribution-9cdaf34d6a12
 
