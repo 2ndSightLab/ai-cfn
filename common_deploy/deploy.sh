@@ -11,11 +11,25 @@ IDENTITY_NAME=$(get_identity_name_from_arn $IDENTITY_ARN)
 echo "Enter environment name (prod, dev, test):"
 read ENV_NAME
 
-echo "Enter the service from which you want to deploy a resource:"
-read SERVICE_NAME
+SERVICE_NAME=""
+while [ -z "$SERVICE_NAME" ]; do
+    echo "Enter the service from which you want to deploy a resource (type help for a list of services):"
+    read SERVICE_NAME
+    if [ "$SERVICE_NAME" == "help" ]; then
+      list_service_names
+      SERVICE_NAME=""
+    fi
+done
 
-echo "Enter the type of resource you would like to deploy:"
-read RESOURCE_NAME
+RESOURCE_NAME=""
+while [ -z "$RESOURCE_NAME" ]; do
+    echo "Enter the service from which you want to deploy a resource (type help for a list of services):"
+    read RESOURCE_NAME
+    if [ "$RESOURCE_NAME" == "help" ]; then
+       list_resources_for_service $SERVICE_NAME
+       RESOURCE_NAME=""
+    fi
+done
 
 NAME=""
 echo "Is this resource a user, for a specific user, or associated with an application? [y]"
