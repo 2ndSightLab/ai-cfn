@@ -6,14 +6,14 @@ is_valid_service_resource() {
     # Check if both parameters are provided
     if [ -z "$service_name" ] || [ -z "$resource_type" ]; then
         echo "Error: Both service name and resource type must be provided." >&2
-        return 1
+        exit
     fi
     
     # First check if the service is valid
     is_valid_aws_service "$service_name"
     if [ $? -ne 0 ]; then
         # No need to output an error message here as is_valid_aws_service already does that
-        return 1
+        exit
     fi
     
     # Fetch the JSON data for the service
