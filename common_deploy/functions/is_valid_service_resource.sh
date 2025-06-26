@@ -1,3 +1,4 @@
+#!/bin/bash
 is_valid_service_resource() {
     local service_name=$1
     local resource_type=$2
