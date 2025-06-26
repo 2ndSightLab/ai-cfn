@@ -9,7 +9,7 @@ IDENTITY_ARN=$(get_current_identity_arn)
 IDENTITY_NAME=$(get_identity_name_from_arn $IDENTITY_ARN)
 
 echo "Enter environment name (prod, dev, test):"
-read ENV_NAME
+read ENV_NAME 
 
 SERVICE_NAME=""
 while [ -z "$SERVICE_NAME" ]; do
@@ -41,6 +41,10 @@ fi
 
 STACK_NAME=$(get_stack_name "$ENV_NAME" "$IDENTITY_NAME" "$SERVICE_NAME" "$RESOURCE_NAME" "$NAME")
 STACK_RESOURCE_NAME=$(get_stack_resource_name "$ENV_NAME" "$SERVICE_NAME" "$RESOURCE_NAME" "$NAME")
+SERVICE_NAME_LOWER=$(echo $SERVICE_NAME | tr 'A-Z' 'a-z')
+RESOURCE_NAME_LOWER=$(echo $RESOURCE_NAME | tr 'A-Z' 'a-z')
+TEMPLATE_FILE_PATH="cfn/$SERVICE_NAME_LOWER/$RESOURCE_NAME_LOWER.yaml"
+SCRIPT_FILE_PATH="scripts/$SERVICE_NAME_LOWER/$RESOURCE_NAME_LOWER.sh"
 
 echo "ENV: $ENV_NAME"
 echo "IDENTITY_ARN: $IDENTITY_ARN"
@@ -48,3 +52,8 @@ echo "IDENTITY_NAME: $IDENTITY_NAME"
 echo "REGION: $REGION"
 echo "STACK_NAME: $STACK_NAME"
 echo "STACK_RESOURCE_NAME: $STACK_RESOURCE_NAME"
+echo "TEMPLATE_FILE_PATH: $TEMPLATE_FILE_PATH"
+echo "SCRIPT_FILE_PATH: $SCRIPT_FILE_PATH"
+
+create_file_not_exists $SCRIPT_FILE_PATH
+
