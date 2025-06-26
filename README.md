@@ -13,6 +13,28 @@ These scripts are for testing only.
 For secure deployment considerations check out these posts:
 https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
 
+# Common Deployment Script
+
+Now that I've got the hang of using Q for development in the samlpes below I've started
+to rework the automation I created here with some improvements:
+
+https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
+
+I've found some resources along the way that I didn't know existed (why are they not more widely published?) and I think they will help dramatically speed up the process. Plus I've got some new and improved ideas about naming conventions, shared functions, etc.
+
+IN PROGRESS
+
+Try out what I have so far in CloudShell - the goal is to deploy any resource.
+
+```
+cd ~
+rm -rf ai-cfn
+git clone https://github.com/2ndSightLab/ai-cfn.git
+cd ai-cfn/common-deploy
+chmod 700 deploy.sh
+./deploy.sh
+```
+
 # Deploy an S3 Website, TLS Certificate, and CloudFront distribution
 
 https://medium.com/cloud-security/code-to-deploy-a-website-hosted-in-an-s3-bucket-a-tls-certificate-and-cloudfront-distribution-9cdaf34d6a12
@@ -41,7 +63,7 @@ chmod 700 update-nameservers.sh
 
 # Deploy DNS records:
 
-TBC
+NOT FINISHED
 
 ```
 # Run this scirpt and select the type of DNS record you want to deploy
@@ -77,7 +99,7 @@ chmod 700 run.sh
 
 The file run.sh runs the scripts and tempaltes documented in these posts:
 
-TBC
+NOT FINISHED
 
 ```
 cd ~
@@ -111,7 +133,7 @@ https://medium.com/cloud-security/using-q-developer-to-create-a-script-to-get-th
 2. Get EC2 instance type based on criteria: minimum vpcu, minimum memory, max cost
 https://medium.com/cloud-security/a-script-to-query-for-ec2-instance-type-by-memory-vcpus-and-cost-c0b82999ffa7
 
-TBC
+NOT FINISHED
 
 ```
 cd ~
