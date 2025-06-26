@@ -1,17 +1,11 @@
 # ai-cfn
 CloudFormation templates and scripts created with Amazon Q Developer and a bit of Amazon Bedrock (Kind of...see blogposts). 
 
-TBC = To be continued...
-
 # About writing code with AI
 
 Artifical Intelligence:
+
 https://medium.com/cloud-security/artificial-intelligence-2e97415216c0
-
-These scripts are for testing only. 
-
-For secure deployment considerations check out these posts:
-https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
 
 # Common Deployment Script
 
