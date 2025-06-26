@@ -12,6 +12,8 @@ list_service_resource_names() {
   
   # Service exists, now get its resources
   SERVICE_URL="https://servicereference.us-east-1.amazonaws.com/v1/${SERVICE_NAME}/${SERVICE_NAME}.json"
+
+  echo "Retriving data from $SERVICE_URL"
   
   echo "Resources for $SERVICE_NAME:"
   
