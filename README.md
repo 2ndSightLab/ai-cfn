@@ -72,7 +72,7 @@ chmod 700 get-latest-ami.sh
 ./get-latest-ami.sh
 ```
 
-# Launch and instance or create an AMI
+# Launch and EC2 instnce. Optionally create an AMI
 
 The file run.sh runs the scripts and tempaltes documented in these posts:
 
