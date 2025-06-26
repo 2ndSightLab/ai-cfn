@@ -9,7 +9,6 @@ list_service_resource_names(){
   RESPONSE=$(curl -s "$SERVICE_LIST_URL")
   
   # Check if the service exists in the service list
-  # Updated to use "service" instead of "name"
   SERVICE_CHECK=$(echo "$RESPONSE" | jq -r '.[] | select(.service == "'$SERVICE_NAME'")')
   
   if [ -n "$SERVICE_CHECK" ]; then
@@ -18,12 +17,12 @@ list_service_resource_names(){
     
     # Use curl to download the JSON and jq to parse it
     echo "Resources for $SERVICE_NAME:"
-    curl -s "$SERVICE_URL" | jq -r '.ResourceTypes | keys[]'
+    
+    # Get the service JSON and extract resource types
+    curl -s "$SERVICE_URL" | jq -r 'try .ResourceTypes | keys[] // "No ResourceTypes found"'
   else
     echo "Service '$SERVICE_NAME' not found in the service list."
     echo "Available services:"
-    # Updated to use "service" instead of "name"
     echo "$RESPONSE" | jq -r '.[] | .service' | sort
   fi
 }
-
