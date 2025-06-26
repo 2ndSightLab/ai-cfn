@@ -1,3 +1,4 @@
+#!/bin/bash
 is_valid_aws_service() {
     local service_name=$1
     
