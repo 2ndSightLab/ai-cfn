@@ -58,7 +58,8 @@ chmod 700 deploy.sh
 https://github.com/2ndSightLab/ai-cfn/blob/main/dns/cfn/dnssec-kmskey.yaml
 ```
 
-# Deploy IAM user
+# Deploy IAM user with password in secret 
+The secret can only be accessed by the IAM user and the person running the script.
 
 The file run.sh runs the scripts and tempaltes documented in these posts:
 
