@@ -17,14 +17,12 @@ read SERVICE_NAME
 echo "Enter the type of resource you would like to deploy"
 read RESOURCE_NAME
 
-
+NAME=""
 echo "Is this resource a user, for a specific user, or associated with an application? [y]"
 read hasname
 if [ "$hasname" == "y" ]; then 
   echo "Enter the name: "
   read NAME
-else
-  NAME=""
 fi
 
 STACK_NAME=$(get_stack_name $ENV_NAME, $IDENTITY_NAME, $SERVICE, $RESOURCE, $NAME)
