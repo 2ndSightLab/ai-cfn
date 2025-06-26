@@ -58,6 +58,22 @@ chmod 700 deploy.sh
 https://github.com/2ndSightLab/ai-cfn/blob/main/dns/cfn/dnssec-kmskey.yaml
 ```
 
+# Deploy IAM user
+
+The file run.sh runs the scripts and tempaltes documented in these posts:
+
+TBC
+
+```
+cd ~
+rm -rf ai-cfn
+git clone https://github.com/2ndSightLab/ai-cfn.git
+cd ai-cfn/iam-user
+chmod 700 run.sh
+./run.sh
+```
+
+
 # Deploy shared network
 
 The file run.sh runs the scripts and tempaltes documented in these posts:
