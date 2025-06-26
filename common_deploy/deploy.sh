@@ -6,15 +6,15 @@ for file in functions/*; do [ -f "$file" ] && source "$file"; done
 # We could skip checking these every time but I want to make sure they are right
 REGION=$(get_region)
 IDENTITY_ARN=$(get_current_identity_arn)
-IDENTITY_NAME=$(get_current_identity_arn)
+IDENTITY_NAME=$(get_current_identity_name)
 
-echo "Enter environment name (prod, dev, test):
+echo "Enter environment name (prod, dev, test):"
 read ENV_NAME
 
-Echo "Enter the service from which you want to deploy a resource:"
+echo "Enter the service from which you want to deploy a resource:"
 read SERVICE_NAME
 
-echo "Enter the type of resource you would like to deploy"
+echo "Enter the type of resource you would like to deploy:"
 read RESOURCE_NAME
 
 NAME=""
@@ -25,8 +25,8 @@ if [ "$hasname" == "y" ]; then
   read NAME
 fi
 
-STACK_NAME=$(get_stack_name $ENV_NAME, $IDENTITY_NAME, $SERVICE, $RESOURCE, $NAME)
-CFN_RESOURCE_NAME=$(get_cfn_resource_name $ENV_NAME, $SERVICE, $RESOURCE, $NAME)
+STACK_NAME=$(get_stack_name "$ENV_NAME" "$IDENTITY_NAME" "$SERVICE_NAME" "$RESOURCE_NAME" "$NAME")
+CFN_RESOURCE_NAME=$(get_cfn_resource_name "$ENV_NAME" "$SERVICE_NAME" "$RESOURCE_NAME" "$NAME")
 
 echo "ENV: $ENV_NAME"
 echo "IDENTITY_ARN: $IDENTITY_ARN"
