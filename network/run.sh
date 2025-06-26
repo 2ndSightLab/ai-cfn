@@ -1,29 +1,31 @@
-#!/bin/bash
+#!/bin/bash -e
 
-echo "Enter the name of the environment for which you want to deploy a shared network:"
+echo "Enter the name of the environment for which you want to deploy an Internet Gateway:"
 read ENV_NAME
 
-user=$(aws sts get-caller-identity --query User.Arn --output text | cut -d '/' -f 2)
+# Get VPC ID from the previously deployed VPC stack
+VPC_STACK_NAME="${ENV_NAME}-vpc"
+VPC_ID=$(aws cloudformation describe-stacks \
+  --stack-name "$VPC_STACK_NAME" \
+  --query "Stacks[0].Outputs[?OutputKey=='VpcId'].OutputValue" \
+  --output text)
 
-echo "Enter VPC_CIDR (e.g. 10.20.30.0/23):"
-read VPC_CIDR
+if [ -z "$VPC_ID" ]; then
+  echo "Error: Could not retrieve VPC ID from stack $VPC_STACK_NAME"
+  exit 1
+fi
 
-VPC_NAME="${ENV_NAME}-VPC"
-ENABLE_DNS_SUPPORT="true"
-ENABLE_DNS_HOSTNAMES="false"
-TEMPLATE_FILE="cfn/vpc.yaml"
-STACK_NAME="$VPC_NAME"
-
-IGW_NAME="${ENV_NAME}-IGW"
+IGW_NAME="${ENV_NAME}-igw"
+TEMPLATE_FILE="cfn/internetgateway.yaml"
+STACK_NAME="${ENV_NAME}-igw"
 
 # Display the configuration for confirmation
-echo "Deploying VPC with the following configuration:"
+echo "Deploying Internet Gateway with the following configuration:"
 echo "Environment: $ENV_NAME"
-echo "VPC CIDR: $VPC_CIDR"
-echo "VPC Name: $VPC_NAME"
+echo "VPC ID: $VPC_ID"
+echo "Internet Gateway Name: $IGW_NAME"
 echo "Stack Name: $STACK_NAME"
 echo "Template File: $TEMPLATE_FILE"
-echo "Internet Gateway Name: $IGW_NAME"
 echo
 
 # Deploy the CloudFormation stack
@@ -32,15 +34,15 @@ aws cloudformation deploy \
   --template-file "$TEMPLATE_FILE" \
   --stack-name "$STACK_NAME" \
   --parameter-overrides \
-    VpcCidrBlock="$VPC_CIDR" \
-    VpcName="$VPC_NAME" \
-    EnableDnsSupport="$ENABLE_DNS_SUPPORT" \
-    EnableDnsHostnames="$ENABLE_DNS_HOSTNAMES"
+    VpcId="$VPC_ID" \
+    InternetGatewayName="$IGW_NAME"
 
-# Check if deployment was successful
-if [ $? -eq 0 ]; then
-  echo "VPC deployment completed successfully!"
-else
-  echo "VPC deployment failed. Please check the CloudFormation events for details."
-  exit 1
-fi
+# Get Internet Gateway ID from stack outputs
+IGW_ID=$(aws cloudformation describe-stacks \
+  --stack-name "$STACK_NAME" \
+  --query "Stacks[0].Outputs[?OutputKey=='InternetGatewayId'].OutputValue" \
+  --output text)
+
+# Display the retrieved value
+echo "Internet Gateway ID: $IGW_ID"
+
