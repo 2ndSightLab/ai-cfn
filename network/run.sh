@@ -75,3 +75,38 @@ IGW_ID=$(aws cloudformation describe-stacks \
 # Display the retrieved Internet Gateway ID
 echo "Internet Gateway ID: $IGW_ID"
 
+# Define route table variables
+ROUTE_TABLE_NAME="${ENV_NAME}-public-rt"
+ROUTE_TABLE_TEMPLATE_FILE="cfn/routetable.yaml"
+ROUTE_TABLE_STACK_NAME="${ENV_NAME}-route-table"
+
+# Display the Route Table configuration for confirmation
+echo
+echo "Deploying Route Table with the following configuration:"
+echo "Environment: $ENV_NAME"
+echo "VPC ID: $VPC_ID"
+echo "Internet Gateway ID: $IGW_ID"
+echo "Route Table Name: $ROUTE_TABLE_NAME"
+echo "Stack Name: $ROUTE_TABLE_STACK_NAME"
+echo "Template File: $ROUTE_TABLE_TEMPLATE_FILE"
+echo
+
+# Deploy the Route Table CloudFormation stack
+echo "Deploying Route Table CloudFormation stack..."
+aws cloudformation deploy \
+  --template-file "$ROUTE_TABLE_TEMPLATE_FILE" \
+  --stack-name "$ROUTE_TABLE_STACK_NAME" \
+  --parameter-overrides \
+    VpcId="$VPC_ID" \
+    InternetGatewayId="$IGW_ID" \
+    RouteTableName="$ROUTE_TABLE_NAME"
+
+# Get Route Table ID from stack outputs
+ROUTE_TABLE_ID=$(aws cloudformation describe-stacks \
+  --stack-name "$ROUTE_TABLE_STACK_NAME" \
+  --query "Stacks[0].Outputs[?OutputKey=='RouteTableId'].OutputValue" \
+  --output text)
+
+# Display the retrieved Route Table ID
+echo "Route Table ID: $ROUTE_TABLE_ID"
+
