@@ -11,7 +11,13 @@ get_stack_name() {
         echo "Error: All parameters (ENV_NAME, USERNAME, SERVICE, RESOURCE, NAME) must be provided." >&2
         return 1
     fi
+    
+    #validte the service is a valid AWS service
+    is_valid_aws_service $SERVICE
 
+    #validte the resource is a valid AWS service resource
+    is_valid_service_resource $RESOURCE
+    
     # Return the concatenated string
     echo "$ENV_NAME-$IDENTITY_NAME-$SERVICE-$RESOURCE-$NAME"
 }
