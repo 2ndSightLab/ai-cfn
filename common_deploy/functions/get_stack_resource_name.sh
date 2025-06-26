@@ -1,5 +1,5 @@
 #!/bin/bash -e
-get_cfn_resource_name() {
+get_stack_resource_name() {
     local ENV_NAME=$(echo "$1" | tr '[:upper:]' '[:lower:]')
     local SERVICE=$(echo "$2" | tr '[:upper:]' '[:lower:]')
     local RESOURCE=$(echo "$3" | tr '[:upper:]' '[:lower:]')
