@@ -115,7 +115,7 @@ chmod 700 get-latest-ami.sh
 ./get-latest-ami.sh
 ```
 
-# Launch and EC2 instance. Optionally create an AMI
+# Launch an EC2 instance. Optionally create an AMI
 
 NOT FINISHED - WILL ADD TO THE COMMON DEPLOYMENT METHOD AT THE TOP BUT HERE FOR REFERENCE
 
