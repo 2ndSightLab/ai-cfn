@@ -23,4 +23,6 @@ get_stack_resource_name() {
     if [ "$NAME" != "" ]; then
         resource_name="$resource_name-$NAME"
     fi
+
+    echo $resource_name
 }
