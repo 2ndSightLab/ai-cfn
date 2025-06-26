@@ -110,3 +110,57 @@ ROUTE_TABLE_ID=$(aws cloudformation describe-stacks \
 # Display the retrieved Route Table ID
 echo "Route Table ID: $ROUTE_TABLE_ID"
 
+# Prompt for subnet parameters
+echo "Enter Subnet CIDR Block (e.g. 10.0.1.0/24):"
+read SUBNET_CIDR
+
+echo "Enter Subnet Name:"
+read SUBNET_NAME
+
+# Check if subnet name starts with environment name prefix, if not add it
+if [[ ! "$SUBNET_NAME" == "$ENV_NAME"* ]]; then
+  SUBNET_NAME="${ENV_NAME}-${SUBNET_NAME}"
+  echo "Subnet name updated to: $SUBNET_NAME"
+fi
+
+echo "Enter Availability Zone:"
+read AZ
+
+echo "Map Public IP on Launch? (true/false):"
+read MAP_PUBLIC_IP
+
+SUBNET_TEMPLATE_FILE="cfn/subnet.yaml"
+SUBNET_STACK_NAME="${ENV_NAME}-subnet"
+
+# Display the subnet configuration for confirmation
+echo
+echo "Deploying Subnet with the following configuration:"
+echo "VPC ID: $VPC_ID"
+echo "Subnet CIDR: $SUBNET_CIDR"
+echo "Subnet Name: $SUBNET_NAME"
+echo "Availability Zone: $AZ"
+echo "Map Public IP: $MAP_PUBLIC_IP"
+echo "Stack Name: $SUBNET_STACK_NAME"
+echo "Template File: $SUBNET_TEMPLATE_FILE"
+echo
+
+# Deploy the Subnet CloudFormation stack
+echo "Deploying Subnet CloudFormation stack..."
+aws cloudformation deploy \
+  --template-file "$SUBNET_TEMPLATE_FILE" \
+  --stack-name "$SUBNET_STACK_NAME" \
+  --parameter-overrides \
+    VpcId="$VPC_ID" \
+    SubnetCidrBlock="$SUBNET_CIDR" \
+    SubnetName="$SUBNET_NAME" \
+    AvailabilityZone="$AZ" \
+    MapPublicIpOnLaunch="$MAP_PUBLIC_IP"
+
+# Get Subnet ID from stack outputs
+SUBNET_ID=$(aws cloudformation describe-stacks \
+  --stack-name "$SUBNET_STACK_NAME" \
+  --query "Stacks[0].Outputs[?OutputKey=='SubnetId'].OutputValue" \
+  --output text)
+
+# Display the retrieved Subnet ID
+echo "Subnet ID: $SUBNET_ID"
