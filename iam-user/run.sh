@@ -2,7 +2,7 @@
 
 # Set variables
 STACK_NAME="iam-user-with-secret"
-TEMPLATE_FILE="iam-user-with-secret.yaml"
+TEMPLATE_FILE="cfn/iam-user-with-secret.yaml"
 USERNAME="new-iam-user"  # Change this to your desired username
 KMS_KEY_ARN="arn:aws:kms:region:account-id:key/key-id"  # Replace with your actual KMS key ARN
 
