@@ -28,6 +28,3 @@ list_service_resource_names() {
     echo "This service has no resources"
   fi
 }
-
-# Call the function with the provided service name
-list_service_resource_names "$1"
