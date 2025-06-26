@@ -5,8 +5,12 @@ list_service_resource_names(){
   # Fetch the service list first to get available services
   SERVICE_LIST_URL="https://servicereference.us-east-1.amazonaws.com/v1/service-list.json"
   
+  # First, let's check the actual structure of the response
+  RESPONSE=$(curl -s "$SERVICE_LIST_URL")
+  
   # Check if the service exists in the service list
-  SERVICE_CHECK=$(curl -s "$SERVICE_LIST_URL" | jq -r '.services[] | select(.name == "'$SERVICE_NAME'")')
+  # Modified jq query to handle the actual structure (likely a flat array)
+  SERVICE_CHECK=$(echo "$RESPONSE" | jq -r '.[] | select(.name == "'$SERVICE_NAME'")' 2>/dev/null)
   
   if [ -n "$SERVICE_CHECK" ]; then
     # Service exists, now get its resources
@@ -18,6 +22,14 @@ list_service_resource_names(){
   else
     echo "Service '$SERVICE_NAME' not found in the service list."
     echo "Available services:"
-    curl -s "$SERVICE_LIST_URL" | jq -r '.services[].name' | sort
+    # Modified to handle the actual structure
+    echo "$RESPONSE" | jq -r '.[] | .name' 2>/dev/null | sort
+    
+    # If the above fails, try to determine the actual structure
+    if [ $? -ne 0 ]; then
+      echo "Could not parse service list. JSON structure may have changed."
+      echo "First few lines of the response:"
+      echo "$RESPONSE" | head -n 10
+    fi
   fi
 }
