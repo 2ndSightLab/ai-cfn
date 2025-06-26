@@ -1,11 +1,12 @@
-#!/bin/bash
+#!/bin/bash -e
+
 is_valid_aws_service() {
     local service_name=$1
     
     # Check if service name is provided
     if [ -z "$service_name" ]; then
         echo "Error: Service name must be provided." >&2
-        return 1
+        exit
     fi
     
     # Fetch the list of valid AWS service names
@@ -14,7 +15,7 @@ is_valid_aws_service() {
     # Check if curl or jq command failed
     if [ $? -ne 0 ]; then
         echo "Error: Failed to retrieve AWS service list." >&2
-        return 1
+        exit
     fi
     
     # Check if the service name is in the list
@@ -22,6 +23,6 @@ is_valid_aws_service() {
         return 0  # Valid service
     else
         echo "Error: '$service_name' is not a valid AWS service." >&2
-        return 1  # Invalid service
+        exit
     fi
 }
