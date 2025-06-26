@@ -241,3 +241,33 @@ SUBNET_ID=$(aws cloudformation describe-stacks \
 # Display the retrieved Subnet ID
 echo "Subnet ID: $SUBNET_ID"
 
+# Define subnet route table association variables
+SUBNET_RT_ASSOC_TEMPLATE_FILE="cfn/subnetroutetableassociation.yaml"
+SUBNET_RT_ASSOC_STACK_NAME="${ENV_NAME}-subnet-rt-assoc"
+
+# Display the Subnet Route Table Association configuration for confirmation
+echo
+echo "Deploying Subnet Route Table Association with the following configuration:"
+echo "Subnet ID: $SUBNET_ID"
+echo "Route Table ID: $ROUTE_TABLE_ID"
+echo "Stack Name: $SUBNET_RT_ASSOC_STACK_NAME"
+echo "Template File: $SUBNET_RT_ASSOC_TEMPLATE_FILE"
+echo
+
+# Deploy the Subnet Route Table Association CloudFormation stack
+echo "Deploying Subnet Route Table Association CloudFormation stack..."
+aws cloudformation deploy \
+  --template-file "$SUBNET_RT_ASSOC_TEMPLATE_FILE" \
+  --stack-name "$SUBNET_RT_ASSOC_STACK_NAME" \
+  --parameter-overrides \
+    SubnetId="$SUBNET_ID" \
+    RouteTableId="$ROUTE_TABLE_ID"
+
+# Get Association ID from stack outputs
+ASSOCIATION_ID=$(aws cloudformation describe-stacks \
+  --stack-name "$SUBNET_RT_ASSOC_STACK_NAME" \
+  --query "Stacks[0].Outputs[?OutputKey=='AssociationId'].OutputValue" \
+  --output text)
+
+# Display the retrieved Association ID
+echo "Subnet Route Table Association ID: $ASSOCIATION_ID"
