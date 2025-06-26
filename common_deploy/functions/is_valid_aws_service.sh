@@ -1,8 +1,7 @@
 #!/bin/bash -e
 
 is_valid_aws_service() {
-    local service_name=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-    
+    local service_name="$1"
     # Check if service name is provided
     if [ -z "$service_name" ]; then
         echo "Error: Service name must be provided." >&2
