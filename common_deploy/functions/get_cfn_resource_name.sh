@@ -12,15 +12,15 @@ get_cfn_resource_name() {
     fi
 
     #validte the service is a valid AWS service
-    is_valid_aws_service $SERVICE
-
+    is_valid_aws_service "$SERVICE"
+    
     #validte the resource is a valid AWS service resource
-    is_valid_service_resource $RESOURCE
+    is_valid_service_resource "$RESOURCE"
 
     # Return the concatenated string
     resource_name="$ENV_NAME-$SERVICE-$RESOURCE"
 
-    if [ "$NAME != "" ]; then
+    if [ "$NAME" != "" ]; then
         resource_name="$resource_name-$NAME"
     fi
 }
