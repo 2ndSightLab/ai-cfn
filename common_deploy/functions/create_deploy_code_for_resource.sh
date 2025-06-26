@@ -1,7 +1,7 @@
 #!/bin/bash
 create_deploy_code_for_resource(){
-    local RESOURCE_NAME=$(echo "$1" | tr '[:lower:]' '[:upper:]')
-    local SERVICE_NAME=$(echo "$2" | tr '[:lower:]' '[:upper:]')
+    local RESOURCE_NAME="$1" 
+    local SERVICE_NAME="$2"
     
     is_valid_aws_service "$SERVICE_NAME"
     is_valid_service_resource "$SERVICE_NAME" "$RESOURCE_NAME"
