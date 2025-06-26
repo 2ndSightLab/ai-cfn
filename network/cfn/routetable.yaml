@@ -1,1 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create a route table'
 
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: The VPC ID to associate with the route table
+
+  InternetGatewayId:
+    Type: String
+    Description: (Optional) The Internet Gateway ID to create a route for
+    Default: ''
+    
+  RouteTableName:
+    Type: String
+    Description: Name for the route table
+    Default: 'Public-RouteTable'
+
+Conditions:
+  HasInternetGateway: !Not [!Equals [!Ref InternetGatewayId, '']]
+
+Resources:
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VpcId
+      Tags:
+        - Key: Name
+          Value: !Ref RouteTableName
+
+  InternetGatewayRoute:
+    Type: AWS::EC2::Route
+    Condition: HasInternetGateway
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGatewayId
+
+Outputs:
+  RouteTableId:
+    Description: ID of the created Route Table
+    Value: !Ref RouteTable
