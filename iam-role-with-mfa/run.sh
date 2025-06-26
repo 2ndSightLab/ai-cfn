@@ -6,7 +6,7 @@ echo "2. Add a policy to a user to allow them to assume the role."
 read action
 
 if [ "$action" == "1" ]; then
-   ./create-role-to-asume-with-mfa.sh
+   ./create-role-that-requires-mfa-to-assume.sh
 else
    ./create-iam-policy-to-assume-role-with-mfa.sh
 fi
