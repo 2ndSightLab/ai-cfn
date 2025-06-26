@@ -27,6 +27,14 @@ chmod 700 deploy.sh
 ./deploy.sh
 ```
 
+What's done:
+* initializes region based on region where the script is being deployed (for now)
+* initializes current principal ARN and name
+* Asks user for service and resource to deploy
+* validates region, service, resource are all valid
+* gets stack name based on provided values
+* gets stack resource name base don provided values
+
 # Deploy an S3 Website, TLS Certificate, and CloudFront distribution
 
 https://medium.com/cloud-security/code-to-deploy-a-website-hosted-in-an-s3-bucket-a-tls-certificate-and-cloudfront-distribution-9cdaf34d6a12
@@ -55,7 +63,7 @@ chmod 700 update-nameservers.sh
 
 # Deploy DNS records:
 
-NOT FINISHED - WILL ADD TO THE COMMON DEPLOYMENT METHOD AT THE TOP BUT HERE FOR REFERENCE
+NOT FINISHED
 
 ```
 # Run this scirpt and select the type of DNS record you want to deploy
@@ -86,12 +94,11 @@ chmod 700 run.sh
 ./run.sh
 ```
 
-
 # Deploy shared network
 
 The file run.sh runs the scripts and tempaltes documented in these posts:
 
-NOT FINISHED - WILL ADD TO THE COMMON DEPLOYMENT METHOD AT THE TOP BUT HERE FOR REFERENCE
+NOT FINISHED
 
 ```
 cd ~
@@ -117,7 +124,7 @@ chmod 700 get-latest-ami.sh
 
 # Launch an EC2 instance. Optionally create an AMI
 
-NOT FINISHED - WILL ADD TO THE COMMON DEPLOYMENT METHOD AT THE TOP BUT HERE FOR REFERENCE
+NOT FINISHED
 
 1. Get AMI ID
 https://medium.com/cloud-security/using-q-developer-to-create-a-script-to-get-the-latest-ami-id-e47c413ab8bf
