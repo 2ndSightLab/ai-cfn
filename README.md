@@ -8,7 +8,9 @@ TBC = To be continued...
 Artifical Intelligence:
 https://medium.com/cloud-security/artificial-intelligence-2e97415216c0
 
-Note: These scripts are for testing only. For secure deployment considerations check out these posts:
+These scripts are for testing only. 
+
+For secure deployment considerations check out these posts:
 https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
 
 # Instructions to Deploy a Static Website With a TLS Certificate and CloudFront distribution
