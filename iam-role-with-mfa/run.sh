@@ -8,5 +8,5 @@ read action
 if [ "$action" == "1" ]; then
    ./create-role-to-asume-with-mfa.sh
 else
-   ./create-poicy-to-assume-role-with-mfa.sh
+   ./create-iam-policy-to-assume-role-with-mfa.sh
 fi
