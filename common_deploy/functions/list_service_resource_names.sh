@@ -24,4 +24,3 @@ list_service_resource_names(){
     curl -s "$SERVICE_LIST_URL" | jq -r '.services[].name' | sort
   fi
 }
-
