@@ -16,3 +16,31 @@ STACK_NAME="$VPC_NAME"
 
 IGW_NAME="${ENV_NAME}-IGW"
 
+# Display the configuration for confirmation
+echo "Deploying VPC with the following configuration:"
+echo "Environment: $ENV_NAME"
+echo "VPC CIDR: $VPC_CIDR"
+echo "VPC Name: $VPC_NAME"
+echo "Stack Name: $STACK_NAME"
+echo "Template File: $TEMPLATE_FILE"
+echo "Internet Gateway Name: $IGW_NAME"
+echo
+
+# Deploy the CloudFormation stack
+echo "Deploying CloudFormation stack..."
+aws cloudformation deploy \
+  --template-file "$TEMPLATE_FILE" \
+  --stack-name "$STACK_NAME" \
+  --parameter-overrides \
+    VpcCidrBlock="$VPC_CIDR" \
+    VpcName="$VPC_NAME" \
+    EnableDnsSupport="$ENABLE_DNS_SUPPORT" \
+    EnableDnsHostnames="$ENABLE_DNS_HOSTNAMES"
+
+# Check if deployment was successful
+if [ $? -eq 0 ]; then
+  echo "VPC deployment completed successfully!"
+else
+  echo "VPC deployment failed. Please check the CloudFormation events for details."
+  exit 1
+fi
