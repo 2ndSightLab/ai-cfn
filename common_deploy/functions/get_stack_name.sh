@@ -3,7 +3,7 @@ get_stack_name() {
     local ENV_NAME=$(echo "$1" | tr '[:upper:]' '[:lower:]')
     local IDENTITY_NAME=$(echo "$2" | tr '[:upper:]' '[:lower:]')
     local SERVICE=$(echo "$3" | tr '[:upper:]' '[:lower:]')
-    local RESOURCE==$(echo "$4" | tr '[:upper:]' '[:lower:]')
+    local RESOURCE=$(echo "$4" | tr '[:upper:]' '[:lower:]')
     local NAME=$(echo "$5" | tr '[:upper:]' '[:lower:]')
 
     # Check if all parameters are provided
