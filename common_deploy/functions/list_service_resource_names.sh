@@ -18,8 +18,12 @@ list_service_resource_names(){
     # Use curl to download the JSON and jq to parse it
     echo "Resources for $SERVICE_NAME:"
     
-    # Get the service JSON and extract resource types
-    curl -s "$SERVICE_URL" | jq -r 'try .ResourceTypes | keys[] // "No ResourceTypes found"'
+    # Get the service JSON
+    SERVICE_JSON=$(curl -s "$SERVICE_URL")
+    
+    # Try to get resource types, output custom message if none exist
+    RESOURCES=$(echo "$SERVICE_JSON" | jq -r 'if has("ResourceTypes") and (.ResourceTypes | length > 0) then .ResourceTypes | keys[] else "This service has no resources" end')
+    echo "$RESOURCES"
   else
     echo "Service '$SERVICE_NAME' not found in the service list."
     echo "Available services:"
