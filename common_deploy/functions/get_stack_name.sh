@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 get_stack_name() {
     local ENV_NAME=$1
     local IDENTITY_NAME=$2
@@ -9,7 +9,7 @@ get_stack_name() {
     # Check if all parameters are provided
     if [ -z "$ENV_NAME" ] || [ -z "$IDENTITY_NAME" ] || [ -z "$SERVICE" ] || [ -z "$RESOURCE" ] ; then
         echo "Error: All parameters (ENV_NAME, USERNAME, SERVICE, RESOURCE) must be provided." >&2
-        return 1
+        exit
     fi
     
     #validte the service is a valid AWS service
