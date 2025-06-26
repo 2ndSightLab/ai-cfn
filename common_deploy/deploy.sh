@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 #source all the files in the functions directory
-for file in ../functions/*; do [ -f "$file" ] && source "$file"; done
+for file in functions/*; do [ -f "$file" ] && source "$file"; done
 
 # We could skip checking these every time but I want to make sure they are right
 REGION=$(get_region)
