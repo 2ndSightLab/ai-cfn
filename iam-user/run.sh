@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
-# Get the username of the person deploying the template
-DEPLOY_USER_NAME=$(aws sts get-caller-identity --query 'Arn' --output text | cut -d '/' -f 2)
+# Get the username of the person deploying the template (extract just the name, not the full ARN)
+DEPLOY_USER_NAME=$(aws sts get-caller-identity --query 'Arn' --output text | cut -d '/' -f 2 | cut -d ':' -f 2)
 echo "Deploying as user: $DEPLOY_USER_NAME"
 
 # Check if the template file exists
@@ -65,4 +65,5 @@ aws cloudformation describe-stacks \
 echo "User $USERNAME has been successfully deployed!"
 echo "The password is stored in AWS Secrets Manager with the same name as the username."
 echo "The user will be required to change their password on first login."
+
 
