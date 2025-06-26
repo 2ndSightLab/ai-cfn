@@ -1,5 +1,5 @@
 #!/bin/bash
-get_identityname_from_arn() {
+get_identity_name_from_arn() {
     local arn=$1
     
     # Check if ARN is provided
