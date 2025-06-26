@@ -5,14 +5,14 @@ read ENV_NAME
 
 user=$(aws sts get-caller-identity --query User.Arn --output text | cut -d '/' -f 2)
 
-echo "Enter VPC_CIDR (e.g. 10.20.30.0/23"
+echo "Enter VPC_CIDR (e.g. 10.20.30.0/23):"
 read VPC_CIDR
 
-VPC_NAME="$env-VPC"
+VPC_NAME="${ENV_NAME}-VPC"
 ENABLE_DNS_SUPPORT="true"
 ENABLE_DNS_HOSTNAMES="false"
 TEMPLATE_FILE="cfn/vpc.yaml"
-STACK_NAME=$VPC_NAME
+STACK_NAME="$VPC_NAME"
 
+IGW_NAME="${ENV_NAME}-IGW"
 
-IGW_NAME="$ENV_NAME-IGW"
