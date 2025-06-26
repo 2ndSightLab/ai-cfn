@@ -62,8 +62,6 @@ https://github.com/2ndSightLab/ai-cfn/blob/main/dns/cfn/dnssec-kmskey.yaml
 
 The file run.sh runs the scripts and tempaltes documented in these posts:
 
-TBC
-
 ```
 cd ~
 rm -rf ai-cfn
