@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Get the current user's name
-DEPLOY_USER_NAME=$(aws sts get-caller-identity --query 'Arn' --output text | cut -d '/' -f 2)
+# Get the current user's name (just the username, not the full ARN)
+DEPLOY_USER_NAME=$(aws sts get-caller-identity --query 'UserId' --output text)
+# Alternative way to get just the username
+# DEPLOY_USER_NAME=$(aws sts get-caller-identity --query 'Arn' --output text | cut -d '/' -f 2)
 
 # Check if the template file exists
 TEMPLATE_FILE="cfn/iam-user-with-secret.yaml"
@@ -35,7 +37,9 @@ while [ -z "$KMS_KEY_ARN" ] || ! [[ $KMS_KEY_ARN =~ ^arn:aws:kms:[a-z0-9-]+:[0-9
 done
 
 # Set the stack name based on environment, deployer, and IAM username
-STACK_NAME="$ENV_NAME-$DEPLOY_USER_NAME-iam-user-$USERNAME"
+# Ensure the stack name only contains valid characters (alphanumeric and hyphens)
+# and starts with an alphabetic character
+STACK_NAME="${ENV_NAME}-${DEPLOY_USER_NAME}-iam-user-${USERNAME}"
 
 # Get the current user's ARN for the AdditionalPrincipalArn parameter
 CURRENT_USER_ARN=$(aws sts get-caller-identity --query "Arn" --output text)
