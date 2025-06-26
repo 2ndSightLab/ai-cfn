@@ -4,4 +4,8 @@ list_service_resource_names() {
   aws cloudformation list-types --visibility PUBLIC --type RESOURCE | \
   jq -r --arg svc "$SERVICE_NAME" '
     .TypeSummaries[] 
-    | select(.TypeName | startswith("AWS::" + $svc +
+    | select(.TypeName | startswith("AWS::" + $svc + "::")) 
+    | .TypeName 
+    | sub("AWS::" + $svc + "::";"")
+  '
+}
