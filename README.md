@@ -55,7 +55,7 @@ chmod 700 update-nameservers.sh
 
 # Deploy DNS records:
 
-NOT FINISHED
+NOT FINISHED - WILL ADD TO THE COMMON DEPLOYMENT METHOD AT THE TOP BUT HERE FOR REFERENCE
 
 ```
 # Run this scirpt and select the type of DNS record you want to deploy
@@ -91,7 +91,7 @@ chmod 700 run.sh
 
 The file run.sh runs the scripts and tempaltes documented in these posts:
 
-NOT FINISHED
+NOT FINISHED - WILL ADD TO THE COMMON DEPLOYMENT METHOD AT THE TOP BUT HERE FOR REFERENCE
 
 ```
 cd ~
@@ -117,7 +117,7 @@ chmod 700 get-latest-ami.sh
 
 # Launch and EC2 instance. Optionally create an AMI
 
-The file run.sh runs the scripts and tempaltes documented in these posts:
+NOT FINISHED - WILL ADD TO THE COMMON DEPLOYMENT METHOD AT THE TOP BUT HERE FOR REFERENCE
 
 1. Get AMI ID
 https://medium.com/cloud-security/using-q-developer-to-create-a-script-to-get-the-latest-ami-id-e47c413ab8bf
@@ -125,7 +125,6 @@ https://medium.com/cloud-security/using-q-developer-to-create-a-script-to-get-th
 2. Get EC2 instance type based on criteria: minimum vpcu, minimum memory, max cost
 https://medium.com/cloud-security/a-script-to-query-for-ec2-instance-type-by-memory-vcpus-and-cost-c0b82999ffa7
 
-NOT FINISHED
 
 ```
 cd ~
