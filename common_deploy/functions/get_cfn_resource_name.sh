@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 get_cfn_resource_name() {
     local ENV_NAME=$1
     local SERVICE=$2
@@ -10,6 +10,12 @@ get_cfn_resource_name() {
         echo "Error: All parameters (ENV_NAME, SERVICE, RESOURCE) must be provided." >&2
         return 1
     fi
+
+    #validte the service is a valid AWS service
+    is_valid_aws_service $SERVICE
+
+    #validte the resource is a valid AWS service resource
+    is_valid_service_resource $RESOURCE
 
     # Return the concatenated string
     resource_name="$ENV_NAME-$SERVICE-$RESOURCE"
