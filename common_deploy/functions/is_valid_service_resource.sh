@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/bash -e
+
 is_valid_service_resource() {
   SERVICE_NAME=$(echo "$1" | tr '[:lower:]' '[:upper:]')
   RESOURCE_NAME=$(echo "$2" | tr '[:lower:]' '[:upper:]')
@@ -12,9 +13,6 @@ is_valid_service_resource() {
 
   if [ -z "$RESOURCE_EXISTS" ]; then
     echo "Error: Invalid resource name '$RESOURCE_NAME' for service '$SERVICE_NAME'"
-    return 1
-  else
-    echo "Valid resource name: $RESOURCE_NAME for service $SERVICE_NAME"
-    return 0
+    exit
   fi
 }
