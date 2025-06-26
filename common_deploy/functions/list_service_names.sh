@@ -5,5 +5,5 @@ list_service_names(){
   
   # Use curl to download the JSON and jq to parse it
   echo "Available AWS services:"
-  curl -s "$SERVICE_LIST_URL" | jq -r '.[] | .name' | sort
+  curl -s "$SERVICE_LIST_URL" | jq -r '.[].name' | sort
 }
