@@ -1,43 +1,79 @@
 #!/bin/bash
 
-# Set variables
-STACK_NAME="iam-user-with-secret"
-TEMPLATE_FILE="cfn/iam-user-with-secret.yaml"
-USERNAME="new-iam-user"  # Change this to your desired username
-KMS_KEY_ARN="arn:aws:kms:region:account-id:key/key-id"  # Replace with your actual KMS key ARN
+# Get the current user's name
+DEPLOY_USER_NAME=$(aws sts get-caller-identity --query 'Arn' --output text | cut -d '/' -f 2)
 
-# Get the current user's ARN
+# Check if the template file exists
+TEMPLATE_FILE="cfn/iam-user-with-secret.yaml"
+if [ ! -f "$TEMPLATE_FILE" ]; then
+    echo "Error: Template file not found at $TEMPLATE_FILE"
+    exit 1
+fi
+
+# Prompt for environment name until provided
+ENV_NAME=""
+while [ -z "$ENV_NAME" ]; do
+    read -p "Enter environment name (e.g., dev, test, prod): " ENV_NAME
+done
+
+# Prompt for username until provided
+USERNAME=""
+while [ -z "$USERNAME" ]; do
+    read -p "Enter username for the IAM user: " USERNAME
+done
+
+# Prompt for KMS key ARN until a valid value is provided
+KMS_KEY_ARN=""
+while [ -z "$KMS_KEY_ARN" ] || ! [[ $KMS_KEY_ARN =~ ^arn:aws:kms:[a-z0-9-]+:[0-9]{12}:key/[a-f0-9-]+$ ]]; do
+    read -p "Enter KMS key ARN (format: arn:aws:kms:region:account-id:key/key-id): " KMS_KEY_ARN
+    
+    # Show error message if input is not empty but invalid
+    if [ ! -z "$KMS_KEY_ARN" ] && ! [[ $KMS_KEY_ARN =~ ^arn:aws:kms:[a-z0-9-]+:[0-9]{12}:key/[a-f0-9-]+$ ]]; then
+        echo "Error: Invalid KMS key ARN format. Please try again."
+        KMS_KEY_ARN=""
+    fi
+done
+
+# Set the stack name based on environment, deployer, and IAM username
+STACK_NAME="$ENV_NAME-$DEPLOY_USER_NAME-iam-user-$USERNAME"
+
+# Get the current user's ARN for the AdditionalPrincipalArn parameter
 CURRENT_USER_ARN=$(aws sts get-caller-identity --query "Arn" --output text)
 
-echo "Current user ARN: $CURRENT_USER_ARN"
-echo "Deploying CloudFormation stack with additional access for current user..."
+# Display all values in KEY: VALUE format before deployment
+echo "Deployment Configuration:"
+echo "Deploying User: $DEPLOY_USER_NAME"
+echo "Environment: $ENV_NAME"
+echo "IAM Username: $USERNAME"
+echo "Stack Name: $STACK_NAME"
+echo "Template File: $TEMPLATE_FILE"
+echo "KMS Key ARN: $KMS_KEY_ARN"
+echo "Additional Principal ARN: $CURRENT_USER_ARN"
+echo "-----------------------------------"
+echo "Deploying CloudFormation stack..."
 
-# Deploy the CloudFormation stack
-aws cloudformation create-stack \
+# Deploy the CloudFormation stack using deploy command
+aws cloudformation deploy \
   --stack-name $STACK_NAME \
-  --template-body file://$TEMPLATE_FILE \
+  --template-file $TEMPLATE_FILE \
   --capabilities CAPABILITY_NAMED_IAM \
-  --parameters \
-    ParameterKey=Username,ParameterValue=$USERNAME \
-    ParameterKey=KmsKeyArn,ParameterValue=$KMS_KEY_ARN \
-    ParameterKey=AdditionalPrincipalArn,ParameterValue=$CURRENT_USER_ARN
+  --parameter-overrides \
+    Username=$USERNAME \
+    KmsKeyArn=$KMS_KEY_ARN \
+    AdditionalPrincipalArn=$CURRENT_USER_ARN
 
-echo "Stack creation initiated. Waiting for stack to complete..."
-
-# Wait for the stack to complete
-aws cloudformation wait stack-create-complete --stack-name $STACK_NAME
-
+# Check if deployment was successful
 if [ $? -eq 0 ]; then
-  echo "Stack creation completed successfully!"
+  echo "Stack deployment completed successfully!"
   
   # Get outputs from the stack
   SECRET_NAME=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='SecretName'].OutputValue" --output text)
   
+  echo "Environment: $ENV_NAME"
   echo "Created IAM user: $USERNAME"
-  echo "Secret name: $SECRET_NAME"
   echo "Additional access granted to: $CURRENT_USER_ARN"
 else
-  echo "Stack creation failed. Check the AWS CloudFormation console for details."
+  echo "Stack deployment failed. Check the AWS CloudFormation console for details."
 fi
 
 
