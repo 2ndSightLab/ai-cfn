@@ -39,6 +39,7 @@ if [ "$hasname" == "y" ]; then
   read NAME
 fi
 
+echo "Initializing...please wait..."
 STACK_NAME=$(get_stack_name "$ENV_NAME" "$IDENTITY_NAME" "$SERVICE_NAME" "$RESOURCE_NAME" "$NAME")
 STACK_RESOURCE_NAME=$(get_stack_resource_name "$ENV_NAME" "$SERVICE_NAME" "$RESOURCE_NAME" "$NAME")
 
