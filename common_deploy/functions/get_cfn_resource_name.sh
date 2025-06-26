@@ -8,7 +8,7 @@ get_cfn_resource_name() {
     # Check if all parameters are provided
     if [ -z "$ENV_NAME" ] || [ -z "$SERVICE" ] || [ -z "$RESOURCE" ] ; then
         echo "Error: All parameters (ENV_NAME, SERVICE, RESOURCE) must be provided." >&2
-        return 1
+        exit
     fi
 
     #validte the service is a valid AWS service
