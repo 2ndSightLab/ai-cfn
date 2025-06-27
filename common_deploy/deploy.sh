@@ -63,4 +63,4 @@ create_deploy_script_for_resource $SERVICE_NAME $RESOURCE_NAME
 if [ ! -f $SCRIPT_FILE_PATH ]; then echo "$SCRIPT_FILE_PATH does not exist. Exiting."; exit; fi
 
 echo "Execute th edeploy script $SCRIPT_FILE_PATH"
-./$SCRIPT_FILE_PATH
+source $SCRIPT_FILE_PATH
