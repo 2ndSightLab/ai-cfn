@@ -1,13 +1,10 @@
 #!/bin/bash
 create_deploy_code_for_resource(){
-    local RESOURCE_NAME="$1" 
-    local SERVICE_NAME="$2"
+    local SERVICE_NAME="$1"
+    local RESOURCE_NAME="$2" 
     
-    is_valid_aws_service "$SERVICE_NAME"
-    is_valid_service_resource "$SERVICE_NAME" "$RESOURCE_NAME"
-    
-    local SCRIPT_FILE_PATH=$(get_script_file_path)
-    local TEMPLATE_FILE_PATH=$(get_template_file_path)
+    local SCRIPT_FILE_PATH=$(get_script_file_path $SERVICE_NAME $RESOURCE_NAME)
+    local TEMPLATE_FILE_PATH=$(get_template_file_path $SERVICE_NAME $RESOURCE_NAME)
     
     # Create directory structure if it doesn't exist
     mkdir -p "scripts/$SERVICE_NAME"
