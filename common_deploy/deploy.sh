@@ -54,11 +54,13 @@ echo "REGION: $REGION"
 echo "STACK_NAME: $STACK_NAME"
 echo "STACK_RESOURCE_NAME: $STACK_RESOURCE_NAME"
 
+TEMPLATE_FILE_PATH=$(get_template_file_path $SERVICE_NAME $RESOURCE_NAME)
 create_cloudformation_template $SERVICE_NAME $RESOURCE_NAME
-create_deploy_script_for_resource $SERVICE_NAME $RESOURCE_NAME
+if [ ! -f $TEMPLATE_FILE_PATH ]; then echo "$TEMPLATE_FILE_PATH does not exist. Exiting."; exit; fi
 
 SCRIPT_FILE_PATH=$(get_script_file_path $SERVICE_NAME $RESOURCE_NAME)
-TEMPLATE_FILE_PATH=$(get_template_file_path $SERVICE_NAME $RESOURCE_NAME)
+create_deploy_script_for_resource $SERVICE_NAME $RESOURCE_NAME
+if [ ! -f $SCRIPT_FILE_PATH ]; then echo "$SCRIPT_FILE_PATH does not exist. Exiting."; exit; fi
 
-#Execute the script file
+echo "Execute th edeploy script $SCRIPT_FILE_PATH"
 ./$SCRIPT_FILE_PATH
