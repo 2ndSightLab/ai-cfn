@@ -4,6 +4,12 @@ is_valid_service_resource() {
   SERVICE_NAME="$1"
   RESOURCE_NAME="$2"
 
+  # Check if all parameters are provided
+  if [ -z "$SERVICE" ] || [ -z "$RESOURCE" ] ; then
+        echo "Error: All parameters (SERVICE, RESOURCE) must be provided." >&2
+        exit
+fi
+
   RESOURCE_EXISTS=$(aws cloudformation list-types --visibility PUBLIC --type RESOURCE \
   --filters TypeNamePrefix="AWS::${SERVICE_NAME}::${RESOURCE_NAME}" \
   --query "TypeSummaries[?TypeName=='AWS::${SERVICE_NAME}::${RESOURCE_NAME}'].TypeName" \
