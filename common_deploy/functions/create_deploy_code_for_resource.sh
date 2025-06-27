@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 create_deploy_code_for_resource(){
     local SERVICE_NAME="$1"
     local RESOURCE_NAME="$2" 
