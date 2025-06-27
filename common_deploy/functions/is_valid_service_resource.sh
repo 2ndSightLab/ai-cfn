@@ -12,5 +12,7 @@ is_valid_service_resource() {
   if [ -z "$RESOURCE_EXISTS" ]; then
     echo "Error: Invalid resource name '$RESOURCE_NAME' for service '$SERVICE_NAME'"
     exit
+  else
+     echo "Resource name '$RESOURCE_NAME' for service '$SERVICE_NAME' exists"
   fi
 }
