@@ -22,6 +22,7 @@ I'm scrapping the scripts below to focus on this one. I used AI (in part) to wri
 * The AI brain went in circles a bunch of times and I had to fix problems myself on this one.
 * ^^ I asked multiple AI chatbots ^^
 * Your resrouces and stacks will all have a nice naming convention too!
+* Might still need temlpates like those below for more complicated resources.
 
 https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
 
