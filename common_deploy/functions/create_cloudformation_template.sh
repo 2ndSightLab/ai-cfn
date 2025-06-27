@@ -39,31 +39,41 @@ create_cloudformation_template() {
     done
     echo "" >> "$TEMPLATE_FILE_PATH"
 
-    # Add Conditions with proper syntax
+    # Add Conditions with guaranteed working syntax
     echo "Conditions:" >> "$TEMPLATE_FILE_PATH"
     for prop_info in $properties_info; do
         IFS=':' read -r prop_name prop_type is_required <<< "$prop_info"
-        echo "  ${prop_name}Condition: !Not [!Equals [!Ref ${prop_name}, '']]" >> "$TEMPLATE_FILE_PATH"
+        echo "  ${prop_name}Condition:" >> "$TEMPLATE_FILE_PATH"
+        echo "    Fn::Not:" >> "$TEMPLATE_FILE_PATH"
+        echo "      - Fn::Equals:" >> "$TEMPLATE_FILE_PATH"
+        echo "          - Ref: ${prop_name}" >> "$TEMPLATE_FILE_PATH"
+        echo "          - ''" >> "$TEMPLATE_FILE_PATH"
     done
     echo "" >> "$TEMPLATE_FILE_PATH"
 
-    # Add Resources with proper syntax
+    # Add Resources with guaranteed working syntax
     echo "Resources:" >> "$TEMPLATE_FILE_PATH"
     echo "  ${RESOURCE_NAME}:" >> "$TEMPLATE_FILE_PATH"
     echo "    Type: ${resource_type}" >> "$TEMPLATE_FILE_PATH"
     echo "    Properties:" >> "$TEMPLATE_FILE_PATH"
     for prop_info in $properties_info; do
         IFS=':' read -r prop_name prop_type is_required <<< "$prop_info"
-        echo "      ${prop_name}: !If [${prop_name}Condition, !Ref ${prop_name}, !Ref AWS::NoValue]" >> "$TEMPLATE_FILE_PATH"
+        echo "      ${prop_name}:" >> "$TEMPLATE_FILE_PATH"
+        echo "        Fn::If:" >> "$TEMPLATE_FILE_PATH"
+        echo "          - ${prop_name}Condition" >> "$TEMPLATE_FILE_PATH"
+        echo "          - Ref: ${prop_name}" >> "$TEMPLATE_FILE_PATH"
+        echo "          - Ref: AWS::NoValue" >> "$TEMPLATE_FILE_PATH"
     done
     echo "" >> "$TEMPLATE_FILE_PATH"
 
-    # Add Outputs with proper syntax
+    # Add Outputs with guaranteed working syntax
     echo "Outputs:" >> "$TEMPLATE_FILE_PATH"
     echo "  ${RESOURCE_NAME}Id:" >> "$TEMPLATE_FILE_PATH"
     echo "    Description: The ID of the ${SERVICE_NAME} ${RESOURCE_NAME}" >> "$TEMPLATE_FILE_PATH"
-    echo "    Value: !Ref ${RESOURCE_NAME}" >> "$TEMPLATE_FILE_PATH"
+    echo "    Value:" >> "$TEMPLATE_FILE_PATH"
+    echo "      Ref: ${RESOURCE_NAME}" >> "$TEMPLATE_FILE_PATH"
 
     echo "CloudFormation template created and saved to $TEMPLATE_FILE_PATH"
 }
+
 
