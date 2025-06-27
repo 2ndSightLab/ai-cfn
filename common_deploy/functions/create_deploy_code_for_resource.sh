@@ -26,12 +26,6 @@ create_deploy_code_for_resource(){
         echo "read ${property}_value" >> "$SCRIPT_FILE_PATH"
     done
     
-    # Add section to print all property values at the end
-    echo "" >> "$SCRIPT_FILE_PATH"
-    echo "echo \"\"" >> "$SCRIPT_FILE_PATH"
-    echo "echo \"Summary of entered values:\"" >> "$SCRIPT_FILE_PATH"
-    echo "echo \"----------------------\"" >> "$SCRIPT_FILE_PATH"
-    
     for property in $properties; do
         echo "echo \"$property: \${${property}_value}\"" >> "$SCRIPT_FILE_PATH"
     done
