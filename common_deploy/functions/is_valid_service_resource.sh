@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
 is_valid_service_resource() {
-  SERVICE_NAME=$(echo "$1" | tr '[:lower:]' '[:upper:]')
-  RESOURCE_NAME=$(echo "$2" | tr '[:lower:]' '[:upper:]')
+  SERVICE_NAME="$1"
+  RESOURCE_NAME="$2"
 
   RESOURCE_EXISTS=$(aws cloudformation list-types --visibility PUBLIC --type RESOURCE | \
   jq -r --arg svc "$SERVICE_NAME" --arg res "$RESOURCE_NAME" '
