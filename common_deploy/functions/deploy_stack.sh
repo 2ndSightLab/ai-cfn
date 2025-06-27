@@ -31,6 +31,7 @@ deploy_cloudformation_stack() {
     fi
 
     # Execute the deploy command
-    echo "Deploying stack $STACK_NAME..."
+    echo "Deploying stack $STACK_NAME"
+    echo "$deploy_cmd"
     $deploy_cmd
 }
