@@ -7,16 +7,21 @@ Artifical Intelligence:
 
 https://medium.com/cloud-security/artificial-intelligence-2e97415216c0
 
-# Common Deployment Script
+# Deploy Anything!
 
-Now that I've got the hang of using Q for development in the samlpes below I've started
-to rework the automation I created here with some improvements:
+I'm scrapping the scripts below to focus on this one.
+> Choose an environment name (like dev, qa, prod, or however you want to group permissions)
+> Enter the service name of the resource you want to deploy
+> Enter the Resource Type
+> If a cloudforamtion template to deploy the resource deos not exist, it will be created
+> If the script to deploy the template does not exist, it will be created
+> You will be prompted to enter each possible value (some are not really applicable)
+> Then the values you set will be passed to the temlpate to deploy the resource
+> It is not yet designed to handle sub types and have only tested certain parameter types
 
 https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
 
-IN PROGRESS
-
-Try out what I have so far in CloudShell - the goal is to deploy any resource.
+Try it out:
 
 ```
 cd ~
