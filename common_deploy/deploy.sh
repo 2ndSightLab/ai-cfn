@@ -1,69 +1,66 @@
 #!/bin/bash -e
-create_cloudformation_template() {
-    local SERVICE_NAME="$1"
-    local RESOURCE_NAME="$2"
-    local TEMPLATE_FILE_PATH=$(get_template_file_path $SERVICE_NAME $RESOURCE_NAME)
 
-    # Construct the resource type directly
-    resource_type="AWS::$SERVICE_NAME::$RESOURCE_NAME"
+#source all the files in the functions directory
+for file in functions/*; do [ -f "$file" ] && source "$file"; done
 
-    # Extract properties from the Schema
-    schema=$(aws cloudformation describe-type --type RESOURCE --type-name "$resource_type" | jq -r '.Schema')
-    properties_info=$(echo "$schema" | jq -r '.properties | to_entries[] | "\(.key):\(.value.type // "String"):\(.value.required // false)"' || echo "$schema" | jq -r 'fromjson | .properties | to_entries[] | "\(.key):\(.value.type // "String"):\(.value.required // false)"')
+# We could skip checking these every time but I want to make sure they are right
+REGION=$(get_region)
+IDENTITY_ARN=$(get_current_identity_arn)
+IDENTITY_NAME=$(get_identity_name_from_arn $IDENTITY_ARN)
 
-    # Start the template
-    echo "AWSTemplateFormatVersion: '2010-09-09'" > "$TEMPLATE_FILE_PATH"
-    echo "Description: CloudFormation template for $SERVICE_NAME $RESOURCE_NAME" >> "$TEMPLATE_FILE_PATH"
-    echo "" >> "$TEMPLATE_FILE_PATH"
+echo "Enter environment name (prod, dev, test):"
+read ENV_NAME 
 
-    # Add Parameters
-    echo "Parameters:" >> "$TEMPLATE_FILE_PATH"
-    for prop_info in $properties_info; do
-        IFS=':' read -r prop_name prop_type is_required <<< "$prop_info"
-        
-        # Map JSON Schema types to CloudFormation parameter types
-        case "$prop_type" in
-            "integer"|"number") cf_type="Number" ;;
-            "boolean") cf_type="String"; echo "    AllowedValues: [true, false]" >> "$TEMPLATE_FILE_PATH" ;;
-            "array") cf_type="CommaDelimitedList" ;;
-            *) cf_type="String" ;;
-        esac
-        
-        echo "  ${prop_name}:" >> "$TEMPLATE_FILE_PATH"
-        echo "    Type: ${cf_type}" >> "$TEMPLATE_FILE_PATH"
-        if [ "$is_required" = "true" ]; then
-            echo "    Description: Required - Enter value for ${prop_name}" >> "$TEMPLATE_FILE_PATH"
-        else
-            echo "    Description: Optional - Enter value for ${prop_name}" >> "$TEMPLATE_FILE_PATH"
-            echo "    Default: ''" >> "$TEMPLATE_FILE_PATH"
-        fi
-    done
-    echo "" >> "$TEMPLATE_FILE_PATH"
+SERVICE_NAME=""
+while [ -z "$SERVICE_NAME" ]; do
+    echo "Enter the service from which you want to deploy a resource (type help for a list of services):"
+    read SERVICE_NAME
+    if [ "$SERVICE_NAME" == "help" ]; then
+      list_service_names
+      SERVICE_NAME=""
+    fi
+done
 
-    # Add Conditions with proper syntax
-    echo "Conditions:" >> "$TEMPLATE_FILE_PATH"
-    for prop_info in $properties_info; do
-        IFS=':' read -r prop_name prop_type is_required <<< "$prop_info"
-        echo "  ${prop_name}Condition: !Not [!Equals [!Ref ${prop_name}, '']]" >> "$TEMPLATE_FILE_PATH"
-    done
-    echo "" >> "$TEMPLATE_FILE_PATH"
+is_valid_aws_service $SERVICE_NAME
 
-    # Add Resources with proper syntax
-    echo "Resources:" >> "$TEMPLATE_FILE_PATH"
-    echo "  ${RESOURCE_NAME}:" >> "$TEMPLATE_FILE_PATH"
-    echo "    Type: ${resource_type}" >> "$TEMPLATE_FILE_PATH"
-    echo "    Properties:" >> "$TEMPLATE_FILE_PATH"
-    for prop_info in $properties_info; do
-        IFS=':' read -r prop_name prop_type is_required <<< "$prop_info"
-        echo "      ${prop_name}: !If [${prop_name}Condition, !Ref ${prop_name}, !Ref AWS::NoValue]" >> "$TEMPLATE_FILE_PATH"
-    done
-    echo "" >> "$TEMPLATE_FILE_PATH"
+RESOURCE_NAME=""
+while [ -z "$RESOURCE_NAME" ]; do
+    echo "Enter the resource of the service $SERVICE_NAME that you want to deploy (type help for a list of resources):"
+    read RESOURCE_NAME
+    if [ "$RESOURCE_NAME" == "help" ]; then
+       list_service_resource_names $SERVICE_NAME
+       RESOURCE_NAME=""
+    fi
+done
 
-    # Add Outputs with proper syntax
-    echo "Outputs:" >> "$TEMPLATE_FILE_PATH"
-    echo "  ${RESOURCE_NAME}Id:" >> "$TEMPLATE_FILE_PATH"
-    echo "    Description: The ID of the ${SERVICE_NAME} ${RESOURCE_NAME}" >> "$TEMPLATE_FILE_PATH"
-    echo "    Value: !Ref ${RESOURCE_NAME}" >> "$TEMPLATE_FILE_PATH"
+is_valid_service_resource $SERVICE_NAME $RESOURCE_NAME
 
-    echo "CloudFormation template created and saved to $TEMPLATE_FILE_PATH"
-}
+NAME=""
+echo "Is this resource a user, for a specific user, or associated with an application? [y]"
+read hasname
+if [ "$hasname" == "y" ]; then 
+  echo "Enter the name: "
+  read NAME
+fi
+
+echo "Initializing...please wait..."
+STACK_NAME=$(get_stack_name "$ENV_NAME" "$IDENTITY_NAME" "$SERVICE_NAME" "$RESOURCE_NAME" "$NAME")
+STACK_RESOURCE_NAME=$(get_stack_resource_name "$ENV_NAME" "$SERVICE_NAME" "$RESOURCE_NAME" "$NAME")
+
+echo "ENV: $ENV_NAME"
+echo "IDENTITY_ARN: $IDENTITY_ARN"
+echo "IDENTITY_NAME: $IDENTITY_NAME"
+echo "REGION: $REGION"
+echo "STACK_NAME: $STACK_NAME"
+echo "STACK_RESOURCE_NAME: $STACK_RESOURCE_NAME"
+
+TEMPLATE_FILE_PATH=$(get_template_file_path $SERVICE_NAME $RESOURCE_NAME)
+create_cloudformation_template $SERVICE_NAME $RESOURCE_NAME
+if [ ! -f $TEMPLATE_FILE_PATH ]; then echo "$TEMPLATE_FILE_PATH does not exist. Exiting."; exit; fi
+
+SCRIPT_FILE_PATH=$(get_script_file_path $SERVICE_NAME $RESOURCE_NAME)
+create_deploy_script_for_resource $SERVICE_NAME $RESOURCE_NAME
+if [ ! -f $SCRIPT_FILE_PATH ]; then echo "$SCRIPT_FILE_PATH does not exist. Exiting."; exit; fi
+
+echo "Execute th edeploy script $SCRIPT_FILE_PATH"
+source $SCRIPT_FILE_PATH
