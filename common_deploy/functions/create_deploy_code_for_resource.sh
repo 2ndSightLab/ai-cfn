@@ -6,8 +6,8 @@ create_deploy_code_for_resource(){
     is_valid_aws_service "$SERVICE_NAME"
     is_valid_service_resource "$SERVICE_NAME" "$RESOURCE_NAME"
     
-    local SCRIPT_FILE_PATH="scripts/$SERVICE_NAME/$RESOURCE_NAME.sh"
-    local TEMPLATE_FILE_PATH="cfn/$SERVICE_NAME/$RESOURCE_NAME.yaml"
+    local SCRIPT_FILE_PATH=$(get_script_file_path)
+    local TEMPLATE_FILE_PATH=$(get_template_file_path)
     
     # Create directory structure if it doesn't exist
     mkdir -p "scripts/$SERVICE_NAME"
