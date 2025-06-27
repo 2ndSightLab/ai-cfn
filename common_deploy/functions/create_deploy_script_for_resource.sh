@@ -1,7 +1,7 @@
 #!/bin/bash
 create_deploy_script_for_resource(){
-    local RESOURCE_NAME="$1"
-    local SERVICE_NAME="$2"
+    local SERVICE_NAME="$1"
+    local RESOURCE_NAME="$2"
 
     local SCRIPT_FILE_PATH="scripts/$SERVICE_NAME/$RESOURCE_NAME.sh"
     local TEMPLATE_FILE_PATH="cfn/$SERVICE_NAME/$RESOURCE_NAME.yaml"
