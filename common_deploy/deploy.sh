@@ -57,8 +57,8 @@ echo "STACK_RESOURCE_NAME: $STACK_RESOURCE_NAME"
 create_cloudformation_template $SERVICE_NAME $RESOURCE_NAME
 create_deploy_script_for_resource $SERVICE_NAME $RESOURCE_NAME
 
-local SCRIPT_FILE_PATH=$(get_script_file_path $SERVICE_NAME $RESOURCE_NAME)
-local TEMPLATE_FILE_PATH=$(get_template_file_path $SERVICE_NAME $RESOURCE_NAME)
+SCRIPT_FILE_PATH=$(get_script_file_path $SERVICE_NAME $RESOURCE_NAME)
+TEMPLATE_FILE_PATH=$(get_template_file_path $SERVICE_NAME $RESOURCE_NAME)
 
 #Execute the script file
 ./$SCRIPT_FILE_PATH
