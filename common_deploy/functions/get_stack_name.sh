@@ -18,12 +18,6 @@ get_stack_name() {
     #validte the resource is a valid AWS service resource
     is_valid_service_resource "$SERVICE" "$RESOURCE"
 
-    ENV_NAME=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-    IDENTITY_NAME=$(echo "$2" | tr '[:upper:]' '[:lower:]')
-    SERVICE=$(echo "$3" | tr '[:upper:]' '[:lower:]')
-    RESOURCE=$(echo "$4" | tr '[:upper:]' '[:lower:]')
-    NAME=$(echo "$5" | tr '[:upper:]' '[:lower:]')
-    
     # Return the concatenated string
-    echo "$ENV_NAME-$IDENTITY_NAME-$SERVICE-$RESOURCE-$NAME"
+    echo "$ENV_NAME-$IDENTITY_NAME-$SERVICE-$RESOURCE-$NAME" | tr '[:upper:]' '[:lower:]'
 }
