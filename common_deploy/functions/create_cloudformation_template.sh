@@ -19,59 +19,61 @@ create_cloudformation_template() {
     # Add Parameters
     echo "Parameters:" >> "$TEMPLATE_FILE_PATH"
     for prop_info in $properties_info; do
-        IFS=':' read -r prop type required <<< "$prop_info"
+        IFS=':' read -r prop_name prop_type is_required <<< "$prop_info"
         
         # Map JSON Schema types to CloudFormation parameter types
-        case "$type" in
+        case "$prop_type" in
             "integer"|"number") cf_type="Number" ;;
             "boolean") cf_type="String"; echo "    AllowedValues: [true, false]" >> "$TEMPLATE_FILE_PATH" ;;
             "array") cf_type="CommaDelimitedList" ;;
             *) cf_type="String" ;;
         esac
         
-        echo "  ${prop}:" >> "$TEMPLATE_FILE_PATH"
+        echo "  ${prop_name}:" >> "$TEMPLATE_FILE_PATH"
         echo "    Type: ${cf_type}" >> "$TEMPLATE_FILE_PATH"
-        if [ "$required" = "true" ]; then
-            echo "    Description: Required - Enter value for ${prop}" >> "$TEMPLATE_FILE_PATH"
+        if [ "$is_required" = "true" ]; then
+            echo "    Description: Required - Enter value for ${prop_name}" >> "$TEMPLATE_FILE_PATH"
         else
-            echo "    Description: Optional - Enter value for ${prop}" >> "$TEMPLATE_FILE_PATH"
+            echo "    Description: Optional - Enter value for ${prop_name}" >> "$TEMPLATE_FILE_PATH"
             echo "    Default: ''" >> "$TEMPLATE_FILE_PATH"
         fi
     done
     echo "" >> "$TEMPLATE_FILE_PATH"
 
-    # Add Conditions with proper YAML syntax
+    # Add Conditions with proper long-form syntax and indentation
     echo "Conditions:" >> "$TEMPLATE_FILE_PATH"
     for prop_info in $properties_info; do
-        IFS=':' read -r prop type required <<< "$prop_info"
-        echo "  Has${prop}:" >> "$TEMPLATE_FILE_PATH"
+        IFS=':' read -r prop_name prop_type is_required <<< "$prop_info"
+        echo "  ${prop_name}Condition:" >> "$TEMPLATE_FILE_PATH"
         echo "    Fn::Not:" >> "$TEMPLATE_FILE_PATH"
         echo "      - Fn::Equals:" >> "$TEMPLATE_FILE_PATH"
-        echo "        - !Ref ${prop}" >> "$TEMPLATE_FILE_PATH"
+        echo "        - Fn::Ref: ${prop_name}" >> "$TEMPLATE_FILE_PATH"
         echo "        - ''" >> "$TEMPLATE_FILE_PATH"
     done
     echo "" >> "$TEMPLATE_FILE_PATH"
 
-    # Add Resources
+    # Add Resources with proper long-form syntax and indentation
     echo "Resources:" >> "$TEMPLATE_FILE_PATH"
     echo "  ${RESOURCE_NAME}:" >> "$TEMPLATE_FILE_PATH"
     echo "    Type: ${resource_type}" >> "$TEMPLATE_FILE_PATH"
     echo "    Properties:" >> "$TEMPLATE_FILE_PATH"
     for prop_info in $properties_info; do
-        IFS=':' read -r prop type required <<< "$prop_info"
-        echo "      ${prop}:" >> "$TEMPLATE_FILE_PATH"
+        IFS=':' read -r prop_name prop_type is_required <<< "$prop_info"
+        echo "      ${prop_name}:" >> "$TEMPLATE_FILE_PATH"
         echo "        Fn::If:" >> "$TEMPLATE_FILE_PATH"
-        echo "          - Has${prop}" >> "$TEMPLATE_FILE_PATH"
-        echo "          - !Ref ${prop}" >> "$TEMPLATE_FILE_PATH"
-        echo "          - !Ref AWS::NoValue" >> "$TEMPLATE_FILE_PATH"
+        echo "          - ${prop_name}Condition" >> "$TEMPLATE_FILE_PATH"
+        echo "          - Fn::Ref: ${prop_name}" >> "$TEMPLATE_FILE_PATH"
+        echo "          - Fn::Ref: AWS::NoValue" >> "$TEMPLATE_FILE_PATH"
     done
     echo "" >> "$TEMPLATE_FILE_PATH"
 
-    # Add Outputs
+    # Add Outputs with proper long-form syntax
     echo "Outputs:" >> "$TEMPLATE_FILE_PATH"
     echo "  ${RESOURCE_NAME}Id:" >> "$TEMPLATE_FILE_PATH"
     echo "    Description: The ID of the ${SERVICE_NAME} ${RESOURCE_NAME}" >> "$TEMPLATE_FILE_PATH"
-    echo "    Value: !Ref ${RESOURCE_NAME}" >> "$TEMPLATE_FILE_PATH"
+    echo "    Value:" >> "$TEMPLATE_FILE_PATH"
+    echo "      Fn::Ref: ${RESOURCE_NAME}" >> "$TEMPLATE_FILE_PATH"
 
     echo "CloudFormation template created and saved to $TEMPLATE_FILE_PATH"
 }
+
