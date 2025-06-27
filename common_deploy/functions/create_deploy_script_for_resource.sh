@@ -1,13 +1,10 @@
 #!/bin/bash
-create_deploy_script_for_resource(){
+create_deploy_code_for_resource(){
     local SERVICE_NAME="$1"
     local RESOURCE_NAME="$2"
-
-    local SCRIPT_FILE_PATH="scripts/$SERVICE_NAME/$RESOURCE_NAME.sh"
-    local TEMPLATE_FILE_PATH="cfn/$SERVICE_NAME/$RESOURCE_NAME.yaml"
     
-    # Create directory structure if it doesn't exist
-    mkdir -p "scripts/$SERVICE_NAME"
+    local SCRIPT_FILE_PATH=$(get_script_file_path $SERVICE_NAME $RESOURCE_NAME)
+    local TEMPLATE_FILE_PATH=$(get_template_file_path $SERVICE_NAME $RESOURCE_NAME)
     
     # Create the script file with shebang
     echo '#!/bin/bash -e' > "$SCRIPT_FILE_PATH"
@@ -15,9 +12,9 @@ create_deploy_script_for_resource(){
     # Make the script executable
     chmod +x "$SCRIPT_FILE_PATH"
     
-    # Get resource type that matches the SERVICE_NAME and RESOURCE_NAME
+    # Set resource type directly
     resource_type="AWS::$SERVICE_NAME::$RESOURCE_NAME"
-
+    
     # Get properties for the resource type
     properties=$(aws cloudformation describe-type --type RESOURCE --type-name "$resource_type" | jq -r '.Schema' | jq -r '.properties | keys[]')
     
@@ -27,49 +24,7 @@ create_deploy_script_for_resource(){
         echo "read -r ${property}_value" >> "$SCRIPT_FILE_PATH"
     done
     
-    # Add section to print all property values at the end
-    echo "" >> "$SCRIPT_FILE_PATH"
-    echo "echo \"\"" >> "$SCRIPT_FILE_PATH"
-    echo "echo \"Summary of entered values:\"" >> "$SCRIPT_FILE_PATH"
-    echo "echo \"----------------------\"" >> "$SCRIPT_FILE_PATH"
-    
-    for property in $properties; do
-        echo "echo \"$property: \${${property}_value}\"" >> "$SCRIPT_FILE_PATH"
-    done
-    
-    # Create a parameters JSON file instead of command line overrides
-    echo "" >> "$SCRIPT_FILE_PATH"
-    echo "# Create a parameters JSON file for CloudFormation" >> "$SCRIPT_FILE_PATH"
-    echo "PARAMS_FILE=\"/tmp/${SERVICE_NAME}_${RESOURCE_NAME}_params.json\"" >> "$SCRIPT_FILE_PATH"
-    echo "echo \"[\" > \"\$PARAMS_FILE\"" >> "$SCRIPT_FILE_PATH"
-    
-    # Add first property with conditional
-    echo "FIRST_PARAM=true" >> "$SCRIPT_FILE_PATH"
-    
-    # Add each parameter to the JSON file
-    for property in $properties; do
-        echo "if [[ -n \"\${${property}_value}\" ]]; then" >> "$SCRIPT_FILE_PATH"
-        echo "  if [[ \"\$FIRST_PARAM\" == \"true\" ]]; then" >> "$SCRIPT_FILE_PATH"
-        echo "    echo \"  {\" >> \"\$PARAMS_FILE\"" >> "$SCRIPT_FILE_PATH"
-        echo "    FIRST_PARAM=false" >> "$SCRIPT_FILE_PATH"
-        echo "  else" >> "$SCRIPT_FILE_PATH"
-        echo "    echo \"  },\" >> \"\$PARAMS_FILE\"" >> "$SCRIPT_FILE_PATH"
-        echo "    echo \"  {\" >> \"\$PARAMS_FILE\"" >> "$SCRIPT_FILE_PATH"
-        echo "  fi" >> "$SCRIPT_FILE_PATH"
-        echo "  # Escape any special characters in the parameter value" >> "$SCRIPT_FILE_PATH"
-        echo "  ESCAPED_VALUE=\$(echo \"\${${property}_value}\" | sed 's/\"/\\\\\"/g')" >> "$SCRIPT_FILE_PATH"
-        echo "  echo \"    \\\"ParameterKey\\\": \\\"$property\\\",\" >> \"\$PARAMS_FILE\"" >> "$SCRIPT_FILE_PATH"
-        echo "  echo \"    \\\"ParameterValue\\\": \\\"\$ESCAPED_VALUE\\\"\" >> \"\$PARAMS_FILE\"" >> "$SCRIPT_FILE_PATH"
-        echo "fi" >> "$SCRIPT_FILE_PATH"
-    done
-    
-    # Close the JSON array properly
-    echo "if [[ \"\$FIRST_PARAM\" == \"false\" ]]; then" >> "$SCRIPT_FILE_PATH"
-    echo "  echo \"  }\" >> \"\$PARAMS_FILE\"" >> "$SCRIPT_FILE_PATH"
-    echo "fi" >> "$SCRIPT_FILE_PATH"
-    echo "echo \"]\" >> \"\$PARAMS_FILE\"" >> "$SCRIPT_FILE_PATH"
-    
-    # Also create the parameter-overrides string as before (for reference)
+    # Build parameter-overrides string for CloudFormation deploy
     echo "" >> "$SCRIPT_FILE_PATH"
     echo "# Build parameter-overrides string for CloudFormation deploy" >> "$SCRIPT_FILE_PATH"
     echo "PARAMETER_OVERRIDES=\"\"" >> "$SCRIPT_FILE_PATH"
@@ -107,22 +62,15 @@ create_deploy_script_for_resource(){
     echo "  echo \"This resource requires IAM capabilities for deployment.\"" >> "$SCRIPT_FILE_PATH"
     echo "fi" >> "$SCRIPT_FILE_PATH"
     
-    echo "" >> "$SCRIPT_FILE_PATH"
-    echo "# Define stack name" >> "$SCRIPT_FILE_PATH"
-    echo "STACK_NAME=\"${SERVICE_NAME}-${RESOURCE_NAME}-stack\"" >> "$SCRIPT_FILE_PATH"
-    echo "" >> "$SCRIPT_FILE_PATH"
-    
     # Add template file existence check
     echo "# Check if CloudFormation template file exists" >> "$SCRIPT_FILE_PATH"
     echo "if [[ ! -f \"$TEMPLATE_FILE_PATH\" ]]; then" >> "$SCRIPT_FILE_PATH"
     echo "  echo \"Error: CloudFormation template file not found at $TEMPLATE_FILE_PATH\" >&2" >> "$SCRIPT_FILE_PATH"
-    echo "  echo \"Please create the template file before deploying.\" >&2" >> "$SCRIPT_FILE_PATH"
     echo "  exit 1" >> "$SCRIPT_FILE_PATH"
     echo "fi" >> "$SCRIPT_FILE_PATH"
     echo "" >> "$SCRIPT_FILE_PATH"
     
-    echo "# Deploy CloudFormation stack using parameter file" >> "$SCRIPT_FILE_PATH"
-    echo "echo \"Deploying with parameters from \$PARAMS_FILE\"" >> "$SCRIPT_FILE_PATH"
+    echo "# Deploy CloudFormation stack" >> "$SCRIPT_FILE_PATH"
     echo "deploy_cloudformation_stack \$STACK_NAME \$TEMPLATE_FILE_PATH \$ENCODED_PARAMETERS \$IAM_CAPABILITY" >> "$SCRIPT_FILE_PATH"
     
     echo "Created deployment script at $SCRIPT_FILE_PATH"
