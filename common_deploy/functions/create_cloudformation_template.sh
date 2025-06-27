@@ -41,11 +41,8 @@ create_cloudformation_template() {
             echo "    Description: Required - Enter value for ${prop_name}" >> "$TEMPLATE_FILE_PATH"
         else
             echo "    Description: Optional - Enter value for ${prop_name}" >> "$TEMPLATE_FILE_PATH"
-            if [ "$cf_type" = "CommaDelimitedList" ]; then
-                echo "    Default: []" >> "$TEMPLATE_FILE_PATH"
-            else
-                echo "    Default: ''" >> "$TEMPLATE_FILE_PATH"
-            fi
+            # All default values must be strings, even for CommaDelimitedList
+            echo "    Default: ''" >> "$TEMPLATE_FILE_PATH"
         fi
     done
     echo "" >> "$TEMPLATE_FILE_PATH"
@@ -106,5 +103,6 @@ create_cloudformation_template() {
 
     echo "CloudFormation template created and saved to $TEMPLATE_FILE_PATH"
 }
+
 
 
