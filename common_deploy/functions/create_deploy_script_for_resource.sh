@@ -1,11 +1,8 @@
 #!/bin/bash
 create_deploy_script_for_resource(){
-    local RESOURCE_NAME=$(echo "$1" | tr '[:lower:]' '[:upper:]')
-    local SERVICE_NAME=$(echo "$2" | tr '[:lower:]' '[:upper:]')
-    
-    is_valid_aws_service "$SERVICE_NAME"
-    is_valid_service_resource "$SERVICE_NAME" "$RESOURCE_NAME"
-    
+    local RESOURCE_NAME="$1"
+    local SERVICE_NAME="$2"
+
     local SCRIPT_FILE_PATH="scripts/$SERVICE_NAME/$RESOURCE_NAME.sh"
     local TEMPLATE_FILE_PATH="cfn/$SERVICE_NAME/$RESOURCE_NAME.yaml"
     
