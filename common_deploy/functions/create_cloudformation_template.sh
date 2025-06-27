@@ -1,9 +1,11 @@
-#/bin/bash
+#/bin/bash -e
 create_cloudformation_template() {
     local SERVICE_NAME="$1"
     local RESOURCE_NAME="$2"
     local TEMPLATE_FILE_PATH=$(get_template_file_path $SERVICE_NAME $RESOURCE_NAME)
 
+    echo "Writing file $TEMPLATE_FILE_PATH"
+    
     # Get resource type that matches the SERVICE_NAME and RESOURCE_NAME
     resource_type=$(aws cloudformation list-types --visibility PUBLIC --type RESOURCE --query "TypeSummaries[?contains(TypeName, '${SERVICE_NAME}') && contains(TypeName, '${RESOURCE_NAME}')].TypeName" --output text)
 
