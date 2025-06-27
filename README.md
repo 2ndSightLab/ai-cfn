@@ -10,15 +10,15 @@ https://medium.com/cloud-security/artificial-intelligence-2e97415216c0
 # Deploy Anything!
 
 I'm scrapping the scripts below to focus on this one.
-> Choose an environment name (like dev, qa, prod, or however you want to group permissions)
-> Enter the service name of the resource you want to deploy
-> Enter the Resource Type
-> If a cloudforamtion template to deploy the resource deos not exist, it will be created
-> If the script to deploy the template does not exist, it will be created
-> You will be prompted to enter each possible value (some are not really applicable)
-> Then the values you set will be passed to the temlpate to deploy the resource
-> It is not yet designed to handle sub types and have only tested certain parameter types
-> Not that the AI went in circles a bunch of times and I had to fix problems myself on this one.
+* Choose an environment name (like dev, qa, prod, or however you want to group permissions)
+*  Enter the service name of the resource you want to deploy
+* Enter the Resource Type
+* If a cloudforamtion template to deploy the resource deos not exist, it will be created
+* If the script to deploy the template does not exist, it will be created
+* You will be prompted to enter each possible value (some are not really applicable)
+* Then the values you set will be passed to the temlpate to deploy the resource
+* It is not yet designed to handle sub types and have only tested certain parameter types
+* Not that the AI went in circles a bunch of times and I had to fix problems myself on this one.
 
 https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
 
@@ -32,14 +32,6 @@ cd ai-cfn/common_deploy
 chmod 700 deploy.sh
 ./deploy.sh
 ```
-
-What's done:
-* initializes region based on region where the script is being deployed (for now)
-* initializes current principal ARN and name
-* Asks user for service and resource to deploy
-* validates region, service, resource are all valid
-* gets stack name based on provided values
-* gets stack resource name base don provided values
 
 # Deploy an S3 Website, TLS Certificate, and CloudFront distribution
 
