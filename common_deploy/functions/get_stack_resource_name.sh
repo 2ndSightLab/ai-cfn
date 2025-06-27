@@ -24,5 +24,5 @@ get_stack_resource_name() {
         resource_name="$resource_name-$NAME"
     fi
 
-    echo $resource_name | tr '[:upper:]' '[:lower:]')
+    echo $resource_name | tr '[:upper:]' '[:lower:]'
 }
