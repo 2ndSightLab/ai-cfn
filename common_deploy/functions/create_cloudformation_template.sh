@@ -1,4 +1,4 @@
-#/bin/bash -e
+#!/bin/bash -e
 create_cloudformation_template() {
     local SERVICE_NAME="$1"
     local RESOURCE_NAME="$2"
