@@ -22,7 +22,7 @@ create_deploy_script_for_resource(){
     
     # Add echo and read statements for each property
     for property in $properties; do
-        echo "echo \"Please enter value for $property:\"" >> "$SCRIPT_FILE_PATH"
+        echo "echo \"Enter value for $property:\"" >> "$SCRIPT_FILE_PATH"
         echo "read ${property}_value" >> "$SCRIPT_FILE_PATH"
     done
     
