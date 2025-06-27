@@ -6,9 +6,6 @@ create_deploy_code_for_resource(){
     local SCRIPT_FILE_PATH=$(get_script_file_path $SERVICE_NAME $RESOURCE_NAME)
     local TEMPLATE_FILE_PATH=$(get_template_file_path $SERVICE_NAME $RESOURCE_NAME)
     
-    # Create directory structure if it doesn't exist
-    mkdir -p "resources/$SERVICE_NAME"
-    
     # Create the script file with shebang
     echo '#!/bin/bash -e' > "$SCRIPT_FILE_PATH"
     
