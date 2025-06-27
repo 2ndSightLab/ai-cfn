@@ -50,7 +50,7 @@ create_cloudformation_template() {
     done
     echo "" >> "$TEMPLATE_FILE_PATH"
 
-    # Add Conditions with proper handling for array types and correct YAML formatting
+    # Add Conditions with proper handling for array types and full function names
     echo "Conditions:" >> "$TEMPLATE_FILE_PATH"
     for prop_info in $properties_info; do
         IFS=':' read -r prop_name prop_type is_required min_length <<< "$prop_info"
@@ -58,18 +58,18 @@ create_cloudformation_template() {
         if [ "$is_required" = "false" ] && [ "$min_length" -lt 1 ]; then
             echo "  ${prop_name}Condition:" >> "$TEMPLATE_FILE_PATH"
             if [ "$prop_type" = "array" ]; then
-                # For array types, check if the array has any elements using Fn::Length with proper YAML formatting
-                echo "    !Not" >> "$TEMPLATE_FILE_PATH"
-                echo "      - !Equals" >> "$TEMPLATE_FILE_PATH"
-                echo "        - !Length" >> "$TEMPLATE_FILE_PATH"
-                echo "          - !Ref $prop_name" >> "$TEMPLATE_FILE_PATH"
-                echo "        - 0" >> "$TEMPLATE_FILE_PATH"
+                # For array types, check if the array has any elements using Fn::Length
+                echo "    Fn::Not:" >> "$TEMPLATE_FILE_PATH"
+                echo "      - Fn::Equals:" >> "$TEMPLATE_FILE_PATH"
+                echo "          - Fn::Length:" >> "$TEMPLATE_FILE_PATH"
+                echo "              - Ref: $prop_name" >> "$TEMPLATE_FILE_PATH"
+                echo "          - 0" >> "$TEMPLATE_FILE_PATH"
             else
-                # For non-array types, check if the value is not empty with proper YAML formatting
-                echo "    !Not" >> "$TEMPLATE_FILE_PATH"
-                echo "      - !Equals" >> "$TEMPLATE_FILE_PATH"
-                echo "        - !Ref $prop_name" >> "$TEMPLATE_FILE_PATH"
-                echo "        - ''" >> "$TEMPLATE_FILE_PATH"
+                # For non-array types, check if the value is not empty
+                echo "    Fn::Not:" >> "$TEMPLATE_FILE_PATH"
+                echo "      - Fn::Equals:" >> "$TEMPLATE_FILE_PATH"
+                echo "          - Ref: $prop_name" >> "$TEMPLATE_FILE_PATH"
+                echo "          - ''" >> "$TEMPLATE_FILE_PATH"
             fi
         fi
     done
@@ -84,23 +84,25 @@ create_cloudformation_template() {
         IFS=':' read -r prop_name prop_type is_required min_length <<< "$prop_info"
         if [ "$is_required" = "true" ] || [ "$min_length" -ge 1 ]; then
             # Required properties are always included
-            echo "      $prop_name: !Ref $prop_name" >> "$TEMPLATE_FILE_PATH"
-        else
-            # Optional properties are conditionally included with proper YAML formatting
             echo "      $prop_name:" >> "$TEMPLATE_FILE_PATH"
-            echo "        !If" >> "$TEMPLATE_FILE_PATH"
+            echo "        Ref: $prop_name" >> "$TEMPLATE_FILE_PATH"
+        else
+            # Optional properties are conditionally included
+            echo "      $prop_name:" >> "$TEMPLATE_FILE_PATH"
+            echo "        Fn::If:" >> "$TEMPLATE_FILE_PATH"
             echo "          - ${prop_name}Condition" >> "$TEMPLATE_FILE_PATH"
-            echo "          - !Ref $prop_name" >> "$TEMPLATE_FILE_PATH"
-            echo "          - !Ref AWS::NoValue" >> "$TEMPLATE_FILE_PATH"
+            echo "          - Ref: $prop_name" >> "$TEMPLATE_FILE_PATH"
+            echo "          - Ref: AWS::NoValue" >> "$TEMPLATE_FILE_PATH"
         fi
     done
     echo "" >> "$TEMPLATE_FILE_PATH"
 
-    # Add Outputs with shorthand notation
+    # Add Outputs with full function names
     echo "Outputs:" >> "$TEMPLATE_FILE_PATH"
     echo "  ${RESOURCE_NAME}Id:" >> "$TEMPLATE_FILE_PATH"
     echo "    Description: The ID of the ${SERVICE_NAME} ${RESOURCE_NAME}" >> "$TEMPLATE_FILE_PATH"
-    echo "    Value: !Ref $RESOURCE_NAME" >> "$TEMPLATE_FILE_PATH"
+    echo "    Value:" >> "$TEMPLATE_FILE_PATH"
+    echo "      Ref: $RESOURCE_NAME" >> "$TEMPLATE_FILE_PATH"
 
     echo "CloudFormation template created and saved to $TEMPLATE_FILE_PATH"
 }
