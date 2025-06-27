@@ -16,8 +16,8 @@ create_deploy_script_for_resource(){
     chmod +x "$SCRIPT_FILE_PATH"
     
     # Get resource type that matches the SERVICE_NAME and RESOURCE_NAME
-    resource_type=$(aws cloudformation list-types --visibility PUBLIC --type RESOURCE --query "TypeSummaries[?contains(TypeName, '${SERVICE_NAME}') && contains(TypeName, '${RESOURCE_NAME}')].TypeName" --output text)
-    
+    resource_type="AWS::$SERVICE_NAME::$RESOURCE_NAME"
+
     # Get properties for the resource type
     properties=$(aws cloudformation describe-type --type RESOURCE --type-name "$resource_type" | jq -r '.Schema' | jq -r '.properties | keys[]')
     
