@@ -12,6 +12,12 @@ get_stack_name() {
         exit
     fi
 
+    #validte the service is a valid AWS service
+    is_valid_aws_service "$SERVICE"
+    
+    #validte the resource is a valid AWS service resource
+    is_valid_service_resource "$SERVICE" "$RESOURCE"
+
     ENV_NAME=$(echo "$1" | tr '[:upper:]' '[:lower:]')
     IDENTITY_NAME=$(echo "$2" | tr '[:upper:]' '[:lower:]')
     SERVICE=$(echo "$3" | tr '[:upper:]' '[:lower:]')
