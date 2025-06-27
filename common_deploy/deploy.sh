@@ -54,7 +54,7 @@ echo "REGION: $REGION"
 echo "STACK_NAME: $STACK_NAME"
 echo "STACK_RESOURCE_NAME: $STACK_RESOURCE_NAME"
 
-create_deploy_code_for_resource $RESOURCE_NAME $SERVICE_NAME
+create_deploy_code_for_resource $SERVICE_NAME $RESOURCE_NAME
 
 local SCRIPT_FILE_PATH=$(get_script_file_path $SERVICE_NAME $RESOURCE_NAME)
 local TEMPLATE_FILE_PATH=$(get_template_file_path $SERVICE_NAME $RESOURCE_NAME)
