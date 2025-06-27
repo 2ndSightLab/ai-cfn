@@ -11,12 +11,6 @@ get_stack_resource_name() {
         exit
     fi
 
-    #validte the service is a valid AWS service
-    is_valid_aws_service "$SERVICE"
-    
-    #validte the resource is a valid AWS service resource
-    is_valid_service_resource "$SERVICE" "$RESOURCE"
-
     # Return the concatenated string
     resource_name="$ENV_NAME-$SERVICE-$RESOURCE"
 
