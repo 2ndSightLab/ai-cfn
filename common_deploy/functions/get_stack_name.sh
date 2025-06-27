@@ -12,12 +12,6 @@ get_stack_name() {
         exit
     fi
 
-    #validte the service is a valid AWS service
-    is_valid_aws_service "$SERVICE"
-    
-    #validte the resource is a valid AWS service resource
-    is_valid_service_resource "$SERVICE" "$RESOURCE"
-
     # Return the concatenated string
     echo "$ENV_NAME-$IDENTITY_NAME-$SERVICE-$RESOURCE-$NAME" | tr '[:upper:]' '[:lower:]'
 }
