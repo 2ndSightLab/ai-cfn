@@ -8,9 +8,8 @@ get_template_file_path(){
     # Create the directory structure if it doesn't exist
     if [ ! -d "$DIR_PATH" ]; then
         mkdir -p "$DIR_PATH"
-        echo "Created directory: $DIR_PATH"
     fi
     
-    echo "resources/$SERVICE_NAME/$RESOURCE_NAME.sh"
+    echo "$DIR_PATH/$RESOURCE_NAME.sh"
     
 }
