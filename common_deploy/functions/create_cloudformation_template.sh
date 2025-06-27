@@ -4,13 +4,12 @@ create_cloudformation_template() {
     local RESOURCE_NAME="$2"
     local TEMPLATE_FILE_PATH=$(get_template_file_path $SERVICE_NAME $RESOURCE_NAME)
 
-    echo "Writing CloudFormation template file $TEMPLATE_FILE_PATH"
-    
-    # Get resource type that matches the SERVICE_NAME and RESOURCE_NAME
-    resource_type=$(aws cloudformation list-types --visibility PUBLIC --type RESOURCE --query "TypeSummaries[?contains(TypeName, '${SERVICE_NAME}') && contains(TypeName, '${RESOURCE_NAME}')].TypeName" --output text)
+    # Construct the resource type directly
+    resource_type="AWS::$SERVICE_NAME::$RESOURCE_NAME"
 
-    # Get properties and their types for the resource type, along with whether they are required
-    properties_info=$(aws cloudformation describe-type --type RESOURCE --type-name "$resource_type" | jq -r '.Schema | .properties | to_entries[] | "\(.key):\(.value.type):\(.value.required // false)"')
+    # Extract properties from the Schema - try different approaches to handle the Schema format
+    schema=$(aws cloudformation describe-type --type RESOURCE --type-name "$resource_type" | jq -r '.Schema')
+    properties_info=$(echo "$schema" | jq -r '.properties | to_entries[] | "\(.key):\(.value.type // "String"):\(.value.required // false)"' || echo "$schema" | jq -r 'fromjson | .properties | to_entries[] | "\(.key):\(.value.type // "String"):\(.value.required // false)"')
 
     # Start the template
     echo "AWSTemplateFormatVersion: '2010-09-09'" > "$TEMPLATE_FILE_PATH"
@@ -19,34 +18,29 @@ create_cloudformation_template() {
 
     # Add Parameters
     echo "Parameters:" >> "$TEMPLATE_FILE_PATH"
-    for prop_info in $properties_info; do
-        IFS=':' read -r prop type required <<< "$prop_info"
-        
-        # Map JSON Schema types to CloudFormation parameter types
-        case "$type" in
+    while IFS=: read -r prop_name prop_type is_required; do
+        echo "  ${prop_name}:" >> "$TEMPLATE_FILE_PATH"
+        case "$prop_type" in
             "integer"|"number") cf_type="Number" ;;
             "boolean") cf_type="String"; echo "    AllowedValues: [true, false]" >> "$TEMPLATE_FILE_PATH" ;;
             "array") cf_type="CommaDelimitedList" ;;
             *) cf_type="String" ;;
         esac
-        
-        echo "  ${prop}:" >> "$TEMPLATE_FILE_PATH"
         echo "    Type: ${cf_type}" >> "$TEMPLATE_FILE_PATH"
-        if [ "$required" = "true" ]; then
-            echo "    Description: Required - Enter value for ${prop}" >> "$TEMPLATE_FILE_PATH"
+        if [ "$is_required" = "true" ]; then
+            echo "    Description: Required - Enter value for ${prop_name}" >> "$TEMPLATE_FILE_PATH"
         else
-            echo "    Description: Optional - Enter value for ${prop}" >> "$TEMPLATE_FILE_PATH"
+            echo "    Description: Optional - Enter value for ${prop_name}" >> "$TEMPLATE_FILE_PATH"
             echo "    Default: ''" >> "$TEMPLATE_FILE_PATH"
         fi
-    done
+    done <<< "$properties_info"
     echo "" >> "$TEMPLATE_FILE_PATH"
 
     # Add Conditions
     echo "Conditions:" >> "$TEMPLATE_FILE_PATH"
-    for prop_info in $properties_info; do
-        IFS=':' read -r prop type required <<< "$prop_info"
-        echo "  Has${prop}: !Not [!Equals [!Ref ${prop}, '']]" >> "$TEMPLATE_FILE_PATH"
-    done
+    while IFS=: read -r prop_name prop_type is_required; do
+        echo "  ${prop_name}Condition: !Not [!Equals [!Ref ${prop_name}, '']]" >> "$TEMPLATE_FILE_PATH"
+    done <<< "$properties_info"
     echo "" >> "$TEMPLATE_FILE_PATH"
 
     # Add Resources
@@ -54,10 +48,13 @@ create_cloudformation_template() {
     echo "  ${RESOURCE_NAME}:" >> "$TEMPLATE_FILE_PATH"
     echo "    Type: ${resource_type}" >> "$TEMPLATE_FILE_PATH"
     echo "    Properties:" >> "$TEMPLATE_FILE_PATH"
-    for prop_info in $properties_info; do
-        IFS=':' read -r prop type required <<< "$prop_info"
-        echo "      ${prop}: !If [Has${prop}, !Ref ${prop}, !Ref 'AWS::NoValue']" >> "$TEMPLATE_FILE_PATH"
-    done
+    while IFS=: read -r prop_name prop_type is_required; do
+        echo "      ${prop_name}:" >> "$TEMPLATE_FILE_PATH"
+        echo "        Fn::If:" >> "$TEMPLATE_FILE_PATH"
+        echo "          - ${prop_name}Condition" >> "$TEMPLATE_FILE_PATH"
+        echo "          - !Ref ${prop_name}" >> "$TEMPLATE_FILE_PATH"
+        echo "          - !Ref AWS::NoValue" >> "$TEMPLATE_FILE_PATH"
+    done <<< "$properties_info"
     echo "" >> "$TEMPLATE_FILE_PATH"
 
     # Add Outputs
