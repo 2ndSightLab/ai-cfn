@@ -42,7 +42,6 @@ create_cloudformation_template() {
             echo "    Description: Required - Enter value for ${prop_name}" >> "$TEMPLATE_FILE_PATH"
         else
             echo "    Description: Optional - Enter value for ${prop_name}" >> "$TEMPLATE_FILE_PATH"
-            # All default values must be strings, even for CommaDelimitedList
             echo "    Default: ''" >> "$TEMPLATE_FILE_PATH"
         fi
     done
@@ -56,12 +55,13 @@ create_cloudformation_template() {
         if [ "$is_required" = "false" ] && [ "$min_length" -lt 1 ]; then
             echo "  ${prop_name}Condition:" >> "$TEMPLATE_FILE_PATH"
             if [ "$prop_type" = "array" ]; then
-                # For array types, check if the array has any elements using Fn::Length
+                # For array types, check if the array is empty using Fn::Join
                 echo "    Fn::Not:" >> "$TEMPLATE_FILE_PATH"
                 echo "      - Fn::Equals:" >> "$TEMPLATE_FILE_PATH"
-                echo "          - Fn::Length:" >> "$TEMPLATE_FILE_PATH"
+                echo "          - Fn::Join:" >> "$TEMPLATE_FILE_PATH"
+                echo "              - ''" >> "$TEMPLATE_FILE_PATH"
                 echo "              - Ref: $prop_name" >> "$TEMPLATE_FILE_PATH"
-                echo "          - 0" >> "$TEMPLATE_FILE_PATH"
+                echo "          - ''" >> "$TEMPLATE_FILE_PATH"
             else
                 # For non-array types, check if the value is not empty
                 echo "    Fn::Not:" >> "$TEMPLATE_FILE_PATH"
@@ -104,6 +104,8 @@ create_cloudformation_template() {
 
     echo "CloudFormation template created and saved to $TEMPLATE_FILE_PATH"
 }
+
+
 
 
 
