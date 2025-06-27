@@ -9,11 +9,12 @@ https://medium.com/cloud-security/artificial-intelligence-2e97415216c0
 
 # Deploy Anything!
 
-I'm scrapping the scripts below to focus on this one.
+I'm scrapping the scripts below to focus on this one. I used AI (in part) to write deterministic code.
+
 * Choose an environment name (like dev, qa, prod, or however you want to define trust boundaries)
 * Enter the service name of the resource you want to deploy (e.g. Organizations)
 * Enter the resource type (e.g. Account)
-* If a cloudforamtion template to deploy the resource deos not exist, it will be created
+* If a cloudformation template to deploy the resource deos not exist, it will be created
 * If the script to deploy the template does not exist, it will be created
 * You will be prompted to enter each possible value (some are not really applicable)
 * Then the values you set will be passed to the temlpate to deploy the resource
