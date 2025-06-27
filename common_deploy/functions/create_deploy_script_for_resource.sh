@@ -1,5 +1,5 @@
 #!/bin/bash
-create_deploy_code_for_resource(){
+create_deploy_script_for_resource(){
     local RESOURCE_NAME=$(echo "$1" | tr '[:lower:]' '[:upper:]')
     local SERVICE_NAME=$(echo "$2" | tr '[:lower:]' '[:upper:]')
     
