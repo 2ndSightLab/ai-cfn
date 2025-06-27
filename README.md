@@ -10,7 +10,7 @@ https://medium.com/cloud-security/artificial-intelligence-2e97415216c0
 # Deploy Anything!
 
 I'm scrapping the scripts below to focus on this one.
-* Choose an environment name (like dev, qa, prod, or however you want to group permissions)
+* Choose an environment name (like dev, qa, prod, or however you want to define trust boundaries)
 * Enter the service name of the resource you want to deploy
 * Enter the Resource Type
 * If a cloudforamtion template to deploy the resource deos not exist, it will be created
