@@ -18,6 +18,7 @@ I'm scrapping the scripts below to focus on this one.
 > You will be prompted to enter each possible value (some are not really applicable)
 > Then the values you set will be passed to the temlpate to deploy the resource
 > It is not yet designed to handle sub types and have only tested certain parameter types
+> Not that the AI went in circles a bunch of times and I had to fix problems myself on this one.
 
 https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
 
