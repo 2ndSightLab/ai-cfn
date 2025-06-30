@@ -1,5 +1,5 @@
 # ai-cfn
-CloudFormation templates and scripts created with Amazon Q Developer and a bit of Amazon Bedrock (Kind of...see blogposts). 
+Expiramentation writing deployment scripts with AI. See related blog posts for more info.
 
 # About writing code with AI
 
@@ -9,24 +9,14 @@ https://medium.com/cloud-security/artificial-intelligence-2e97415216c0
 
 # Deploy Anything!
 
-I'm scrapping the scripts below to focus on this one. I used AI (in part) to write deterministic code.
-
-* Choose an environment name (like dev, qa, prod, or however you want to define trust boundaries)
-* Enter the service name of the resource you want to deploy (e.g. Organizations)
-* Enter the resource type (e.g. Account)
-* If a cloudformation template to deploy the resource deos not exist, it will be created
-* If the script to deploy the template does not exist, it will be created
-* You will be prompted to enter each possible value (some are not really applicable)
-* Then the values you set will be passed to the temlpate to deploy the resource
-* It is not yet designed to handle sub types and have only tested certain parameter types
-* The AI brain went in circles a bunch of times and I had to fix problems myself on this one.
-* ^^ I asked multiple AI chatbots ^^
-* Your resrouces and stacks will all have a nice naming convention too!
-* Might still need temlpates like those below for more complicated resources.
-
+This is where I started to script individual scripts with a tool that can deploy anything.\
+This has moved to it's own repository because it's a bona fide project now and I use it!\
+https://github.com/2ndSightLab/aws-deploy\
+\
+I started out trying to create tempaltes for different resources here and it's just way too time consuming and error prone:\
 https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
 
-Try it out:
+Try it out the original code I started with:
 
 ```
 cd ~
