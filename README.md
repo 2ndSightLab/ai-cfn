@@ -13,9 +13,13 @@ This is where I started to script individual scripts with a tool that can deploy
 This has moved to it's own repository because it's a bona fide project now and I use it!\
 https://github.com/2ndSightLab/aws-deploy
 <BR/><BR/>
-I started out trying to create tempaltes for different resources here and it's just way too time consuming and error prone:\
+I started out trying to create templates for different resources here and it's just way too time consuming and error prone:\
 https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
-
+<br/><br/>
+While playing around with AI - one of the things it's good for - is search.\
+I found the data model I was looking for all along in the above posts to do things faster. Finally!\
+It came out in 2021 apparently and I missed it.\
+<br/><br/>
 Try it out the original code I started with:
 
 ```
