@@ -18,8 +18,8 @@ https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
 <br/><br/>
 While playing around with AI - one of the things it's good for - is search.\
 I found the data model I was looking for all along in the above posts to do things faster. Finally!\
-It came out in 2021 apparently and I missed it.\
-<br/><br/>
+It came out in 2021 apparently and I missed it and not easily found by searching (at least for me).\
+<br/>
 Try it out the original code I started with:
 
 ```
