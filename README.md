@@ -12,7 +12,7 @@ https://medium.com/cloud-security/artificial-intelligence-2e97415216c0
 This is where I started to script individual scripts with a tool that can deploy anything.\
 This has moved to it's own repository because it's a bona fide project now and I use it!\
 https://github.com/2ndSightLab/aws-deploy
-\
+<BR/><BR/>
 I started out trying to create tempaltes for different resources here and it's just way too time consuming and error prone:\
 https://medium.com/cloud-security/automating-cybersecurity-metrics-890dfabb6198
 
